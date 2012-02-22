@@ -1,5 +1,9 @@
 package com.tojosebe.vulfen;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import android.R.color;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,30 +18,41 @@ import com.vulfox.util.Vector2fPool;
 
 public class GameScreen extends Screen {
 
-	private Pong mPong;
-	private Paint mPongPaint;
-	private Paint mRopePaint;
+	private static final float GRAVITATIONAL_CONSTANT = 240.0f;
+	private static final float COLLISION_ENERGY_LOSS = 0.04f;
+
 	private Paint mBackgroundPaint;
-	
+
 	private boolean mTouchDown = false;
 	private Vector2f mLastTouch = new Vector2f();
 
+	private List<Pong> mPongs = new ArrayList<Pong>();
+
+	Random random = new Random();
+
 	@Override
 	protected void initialize() {
-		mPong = new Pong();
-		mPong.mass = 1;
-		mPong.radius = 32;
-		mPong.position = new Vector2f(100, 100);
-		mPong.velocity = new Vector2f(40, 50);
-		mPong.force = new Vector2f();
+		Pong firstPong = new Pong();
+		firstPong.setRadius(64);
+		firstPong.getPosition().set(100, 100);
 
-		mPongPaint = new Paint();
-		mPongPaint.setColor(Color.YELLOW);
-		
-		mRopePaint = new Paint();
-		mRopePaint.setColor(Color.RED);
-		mRopePaint.setStyle(Style.STROKE);
-		mRopePaint.setStrokeWidth(7.0f);
+		Pong secondPong = new Pong();
+		secondPong.setRadius(61.0f);
+		secondPong.getPosition().set(mWidth - 100, mHeight - 100);
+		// secondPong.getVelocity().set(30, -20);
+
+		// mPongs.add(firstPong);
+		// mPongs.add(secondPong);
+
+		Random random = new Random();
+		for (int i = 0; i < 0; i++) {
+			Pong newPong = new Pong();
+			newPong.setRadius(random.nextFloat() * 15.0f + 1.0f);
+			newPong.getPosition().set(random.nextFloat() * mWidth,
+					random.nextFloat() * mHeight);
+
+			mPongs.add(newPong);
+		}
 
 		mBackgroundPaint = new Paint();
 		mBackgroundPaint.setColor(Color.BLACK);
@@ -46,68 +61,140 @@ public class GameScreen extends Screen {
 	@Override
 	public void handleInput(MotionEvent motionEvent) {
 
-		if(motionEvent.getAction() == MotionEvent.ACTION_DOWN)
-		{
-			mTouchDown = true;
+		if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+			Pong newPong = new Pong();
+			newPong.setRadius(random.nextFloat() * 16.0f + 10.0f);
+			newPong.getPosition().set(motionEvent.getX(), motionEvent.getY());
+			// newPong.getVelocity().set(random.nextFloat() * 50.0f - 25.0f,
+			// random.nextFloat() * 50 - 25);
+			mPongs.add(newPong);
 		}
-		else if(motionEvent.getAction() == MotionEvent.ACTION_UP)
-		{
-			mTouchDown = false;
-		}
-		
-		mLastTouch.set(motionEvent.getX(), motionEvent.getY());
+
 	}
 
 	@Override
 	public void update(float timeStep) {
 
-		if(mTouchDown) {
-			Vector2f force = Vector2fPool.getInstance().aquire();
-			
-			force.set(mLastTouch);
-			force.subT(mPong.position);			
-			force.setLength(1000.0f);			
-			mPong.force.addT(force);
-			
-			Vector2fPool.getInstance().release(force);
+		// Calculate collisions between spheres
+		for (int i = 0; i < mPongs.size(); i++) {
+			for (int j = i + 1; j < mPongs.size(); j++) {
+
+				Pong first = mPongs.get(i);
+				Pong second = mPongs.get(j);
+
+				Vector2f collision = Vector2fPool.getInstance().aquire();
+				Vector2f mtd = Vector2fPool.getInstance().aquire();
+				Vector2f mtdFirst = Vector2fPool.getInstance().aquire();
+				Vector2f mtdSecond = Vector2fPool.getInstance().aquire();
+				Vector2f collisionFirst = Vector2fPool.getInstance().aquire();
+				Vector2f collisionSecond = Vector2fPool.getInstance().aquire();
+
+				first.getPosition().sub(second.getPosition(), collision);
+				float lengthSqared = collision.getLengthSquared();
+
+				float sumRadius = first.getRadius() + second.getRadius();
+				if (lengthSqared < sumRadius * sumRadius) {
+
+					float length = (float) Math.sqrt(lengthSqared);
+					collision.mul((sumRadius - length) / length, mtd);
+
+					float sumMass = first.getMass() + second.getMass();
+
+					mtd.mul(second.getMass() / sumMass, mtdFirst);
+					mtd.mul(first.getMass() / sumMass, mtdSecond);
+
+					first.getPosition().addT(mtdFirst);
+					second.getPosition().subT(mtdSecond);
+
+					collision.normalizeT();
+
+					float aci = first.getVelocity().dot(collision);
+					float bci = second.getVelocity().dot(collision);
+
+					float acf = bci;
+					float bcf = aci;
+
+					collision.mul((acf - aci) * 2.0f
+							* (1.0f - COLLISION_ENERGY_LOSS) * second.getMass()
+							/ sumMass, collisionFirst);
+					collision.mul((bcf - bci) * 2.0f
+							* (1.0f - COLLISION_ENERGY_LOSS) * first.getMass()
+							/ sumMass, collisionSecond);
+
+					first.getVelocity().addT(collisionFirst);
+					second.getVelocity().addT(collisionSecond);
+				}
+
+				Vector2fPool.getInstance().release(collision);
+				Vector2fPool.getInstance().release(mtd);
+				Vector2fPool.getInstance().release(mtdFirst);
+				Vector2fPool.getInstance().release(mtdSecond);
+				Vector2fPool.getInstance().release(collisionFirst);
+				Vector2fPool.getInstance().release(collisionSecond);
+
+			}
+		}
+
+		// Calculate gravity
+		for (Pong fromPong : mPongs) {
+			for (Pong toPong : mPongs) {
+				if (!fromPong.equals(toPong)) {
+					Vector2f force = Vector2fPool.getInstance().aquire();
+
+					force.set(toPong.getPosition());
+					force.subT(fromPong.getPosition());
+					float lengthSquared = force.getLengthSquared();
+					if (lengthSquared != 0.0f) {
+
+						float attractionForce = GRAVITATIONAL_CONSTANT
+								* fromPong.getMass() * toPong.getMass()
+								/ lengthSquared;
+						force.setLength(attractionForce);
+						fromPong.getForce().addT(force);
+					}
+
+					Vector2fPool.getInstance().release(force);
+				}
+			}
+		}
+
+		// Apply force and calculate collisions against screen edges
+		for (Pong pong : mPongs) {
+			pong.update(timeStep);
+			pong.getForce().set(0.0f, 0.0f);
+
+			if (pong.getPosition().getX() < pong.getRadius()) {
+				pong.getPosition().setX(
+						2.0f * pong.getRadius() - pong.getPosition().getX());
+				pong.getVelocity().setX(-pong.getVelocity().getX());
+			} else if (pong.getPosition().getX() > mWidth - pong.getRadius()) {
+				pong.getPosition().setX(
+						2.0f * (mWidth - pong.getRadius())
+								- pong.getPosition().getX());
+				pong.getVelocity().setX(-pong.getVelocity().getX());
+			}
+			if (pong.getPosition().getY() < pong.getRadius()) {
+				pong.getPosition().setY(
+						2.0f * pong.getRadius() - pong.getPosition().getY());
+				pong.getVelocity().setY(-pong.getVelocity().getY());
+			} else if (pong.getPosition().getY() > mHeight - pong.getRadius()) {
+				pong.getPosition().setY(
+						2.0f * (mHeight - pong.getRadius())
+								- pong.getPosition().getY());
+				pong.getVelocity().setY(-pong.getVelocity().getY());
+			}
 		}
 		
-		mPong.update(timeStep);
-		mPong.force.set(0.0f, 0.0f);
-
-		if (mPong.position.getX() < mPong.radius) {
-			mPong.position.setX(2.0f * mPong.radius - mPong.position.getX());
-			mPong.velocity.setX(-mPong.velocity.getX());
-		} else if (mPong.position.getX() > mWidth - mPong.radius) {
-			mPong.position.setX(2.0f * (mWidth - mPong.radius)
-					- mPong.position.getX());
-			mPong.velocity.setX(-mPong.velocity.getX());
-		}
-		if (mPong.position.getY() < mPong.radius) {
-			mPong.position.setY(2.0f * mPong.radius - mPong.position.getY());
-			mPong.velocity.setY(-mPong.velocity.getY());
-		} else if (mPong.position.getY() > mHeight - mPong.radius) {
-			mPong.position.setY(2.0f * (mHeight - mPong.radius)
-					- mPong.position.getY());
-			mPong.velocity.setY(-mPong.velocity.getY());
-		}
-
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
 
 		canvas.drawRect(0, 0, mWidth, mHeight, mBackgroundPaint);
-		
-		if(mTouchDown) {
-			canvas.drawLine(
-					mPong.position.getX(), mPong.position.getY(),
-					mLastTouch.getX(), mLastTouch.getY(), mRopePaint);
+
+		for (Pong pong : mPongs) {
+			pong.draw(canvas);
 		}
-
-		canvas.drawCircle(mPong.position.getX(), mPong.position.getY(),
-				mPong.radius, mPongPaint);
-
 	}
 
 }
