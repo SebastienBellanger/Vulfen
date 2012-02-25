@@ -9,7 +9,7 @@ import com.vulfox.util.Vector2fPool;
 
 public class Pong {
 
-	public static final float MASS_PER_VOLUME = 3.0f;
+	public static final float MASS_PER_VOLUME = 10000.0f;
 
 	private static final float MIN_RADIUS = 8.0f;
 	private static final float MAX_RADIUS = 32.0f;
@@ -53,8 +53,8 @@ public class Pong {
 		Vector2fPool.getInstance().release(positionDelta);
 	}
 
-	public void draw(Canvas canvas) {
-		canvas.drawCircle(position.getX(), position.getY(), radius, mPaint);
+	public void draw(Canvas canvas, Vector2f screenOffset) {
+		canvas.drawCircle(position.getX() + screenOffset.getX(), position.getY() + screenOffset.getY(), radius, mPaint);
 	}
 
 	public float getMass() {

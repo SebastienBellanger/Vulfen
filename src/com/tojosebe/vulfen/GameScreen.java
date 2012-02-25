@@ -18,13 +18,17 @@ import com.vulfox.util.Vector2fPool;
 
 public class GameScreen extends Screen {
 
-	private static final float GRAVITATIONAL_CONSTANT = 240.0f;
-	private static final float COLLISION_ENERGY_LOSS = 0.04f;
+	private static final long TAP_TIME = 100;
+	private static final float GRAVITATIONAL_CONSTANT = 0.005f;
+	private static final float COLLISION_ENERGY_LOSS = 0.05f;
 
 	private Paint mBackgroundPaint;
 
 	private boolean mTouchDown = false;
+	private long mTouchTime = 0;
 	private Vector2f mLastTouch = new Vector2f();
+	private Vector2f mTouchDelta = new Vector2f();
+	private Vector2f mScreenOffset = new Vector2f();
 
 	private List<Pong> mPongs = new ArrayList<Pong>();
 
@@ -61,15 +65,30 @@ public class GameScreen extends Screen {
 	@Override
 	public void handleInput(MotionEvent motionEvent) {
 
-		if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-			Pong newPong = new Pong();
-			newPong.setRadius(random.nextFloat() * 16.0f + 10.0f);
-			newPong.getPosition().set(motionEvent.getX(), motionEvent.getY());
-			// newPong.getVelocity().set(random.nextFloat() * 50.0f - 25.0f,
-			// random.nextFloat() * 50 - 25);
-			mPongs.add(newPong);
+		if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+			mTouchTime = motionEvent.getEventTime();
+		}
+		
+		if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
+			mTouchDelta.set(motionEvent.getX(), motionEvent.getY());
+			mTouchDelta.subT(mLastTouch);
+			mScreenOffset.addT(mTouchDelta);
 		}
 
+		if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+
+			if (motionEvent.getEventTime() - mTouchTime < TAP_TIME) {
+				Pong newPong = new Pong();
+				newPong.setRadius(random.nextFloat() * 25.0f + 8.0f);
+				newPong.getPosition().set(motionEvent.getX() - mScreenOffset.getX(),
+						motionEvent.getY() - mScreenOffset.getY());
+				// newPong.getVelocity().set(random.nextFloat() * 50.0f - 25.0f,
+				// random.nextFloat() * 50 - 25);
+				mPongs.add(newPong);
+			}
+		}
+
+		mLastTouch.set(motionEvent.getX(), motionEvent.getY());
 	}
 
 	@Override
@@ -102,7 +121,7 @@ public class GameScreen extends Screen {
 
 					mtd.mul(second.getMass() / sumMass, mtdFirst);
 					mtd.mul(first.getMass() / sumMass, mtdSecond);
-
+					
 					first.getPosition().addT(mtdFirst);
 					second.getPosition().subT(mtdSecond);
 
@@ -121,6 +140,7 @@ public class GameScreen extends Screen {
 							* (1.0f - COLLISION_ENERGY_LOSS) * first.getMass()
 							/ sumMass, collisionSecond);
 
+					
 					first.getVelocity().addT(collisionFirst);
 					second.getVelocity().addT(collisionSecond);
 				}
@@ -163,28 +183,28 @@ public class GameScreen extends Screen {
 			pong.update(timeStep);
 			pong.getForce().set(0.0f, 0.0f);
 
-			if (pong.getPosition().getX() < pong.getRadius()) {
-				pong.getPosition().setX(
-						2.0f * pong.getRadius() - pong.getPosition().getX());
-				pong.getVelocity().setX(-pong.getVelocity().getX());
-			} else if (pong.getPosition().getX() > mWidth - pong.getRadius()) {
-				pong.getPosition().setX(
-						2.0f * (mWidth - pong.getRadius())
-								- pong.getPosition().getX());
-				pong.getVelocity().setX(-pong.getVelocity().getX());
-			}
-			if (pong.getPosition().getY() < pong.getRadius()) {
-				pong.getPosition().setY(
-						2.0f * pong.getRadius() - pong.getPosition().getY());
-				pong.getVelocity().setY(-pong.getVelocity().getY());
-			} else if (pong.getPosition().getY() > mHeight - pong.getRadius()) {
-				pong.getPosition().setY(
-						2.0f * (mHeight - pong.getRadius())
-								- pong.getPosition().getY());
-				pong.getVelocity().setY(-pong.getVelocity().getY());
-			}
+//			if (pong.getPosition().getX() < pong.getRadius()) {
+//				pong.getPosition().setX(
+//						2.0f * pong.getRadius() - pong.getPosition().getX());
+//				pong.getVelocity().setX(-pong.getVelocity().getX());
+//			} else if (pong.getPosition().getX() > mWidth - pong.getRadius()) {
+//				pong.getPosition().setX(
+//						2.0f * (mWidth - pong.getRadius())
+//								- pong.getPosition().getX());
+//				pong.getVelocity().setX(-pong.getVelocity().getX());
+//			}
+//			if (pong.getPosition().getY() < pong.getRadius()) {
+//				pong.getPosition().setY(
+//						2.0f * pong.getRadius() - pong.getPosition().getY());
+//				pong.getVelocity().setY(-pong.getVelocity().getY());
+//			} else if (pong.getPosition().getY() > mHeight - pong.getRadius()) {
+//				pong.getPosition().setY(
+//						2.0f * (mHeight - pong.getRadius())
+//								- pong.getPosition().getY());
+//				pong.getVelocity().setY(-pong.getVelocity().getY());
+//			}
 		}
-		
+
 	}
 
 	@Override
@@ -193,7 +213,7 @@ public class GameScreen extends Screen {
 		canvas.drawRect(0, 0, mWidth, mHeight, mBackgroundPaint);
 
 		for (Pong pong : mPongs) {
-			pong.draw(canvas);
+			pong.draw(canvas, mScreenOffset);
 		}
 	}
 
