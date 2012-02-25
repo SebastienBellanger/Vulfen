@@ -1,0 +1,38 @@
+-------------------------
+Backlog
+-------------------------
+
+* SceneComponents (knappar). Hade varit nice med knappar som bytte bild när man håller nere fingret.
+
+* vi kommer behöva visa dialoger. Screen för detta med sceneComponents (knappar).
+
+* Huvudmeny (Som en screen eller renodlad activity?)
+   - Settingsknapp.
+   - Playknapp.
+
+* SpelScreen (GameScreen) egen activity?
+
+* Settingsscreen? eller inkludera detta i huvudmenyn (se angry birds, det är ganska vanligt)
+
+* Levelöverblick som man kommer till innan man börjar spela hade varit najs.
+ 
+
+
+Frågor: 
+
+Hur klarar man en bana? Target score?
+
+
+
+
+
+--------------------------
+Backlog end
+--------------------------
+
+
+
+
+Sprint 1.
+
+Målet med sprint ett är att få till ett spelbart spel med enkel grafik. Grundstommen helt enkelt.
