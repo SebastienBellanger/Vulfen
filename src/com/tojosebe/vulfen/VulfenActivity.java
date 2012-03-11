@@ -1,11 +1,10 @@
 package com.tojosebe.vulfen;
 
-import com.vulfox.GameActivity;
-
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.vulfox.GameActivity;
 
 public class VulfenActivity extends GameActivity {
     /** Called when the activity is first created. */
@@ -19,6 +18,7 @@ public class VulfenActivity extends GameActivity {
        
         mGameThread.setFixedTimeStep(false);
         
-        addScreen(new GameScreen());
+//        addScreen(new GameScreen());
+        addScreen(new StartScreen());
     }
 }

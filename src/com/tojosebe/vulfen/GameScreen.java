@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import android.R.color;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Style;
-import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import com.vulfox.Screen;
 import com.vulfox.math.Vector2f;
@@ -34,8 +32,10 @@ public class GameScreen extends Screen {
 
 	Random random = new Random();
 
+	
+	
 	@Override
-	protected void initialize() {
+	public void initialize() {
 		Pong firstPong = new Pong();
 		firstPong.setRadius(64);
 		firstPong.getPosition().set(100, 100);
@@ -215,6 +215,12 @@ public class GameScreen extends Screen {
 		for (Pong pong : mPongs) {
 			pong.draw(canvas, mScreenOffset);
 		}
+	}
+	
+	@Override
+	public boolean handleBackPressed() {
+		mScreenManager.removeScreen(this);
+		return true;
 	}
 
 }
