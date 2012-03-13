@@ -33,6 +33,9 @@ public class Cloud {
 		velocity = new Vector2f(getRandom(20, 40), 0);
 		position = new Vector2f(imageComponent.getPositionX(),
 				imageComponent.getPositionY());
+		
+		//Resize the loaded bitmap with nice algorithms so that it looks nice.
+		imageComponent.resizeBitmap();
 	}
 
 	private int getRandom(int n, int m) {
