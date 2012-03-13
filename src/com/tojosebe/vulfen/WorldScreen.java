@@ -11,11 +11,10 @@ import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.component.WorldButton;
 import com.vulfox.Screen;
-import com.vulfox.math.Vector2f;
 
 public class WorldScreen extends Screen {
 	
-	private final int BUTTON_OFFSET = 30;
+	private final int BUTTON_OFFSET = 40;
 
 	private int mScrollY = 0;
 	private int mListHeight = BUTTON_OFFSET;
