@@ -1,45 +1,42 @@
 package com.tojosebe.vulfen.startscreen;
 
-import java.util.Random;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import com.tojosebe.vulfen.GameScreen;
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.WorldScreen;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
-import com.vulfox.component.ButtonComponent;
 import com.vulfox.component.ImageComponent;
 import com.vulfox.component.ScreenComponent;
-import com.vulfox.component.TextButtonComponent;
+import com.vulfox.component.StretchableImageButtonComponent;
+import com.vulfox.listener.EventListener;
 
 public class StartScreen extends Screen {
 
 	/** The dots per inch for the device. */
-	private int dpi;
+	private int mDpi;
 
-	private Cloud cloud1;
-	private Cloud cloud2;
-	private Cow[] cows;
+	private Cloud mCloud1;
+	private Cloud mCloud2;
+	private Cow[] mCows;
 
 
 	public StartScreen(int dpi) {
-		this.dpi = dpi;
+		this.mDpi = dpi;
 	}
 
 	@Override
 	protected void initialize() {
 
-		cloud1 = new Cloud(R.drawable.cloud1, dpi, mContext, 200, 70, mWidth);
-		cloud2 = new Cloud(R.drawable.cloud2, dpi, mContext, 60, 130, mWidth);
-		cows = new Cow[5];
+		mCloud1 = new Cloud(R.drawable.cloud1, mDpi, mContext, 200, 70, mWidth);
+		mCloud2 = new Cloud(R.drawable.cloud2, mDpi, mContext, 60, 130, mWidth);
+		mCows = new Cow[5];
 
 		addScreenComponent(createBackground());
 		addScreenComponent(createPlayButton());
-		addScreenComponent(cloud1.getImageComponent());
-		addScreenComponent(cloud2.getImageComponent());
+		addScreenComponent(mCloud1.getImageComponent());
+		addScreenComponent(mCloud2.getImageComponent());
 		addCows();
 		addScreenComponent(createPenguin());
 		addScreenComponent(createTitle());
@@ -47,25 +44,25 @@ public class StartScreen extends Screen {
 
 	private void addCows() {
 
-		cows[0] = new Cow(R.drawable.cow_small, dpi, mContext, 23, 0, 0, mWidth,
+		mCows[0] = new Cow(R.drawable.cow_small, mDpi, mContext, 23, 0, 0, mWidth,
 				mHeight);
-		addScreenComponent(cows[0].getImageComponent());
+		addScreenComponent(mCows[0].getImageComponent());
 
-		cows[1] = new Cow(R.drawable.cow_small, dpi, mContext, 25, -30, 14, mWidth,
+		mCows[1] = new Cow(R.drawable.cow_small, mDpi, mContext, 25, -30, 14, mWidth,
 				mHeight);
-		addScreenComponent(cows[1].getImageComponent());
+		addScreenComponent(mCows[1].getImageComponent());
 
-		cows[2] = new Cow(R.drawable.cow_small, dpi, mContext, 25, 35, 10, mWidth,
+		mCows[2] = new Cow(R.drawable.cow_small, mDpi, mContext, 25, 35, 10, mWidth,
 				mHeight);
-		addScreenComponent(cows[2].getImageComponent());
+		addScreenComponent(mCows[2].getImageComponent());
 
-		cows[3] = new Cow(R.drawable.cow_small, dpi, mContext, 29, -60, 40, mWidth,
+		mCows[3] = new Cow(R.drawable.cow_small, mDpi, mContext, 20, -65, -10, mWidth,
 				mHeight);
-		addScreenComponent(cows[3].getImageComponent());
-
-		cows[4] = new Cow(R.drawable.cow_small, dpi, mContext, 20, -65, -10, mWidth,
+		addScreenComponent(mCows[3].getImageComponent());
+		
+		mCows[4] = new Cow(R.drawable.cow_small, mDpi, mContext, 29, -60, 40, mWidth,
 				mHeight);
-		addScreenComponent(cows[4].getImageComponent());
+		addScreenComponent(mCows[4].getImageComponent());
 
 	}
 
@@ -74,7 +71,7 @@ public class StartScreen extends Screen {
 				R.drawable.penguin);
 		ImageComponent imageComp = new ImageComponent(title);
 
-		imageComp.setWidthInDpAutoSetHeight(180, dpi);
+		imageComp.setWidthInDpAutoSetHeight(180, mDpi);
 		imageComp.setPositionX(mWidth / 2);
 		imageComp.setPositionY(mHeight - imageComp.getHeight());
 
@@ -88,9 +85,9 @@ public class StartScreen extends Screen {
 		Bitmap title = ImageLoader.loadFromResource(mContext, R.drawable.title);
 		ImageComponent imageComp = new ImageComponent(title);
 
-		imageComp.setWidthInDpAutoSetHeight(250, dpi);
+		imageComp.setWidthInDpAutoSetHeight(250, mDpi);
 		imageComp.setPositionX((mWidth - imageComp.getWidth()) / 2);
-		imageComp.setPositionYInDp(40, dpi);
+		imageComp.setPositionYInDp(40, mDpi);
 
 		// Resize the loaded bitmap with nice algorithms so that it looks nice.
 		imageComp.resizeBitmap();
@@ -100,31 +97,37 @@ public class StartScreen extends Screen {
 
 	@Override
 	public void update(float timeStep) {
-		cloud1.update(timeStep);
-		cloud2.update(timeStep);
-		for (Cow cow : cows) {
+		mCloud1.update(timeStep);
+		mCloud2.update(timeStep);
+		for (Cow cow : mCows) {
 			cow.update(timeStep);
 		}
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
-		cloud1.draw(canvas);
-		cloud2.draw(canvas);
-		for (Cow cow : cows) {
+		mCloud1.draw(canvas);
+		mCloud2.draw(canvas);
+		for (Cow cow : mCows) {
 			cow.draw(canvas);
 		}
 	}
 
 	private ScreenComponent createPlayButton() {
-		ButtonComponent button = new TextButtonComponent("Play", 0xFFFF7733,
-				20, 0xFF221144, 0xFF226644, 250, 70, (mWidth - 250) / 2,
-				(mHeight - 70) / 2) {
+		
+		StretchableImageButtonComponent button = new StretchableImageButtonComponent(mContext,
+				R.drawable.button, R.drawable.button_pressed, "Play", 0xFFFFFFFF, 0x44000000,30,150,50,mDpi);
+		
+		button.setEventListener(new EventListener() {
 			@Override
-			public void buttonClicked() {
+			public void handleButtonClicked() {
 				mScreenManager.addScreen(new WorldScreen());
 			}
-		};
+		});
+		
+		button.setPositionX(mWidth/2 - button.getWidth()/2);
+		button.setPositionY(mHeight/2 - button.getHeight()/2);
+		
 		return button;
 	}
 
