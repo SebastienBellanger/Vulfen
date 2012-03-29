@@ -13,75 +13,71 @@ import com.vulfox.util.Vector2fPool;
 
 public class Cow {
 
-	private ImageComponent imageComponent;
+	private ImageComponent mImageComponent;
 
-	private Vector2f velocity;
-	private Vector2f position;
+	private Vector2f mVelocity;
+	private Vector2f mPosition;
 
-	private int dpi;
+	private int mDpi;
 	
-	private boolean movingDown = false;
+	private boolean mMoving;
 
-	private int screenWidth;
-	private int screenHeight;
-	private int yOffsetDp;
-	private int xOffsetDp;
-	private int startY;
+	private int mScreenWidth;
+	private int mScreenHeight;
+	private int mYOffsetDp;
+	private int mXOffsetDp;
+	private int mStartY;
 
 	public Cow(int resourceId, int dpi, Context context, int widthInDp,
 			int xOffsetDp, int yOffsetDp, int screenWidth, int screenHeight) {
-		this.dpi = dpi;
-		this.screenWidth = screenWidth;
-		this.screenHeight = screenHeight;
-		this.xOffsetDp = xOffsetDp;
-		this.yOffsetDp = yOffsetDp;
+		this.mDpi = dpi;
+		this.mScreenWidth = screenWidth;
+		this.mScreenHeight = screenHeight;
+		this.mXOffsetDp = xOffsetDp;
+		this.mYOffsetDp = yOffsetDp;
 
 		float fraction = dpi / 160.0f;
 
 		Bitmap cow = ImageLoader.loadFromResource(context, resourceId);
 
-		imageComponent = new ImageComponent(cow);
-		imageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
+		mImageComponent = new ImageComponent(cow);
+		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
 
-		imageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
+		mImageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
 				+ (int) (xOffsetDp * fraction));
-		imageComponent.setPositionY(screenHeight / 2 + (screenHeight / 4)
+		mImageComponent.setPositionY(screenHeight / 2 + (screenHeight / 4)
 				+ (int) (yOffsetDp * fraction));
 
-		velocity = new Vector2f(0, 0);
-		position = new Vector2f(imageComponent.getPositionX(),
-				imageComponent.getPositionY());
-		startY = imageComponent.getPositionY();
+		mVelocity = new Vector2f(0, 0);
+		mPosition = new Vector2f(mImageComponent.getPositionX(),
+				mImageComponent.getPositionY());
+		mStartY = mImageComponent.getPositionY();
 
 		// Resize the loaded bitmap with nice algorithms so that it looks nice.
-		imageComponent.resizeBitmap();
+		mImageComponent.resizeBitmap();
 	}
 
 	private int getRandom(int n, int m) {
-		Random rand = new Random(System.currentTimeMillis() + (int)position.getX() + (int)position.getY());
+		Random rand = new Random(System.currentTimeMillis() + (int)mPosition.getX() + (int)mPosition.getY());
 		return (int) rand.nextInt(m) + n; // random number n-m
 	}
 
 	public void update(float timeStep) {
 		
-		if (imageComponent.getPositionY() > startY) {
+		if (mImageComponent.getPositionY() > mStartY) {
 			reinitCow();
-			movingDown = false;
+			mMoving = false;
 		}
 		
-		if (velocity.getY() != 0 && !movingDown) {
-		
+		if (mMoving) {
+
 			Vector2f positionDelta = Vector2fPool.getInstance().aquire();
-			positionDelta.set(velocity);
+			positionDelta.set(mVelocity);
 			positionDelta.mulT(timeStep);
 	
-			position.addT(positionDelta);
+			mPosition.addT(positionDelta);
 			
-			velocity.setY(velocity.getY()+30);
-			
-			if (velocity.getY() == 0) {
-				movingDown = true;
-			}
+			mVelocity.setY(mVelocity.getY()+(int)((1.0/mDpi)*350000*timeStep));
 	
 			Vector2fPool.getInstance().release(positionDelta);
 			
@@ -89,36 +85,37 @@ public class Cow {
 			int random = getRandom(0,1000);
 			if (random == 42) {
 				//Jump!
-				velocity.setY(-500);
+				mVelocity.setY(-500);
+				mMoving = true;
 			}
 		}
 	}
 
 	private void reinitCow() {
 		
-		float fraction = dpi / 160.0f;
+		float fraction = mDpi / 160.0f;
 		
-		imageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
-				+ (int) (xOffsetDp * fraction));
-		imageComponent.setPositionY(screenHeight / 2 + (screenHeight / 4)
-				+ (int) (yOffsetDp * fraction));
+		mImageComponent.setPositionX(mScreenWidth / 2 - (mScreenWidth / 4)
+				+ (int) (mXOffsetDp * fraction));
+		mImageComponent.setPositionY(mScreenHeight / 2 + (mScreenHeight / 4)
+				+ (int) (mYOffsetDp * fraction));
 
-		velocity = new Vector2f(0, 0);
-		position = new Vector2f(imageComponent.getPositionX(),
-				imageComponent.getPositionY());
+		mVelocity = new Vector2f(0, 0);
+		mPosition = new Vector2f(mImageComponent.getPositionX(),
+				mImageComponent.getPositionY());
 	}
 
 	public void draw(Canvas canvas) {
-		imageComponent.setPositionX((int) position.getX());
-		imageComponent.setPositionY((int) position.getY());
-		imageComponent.draw(canvas);
+		mImageComponent.setPositionX((int) mPosition.getX());
+		mImageComponent.setPositionY((int) mPosition.getY());
+		mImageComponent.draw(canvas);
 	}
 
 	/**
 	 * @return the imageComponent
 	 */
 	public ImageComponent getImageComponent() {
-		return imageComponent;
+		return mImageComponent;
 	}
 
 }

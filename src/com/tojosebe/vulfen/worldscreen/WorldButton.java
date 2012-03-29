@@ -1,4 +1,4 @@
-package com.tojosebe.vulfen.component;
+package com.tojosebe.vulfen.worldscreen;
 
 import android.graphics.Canvas;
 import android.graphics.Color;

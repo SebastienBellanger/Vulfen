@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, VulfenActivity!</string>
     <string name="app_name">Vulfen</string>
+    <string name="quit">Quit?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="really_quit">Are you sure you want to quit?</string>
 
 </resources>

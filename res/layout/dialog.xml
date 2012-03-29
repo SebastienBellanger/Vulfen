@@ -1,0 +1,99 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/layout_root"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:padding="12dp"
+              android:background="@drawable/dialog_shadow"
+              >
+              
+    <LinearLayout
+              android:id="@+id/header"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="40dp"
+              android:background="@drawable/header_dialog"
+              >
+             
+        <TextView
+            android:id="@+id/dialog_header_text"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:text=""
+            android:textSize="18sp"
+            style="@style/NiceText"
+            android:textColor="#FFF" />
+    
+    </LinearLayout>
+    
+        <LinearLayout
+              android:id="@+id/content"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:background="#FFFFFFFF"
+              >
+              
+        <TextView android:id="@+id/dialog_content"
+              android:text=""
+              android:layout_width="fill_parent"
+              android:layout_height="100dp"
+              android:textColor="#FF000000"
+              android:textSize="16sp"
+              style="@style/NiceText"
+              android:textStyle="normal"
+              android:padding="10dp"
+              android:gravity="center"
+              />
+    
+    </LinearLayout>
+    
+            <LinearLayout
+                android:id="@+id/footer"
+                android:layout_width="fill_parent"
+                android:layout_height="60dp"
+                android:paddingTop="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/footer_dialog"
+                android:orientation="horizontal" >
+        
+                <LinearLayout
+                android:id="@+id/footer"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal" >
+	                <Button
+	                    android:id="@+id/button_positive"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="fill_parent"
+	                    android:textSize="18sp"
+	                    style="@style/ButtonText"
+	                    android:text="Yes" >
+					</Button>
+    			</LinearLayout>
+    			            
+                <LinearLayout
+                android:id="@+id/footer"
+                android:layout_width="fill_parent"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal" >
+	                <Button
+	                    android:id="@+id/button_negative"
+	                    style="@style/ButtonText"
+	                    android:textSize="18sp"
+	                    android:layout_width="wrap_content"
+	                    android:layout_height="fill_parent"
+	                    android:text="No">
+					</Button>
+            	</LinearLayout>
+            	
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,4 +1,4 @@
-package com.tojosebe.vulfen;
+package com.tojosebe.vulfen.worldscreen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
-import com.tojosebe.vulfen.component.WorldButton;
+import com.tojosebe.vulfen.game.BowlConfiguration;
+import com.tojosebe.vulfen.game.BowlScreen;
 import com.vulfox.Screen;
 
 public class WorldScreen extends Screen {
@@ -89,7 +90,7 @@ public class WorldScreen extends Screen {
 		WorldButton worldButton = new WorldButton(worldName, totalStages, clearedStages) {
 			@Override
 			public void buttonClicked() {
-				mScreenManager.addScreen(new GameScreen());
+				mScreenManager.addScreen(new BowlScreen(new BowlConfiguration()));
 			}
 			
 		};
