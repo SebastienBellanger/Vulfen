@@ -4,14 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.view.MotionEvent;
 
-import com.vulfox.component.ScreenComponent;
+import com.vulfox.component.ButtonComponent;
 
 /**
  * Animates a sequence of images. The images need to be of the exact same size.
  */
-public class AnimateableImageComponent extends ScreenComponent {
+public class AnimateableImageComponent extends ButtonComponent {
 
 	private Bitmap[] mBitmap;
 
@@ -38,11 +37,13 @@ public class AnimateableImageComponent extends ScreenComponent {
 	@Override
 	public void draw(Canvas canvas) {
 		
-		mRect.set(getPositionX(), getPositionY(), getPositionX() + getWidth(),
-				getPositionY() + getHeight());
-
-		if (animation != null) {
-			animation.draw(canvas, mRect);
+		if (isVisible()) {
+			mRect.set(getPositionX(), getPositionY(), getPositionX() + getWidth(),
+					getPositionY() + getHeight());
+	
+			if (animation != null) {
+				animation.draw(canvas, mRect);
+			}
 		}
 	}
 
@@ -65,22 +66,6 @@ public class AnimateableImageComponent extends ScreenComponent {
 			mBitmap[i] = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix,
 					true);
 		}
-	}
-
-	@Override
-	public void handleActionDown(MotionEvent motionEvent,
-			boolean insideConponent) {
-	}
-
-	@Override
-	public boolean handleActionUp(MotionEvent motionEvent,
-			boolean insideConponent) {
-		return false;
-	}
-
-	@Override
-	public void handleActionMove(MotionEvent motionEvent,
-			boolean insideConponent) {
 	}
 
 	/**
@@ -119,4 +104,9 @@ public class AnimateableImageComponent extends ScreenComponent {
 	public void startAnimation() {
 		animation.start();
 	}
+	
+	public Bitmap[] getBitmaps() {
+		return mBitmap;
+	}
+	
 }

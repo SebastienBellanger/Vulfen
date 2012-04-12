@@ -1,13 +1,15 @@
 package com.tojosebe.vulfen.worldscreen;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-import com.vulfox.component.ButtonComponent;
+import com.tojosebe.vulfen.R;
+import com.vulfox.component.StretchableImageButtonComponent;
 
-public abstract class WorldButton extends ButtonComponent {
+public class WorldButton extends StretchableImageButtonComponent {
 
 	private String mWorldName;
 	private int mTotalStages;
@@ -22,7 +24,11 @@ public abstract class WorldButton extends ButtonComponent {
 	private Paint mStagesPaint = new Paint();
 	
 	
-	public WorldButton(String worldName, int totalStages, int clearedStages) {
+	public WorldButton(String worldName, int totalStages, int clearedStages, Context context, int dpi) {
+		
+		super(context, R.drawable.world, "", 0xFFFF0000,
+				0xFF000000, 20, 175, 175,dpi);
+		
 		mWorldName = worldName;
 		mTotalStages = totalStages;
 		mClearedStages = clearedStages;
@@ -39,20 +45,51 @@ public abstract class WorldButton extends ButtonComponent {
 		mWorldNamePaint.setFakeBoldText(true);
 		mWorldNamePaint.setTextSize(32.0f);
 		mWorldNamePaint.setTextAlign(Paint.Align.CENTER);
-		mWorldNamePaint.setColor(Color.BLACK);
+		mWorldNamePaint.setColor(0xFFFFFFFF);
+		mWorldNamePaint.setAntiAlias(true);
 		
 		mStagesPaint.setTextSize(26.0f);
 		mStagesPaint.setTextAlign(Paint.Align.CENTER);
-		mStagesPaint.setColor(Color.DKGRAY);
+		mStagesPaint.setColor(0xFFFFFFFF);
+		mStagesPaint.setAntiAlias(true);
 		
-		mStagesText = String.format("%d of %d cleared", clearedStages, totalStages);
+		mStagesText = String.format("%d/%d", clearedStages, totalStages);
+	}
+	
+	public WorldButton(String worldName, int totalStages, int clearedStages, Context context, int dpi, WorldButton buttonTemplate) {
+		
+		super((StretchableImageButtonComponent)buttonTemplate);
+		
+		mWorldName = worldName;
+		mTotalStages = totalStages;
+		mClearedStages = clearedStages;
+		
+		mBackgroundFillPaint.setColor(Color.GRAY);
+		
+		mBackgroundStrokePaint.setColor(Color.WHITE);
+		mBackgroundStrokePaint.setStrokeWidth(5.0f);
+		mBackgroundStrokePaint.setStyle(Paint.Style.STROKE);
+		
+		mWorldNamePaint.setFakeBoldText(true);
+		mWorldNamePaint.setTextSize(32.0f);
+		mWorldNamePaint.setTextAlign(Paint.Align.CENTER);
+		mWorldNamePaint.setColor(0xFFFFFFFF);
+		mWorldNamePaint.setAntiAlias(true);
+		
+		mStagesPaint.setTextSize(26.0f);
+		mStagesPaint.setTextAlign(Paint.Align.CENTER);
+		mStagesPaint.setColor(0xFFFFFFFF);
+		mStagesPaint.setAntiAlias(true);
+		
+		mStagesText = String.format("%d/%d", clearedStages, totalStages);
 	}
 	
 	@Override
 	public void draw(Canvas canvas) {
-		mBackgroundRect.set(getPositionX(), getPositionY(), getPositionX() + getWidth(), getPositionY() + getHeight());
-		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundFillPaint);
-		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundStrokePaint);
+		super.draw(canvas);
+//		mBackgroundRect.set(getPositionX(), getPositionY(), getPositionX() + getWidth(), getPositionY() + getHeight());
+//		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundFillPaint);
+//		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundStrokePaint);
 		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2, getPositionY() + 90, mWorldNamePaint);		
 		canvas.drawText(mStagesText, getPositionX() + getWidth() / 2, getPositionY() + 160, mStagesPaint);
 	}

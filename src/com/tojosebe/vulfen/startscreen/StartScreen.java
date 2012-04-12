@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.VulfenActivity;
 import com.tojosebe.vulfen.component.animation.AnimateableImageComponent;
+import com.tojosebe.vulfen.util.Constants;
 import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
@@ -20,6 +21,7 @@ import com.vulfox.component.ImageComponent;
 import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
+import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
 
 public class StartScreen extends Screen {
@@ -32,7 +34,7 @@ public class StartScreen extends Screen {
 	private Cow[] mCows;
 
 	private int mOrientation;
-	
+
 	private Activity mActivity;
 
 	public StartScreen(int dpi, Activity activity) {
@@ -44,9 +46,9 @@ public class StartScreen extends Screen {
 	protected void initialize() {
 
 		mCloud1 = new Cloud(R.drawable.cloud1, mDpi,
-				mContext.getApplicationContext(), 200, 70, mWidth);
+				mContext.getApplicationContext(), 200, 70, mWidth, Constants.BITMAP_CLOUD_1);
 		mCloud2 = new Cloud(R.drawable.cloud2, mDpi,
-				mContext.getApplicationContext(), 60, 130, mWidth);
+				mContext.getApplicationContext(), 60, 130, mWidth, Constants.BITMAP_CLOUD_2);
 		mCows = new Cow[5];
 
 		addScreenComponent(createBackground());
@@ -74,8 +76,7 @@ public class StartScreen extends Screen {
 		addScreenComponent(mCows[2].getImageComponent());
 
 		mCows[3] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 20, -65, -10, mWidth,
-				mHeight);
+				mContext.getApplicationContext(), 20, -65, -10, mWidth, mHeight);
 		addScreenComponent(mCows[3].getImageComponent());
 
 		mCows[4] = new Cow(R.drawable.cow_small, mDpi,
@@ -105,6 +106,10 @@ public class StartScreen extends Screen {
 		// Resize the loaded bitmaps with nice algorithms so that they looks
 		// nice.
 		imageComp.resizeBitmaps();
+		
+		Bitmap[] rezisedBitmaps = imageComp.getBitmaps();
+		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN,rezisedBitmaps[0]);
+		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN_BLINKING, rezisedBitmaps[1]);
 
 		// blink sequence
 		imageComp.addScene(eyesOpen, 1000);
@@ -156,13 +161,14 @@ public class StartScreen extends Screen {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
 				mContext.getApplicationContext(), R.drawable.button,
-				R.drawable.button_pressed, "Play", 0xFFFFFFFF, 0x44000000, 30,
+				"Play", 0xFFFFFFFF, 0x44000000, 30,
 				150, 50, mDpi);
 
 		button.setEventListener(new EventListener() {
 			@Override
-			public void handleButtonClicked() {
-				mScreenManager.addScreen(new WorldScreen());
+			public boolean handleButtonClicked() {
+				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1, mCloud2));
+				return true;
 			}
 		});
 
@@ -178,12 +184,26 @@ public class StartScreen extends Screen {
 	}
 
 	private ImageComponent createBackground() {
-		Bitmap background = ImageLoader.loadFromResource(
-				mContext.getApplicationContext(), R.drawable.background);
-		ImageComponent imageComp = new ImageComponent(background);
-		imageComp.setHeight(mHeight);
-		imageComp.setWidth(mWidth);
-		imageComp.resizeBitmap();
+		return getImageComponent(Constants.BITMAP_BACKGROUND,
+				R.drawable.background);
+	}
+
+	private ImageComponent getImageComponent(int imageConstant, int resource) {
+		Bitmap background = BitmapManager.getBitmap(imageConstant);
+
+		ImageComponent imageComp = null;
+
+		if (background != null) {
+			imageComp = new ImageComponent(background);
+		} else {
+			background = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), resource);
+			imageComp = new ImageComponent(background);
+			imageComp.setHeight(mHeight);
+			imageComp.setWidth(mWidth);
+			imageComp.resizeBitmap();
+			BitmapManager.addBitmap(imageConstant, imageComp.getBitmap());
+		}
 		return imageComp;
 	}
 
@@ -200,45 +220,49 @@ public class StartScreen extends Screen {
 		switch (id) {
 		case VulfenActivity.DIALOG_REALLY_EXIT:
 
-			//CREATE DIALOG
-			final VulfenDialog dialog = new VulfenDialog(mActivity, R.style.CustomDialogTheme);
-			
-			//INIT DIALOG BUTTONS
-			Button noButton = (Button) dialog.findViewById(R.id.button_negative);
-			Button yesButton = (Button) dialog.findViewById(R.id.button_positive);
+			// CREATE DIALOG
+			final VulfenDialog dialog = new VulfenDialog(mActivity,
+					R.style.CustomDialogTheme);
+
+			// INIT DIALOG BUTTONS
+			Button noButton = (Button) dialog
+					.findViewById(R.id.button_negative);
+			Button yesButton = (Button) dialog
+					.findViewById(R.id.button_positive);
 			noButton.setText(R.string.no);
 			yesButton.setText(R.string.yes);
 			dialog.setPositiveButton(yesButton);
 			dialog.setNegativeButton(noButton);
-			
-			//SET DIALOG HEADER
-			((TextView)dialog.findViewById(R.id.dialog_header_text)).setText(R.string.quit);
-			
-			//SET DIALOG CONTENT
-			((TextView)dialog.findViewById(R.id.dialog_content)).setText(R.string.really_quit);
 
-			//INIT DIALOG SIZES
-			int h = (int)GraphicsUtil.dpToPixels(70, mDpi);
-			int w = (int)GraphicsUtil.dpToPixels(120, mDpi);
+			// SET DIALOG HEADER
+			((TextView) dialog.findViewById(R.id.dialog_header_text))
+					.setText(R.string.quit);
+
+			// SET DIALOG CONTENT
+			((TextView) dialog.findViewById(R.id.dialog_content))
+					.setText(R.string.really_quit);
+
+			// INIT DIALOG SIZES
+			int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
+			int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
 			dialog.initDialog(mActivity, R.drawable.button, h, w);
-			
-			noButton.setOnClickListener(new OnClickListener() {				
+
+			noButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					dialog.dismiss();
 				}
 			});
-			yesButton.setOnClickListener(new OnClickListener() {				
+			yesButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					mActivity.finish();
 				}
 			});
-			
+
 			return dialog;
 		}
 		return null;
 	}
-
 
 }

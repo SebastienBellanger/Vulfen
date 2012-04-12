@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import com.vulfox.ImageLoader;
 import com.vulfox.component.ImageComponent;
 import com.vulfox.math.Vector2f;
+import com.vulfox.util.BitmapManager;
 import com.vulfox.util.Vector2fPool;
 
 public class Cloud {
@@ -22,20 +23,31 @@ public class Cloud {
 	
 	private int screenWidth;
 
-	public Cloud(int resourceId, int dpi, Context context, int xDp, int yDp, int screenWidth) {
+	public Cloud(int resourceId, int dpi, Context context, int xDp, int yDp, int screenWidth, int bitmapId) {
 		this.dpi = dpi;
 		this.screenWidth = screenWidth;
-		Bitmap cloud = ImageLoader.loadFromResource(context, resourceId);
-		imageComponent = new ImageComponent(cloud);
-		imageComponent.setWidthInDpAutoSetHeight(100, dpi);
+		
+		Bitmap cloud = BitmapManager.getBitmap(bitmapId);
+		
+		if (cloud != null) {
+			imageComponent = new ImageComponent(cloud);
+			imageComponent.setWidthInDpAutoSetHeight(100, dpi);
+		} else {
+			cloud = ImageLoader.loadFromResource(context, resourceId);
+			imageComponent = new ImageComponent(cloud);
+			imageComponent.setWidthInDpAutoSetHeight(100, dpi);
+			
+			//Resize the loaded bitmap with nice algorithms so that it looks nice.
+			imageComponent.resizeBitmap();
+		}
+		
 		imageComponent.setPositionXInDp(xDp, dpi);
 		imageComponent.setPositionYInDp(yDp, dpi);
-		velocity = new Vector2f(getRandom(20, 40), 0);
+		
 		position = new Vector2f(imageComponent.getPositionX(),
 				imageComponent.getPositionY());
 		
-		//Resize the loaded bitmap with nice algorithms so that it looks nice.
-		imageComponent.resizeBitmap();
+		velocity = new Vector2f(getRandom(20, 40), 0);
 	}
 
 	private int getRandom(int n, int m) {
