@@ -38,9 +38,9 @@ public class Pig {
 
 		float fraction = dpi / 160.0f;
 
-		Bitmap cow = ImageLoader.loadFromResource(context, resourceId);
+		Bitmap pig = ImageLoader.loadFromResource(context, resourceId);
 
-		mImageComponent = new ImageComponent(cow);
+		mImageComponent = new ImageComponent(pig, false);
 		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
 
 		mImageComponent.setPositionX((int) (xOffsetDp * fraction));
@@ -114,7 +114,6 @@ public class Pig {
 	public void draw(Canvas canvas) {
 		mImageComponent.setPositionX((int) mPosition.getX());
 		mImageComponent.setPositionY((int) mPosition.getY());
-		mImageComponent.draw(canvas);
 	}
 
 	/**

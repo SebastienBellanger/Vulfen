@@ -77,7 +77,7 @@ public class BowlScreen extends Screen {
 		mYellow = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.sebe);
 		mRed = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.tojo);
 
-		mScale = mWidth / 480.0f;
+		mScale = getWidth() / 480.0f;
 		mPongLength = 64 * mScale;
 		mRadius = mPongLength * 0.5f;
 		mPongOffsetX = mPongOffsetY = mPongLength * 0.5f;
@@ -100,8 +100,8 @@ public class BowlScreen extends Screen {
 		mPoints.clear();
 		mPongs.clear();
 
-		float halfWidth = mWidth * 0.5f;
-		float pongTop = mHeight * 0.2f;
+		float halfWidth = getWidth() * 0.5f;
+		float pongTop = getHeight() * 0.2f;
 
 		addInitialPong(new Vector2f(halfWidth - 2 * mPongLength, pongTop));
 		addInitialPong(new Vector2f(halfWidth, pongTop));
@@ -132,7 +132,7 @@ public class BowlScreen extends Screen {
 			if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
 				mHasPong = false;
 
-				if (motionEvent.getY() > mHeight * 0.8f) {
+				if (motionEvent.getY() > getHeight() * 0.8f) {
 					mHasPong = true;
 
 					mLastMotion.set(x, y);
@@ -141,7 +141,7 @@ public class BowlScreen extends Screen {
 				}
 			} else if (mHasPong
 					&& motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-				if (motionEvent.getY() > mHeight * 0.8f) {
+				if (motionEvent.getY() > getHeight() * 0.8f) {
 					mHasPong = true;
 
 					mLastMotion.set(x, y);
@@ -205,8 +205,8 @@ public class BowlScreen extends Screen {
 			if (pong.Position.getX() < mPongOffsetX) {
 				pong.Position.setX(2.0f * mPongOffsetX - pong.Position.getX());
 				pong.Velocity.setX(-pong.Velocity.getX());
-			} else if (pong.Position.getX() > mWidth - mPongOffsetX) {
-				pong.Position.setX(2.0f * (mWidth - mPongOffsetX)
+			} else if (pong.Position.getX() > getWidth() - mPongOffsetX) {
+				pong.Position.setX(2.0f * (getWidth() - mPongOffsetX)
 						- pong.Position.getX());
 				pong.Velocity.setX(-pong.Velocity.getX());
 			}
@@ -214,8 +214,8 @@ public class BowlScreen extends Screen {
 			if (pong.Position.getY() < mPongOffsetY) {
 				pong.Position.setY(2.0f * mPongOffsetY - pong.Position.getY());
 				pong.Velocity.setY(-pong.Velocity.getY());
-			} else if (pong.Position.getY() > mHeight - mPongOffsetY) {
-				pong.Position.setY(2.0f * (mHeight - mPongOffsetY)
+			} else if (pong.Position.getY() > getHeight() - mPongOffsetY) {
+				pong.Position.setY(2.0f * (getHeight() - mPongOffsetY)
 						- pong.Position.getY());
 				pong.Velocity.setY(-pong.Velocity.getY());
 			}
@@ -284,8 +284,8 @@ public class BowlScreen extends Screen {
 	@Override
 	public void draw(Canvas canvas) {
 
-		canvas.drawRect(0, 0, mWidth, mHeight * 0.8f, mBackgroundTop);
-		canvas.drawRect(0, mHeight * 0.8f, mWidth, mHeight, mBackgroundbottom);
+		canvas.drawRect(0, 0, getWidth(), getHeight() * 0.8f, mBackgroundTop);
+		canvas.drawRect(0, getHeight() * 0.8f, getWidth(), getHeight(), mBackgroundbottom);
 
 		for (Pong pong : mPongs) {
 
@@ -329,7 +329,7 @@ public class BowlScreen extends Screen {
 			canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
 					+ topRect.height(), mTopPaint);
 			canvas.drawText(livesLeft,
-					mWidth - livesRect.width() - 10 * mScale, 10 * mScale
+					getWidth() - livesRect.width() - 10 * mScale, 10 * mScale
 							+ livesRect.height(), mTextPaint);
 		} else {
 			String gameOver = "Game Over!";
@@ -345,11 +345,11 @@ public class BowlScreen extends Screen {
 			mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
 			mTextPaint.getTextBounds(tap, 0, tap.length(), tapRect);
 
-			canvas.drawText(gameOver, mWidth / 2 - gameOverRect.width() / 2,
-					mHeight / 2 - gameOverRect.height(), mTextPaint);
-			canvas.drawText(score, mWidth / 2 - scoreRect.width() / 2, mHeight
+			canvas.drawText(gameOver, getWidth() / 2 - gameOverRect.width() / 2,
+					getHeight() / 2 - gameOverRect.height(), mTextPaint);
+			canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2, getHeight()
 					/ 2 + scoreRect.height(), mTextPaint);
-			canvas.drawText(tap, mWidth / 2 - tapRect.width() / 2, mHeight / 2
+			canvas.drawText(tap, getWidth() / 2 - tapRect.width() / 2, getHeight() / 2
 					+ scoreRect.height() + tapRect.height() * 2, mTextPaint);
 		}
 
@@ -405,7 +405,7 @@ public class BowlScreen extends Screen {
 		}
 
 		mLaunchPong.PongType = Type.Red;
-		mLaunchPong.Position = new Vector2f(mWidth * 0.5f, mHeight * 0.9f);
+		mLaunchPong.Position = new Vector2f(getWidth() * 0.5f, getHeight() * 0.9f);
 		mLaunchPong.Velocity = new Vector2f();
 
 		mMotionEnabled = true;

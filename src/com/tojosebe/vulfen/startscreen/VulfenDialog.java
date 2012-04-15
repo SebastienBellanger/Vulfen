@@ -54,7 +54,7 @@ public class VulfenDialog extends Dialog {
 	public void initDialog(Activity activity, int buttonDrawableResource, int h, int w) {
 		
 		Bitmap background = ImageLoader.loadFromResource(activity, buttonDrawableResource);
-		background = GraphicsUtil.resizeBitmap(background, h, w);
+		background = GraphicsUtil.resizeBitmap9PatchStyle(background, h, w);
 		
 		boolean doCopy = false;
 		

@@ -28,9 +28,9 @@ public class SelectScreen extends Screen {
 	@Override
 	public void draw(Canvas canvas) {
 
-		canvas.drawRect(0, 0, mWidth, mHeight, mBackgroundPaint);
+		canvas.drawRect(0, 0, getWidth(), getHeight(), mBackgroundPaint);
 		
-		canvas.drawRect(10, 10, mWidth - 20, 100, mButtonPaint);
+		canvas.drawRect(10, 10, getWidth() - 20, 100, mButtonPaint);
 
 	}
 

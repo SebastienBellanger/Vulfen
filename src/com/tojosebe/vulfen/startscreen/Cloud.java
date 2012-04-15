@@ -30,11 +30,11 @@ public class Cloud {
 		Bitmap cloud = BitmapManager.getBitmap(bitmapId);
 		
 		if (cloud != null) {
-			imageComponent = new ImageComponent(cloud);
+			imageComponent = new ImageComponent(cloud, false);
 			imageComponent.setWidthInDpAutoSetHeight(100, dpi);
 		} else {
 			cloud = ImageLoader.loadFromResource(context, resourceId);
-			imageComponent = new ImageComponent(cloud);
+			imageComponent = new ImageComponent(cloud, false);
 			imageComponent.setWidthInDpAutoSetHeight(100, dpi);
 			
 			//Resize the loaded bitmap with nice algorithms so that it looks nice.
@@ -90,7 +90,7 @@ public class Cloud {
 	public void draw(Canvas canvas) {
 		imageComponent.setPositionX((int) position.getX());
 		imageComponent.setPositionY((int) position.getY());
-		imageComponent.draw(canvas);
+//		imageComponent.draw(canvas);
 	}
 
 	/**

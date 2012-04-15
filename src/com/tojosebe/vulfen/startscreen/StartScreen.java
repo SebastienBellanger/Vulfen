@@ -46,9 +46,9 @@ public class StartScreen extends Screen {
 	protected void initialize() {
 
 		mCloud1 = new Cloud(R.drawable.cloud1, mDpi,
-				mContext.getApplicationContext(), 200, 70, mWidth, Constants.BITMAP_CLOUD_1);
+				mContext.getApplicationContext(), 200, 70, getWidth(), Constants.BITMAP_CLOUD_1);
 		mCloud2 = new Cloud(R.drawable.cloud2, mDpi,
-				mContext.getApplicationContext(), 60, 130, mWidth, Constants.BITMAP_CLOUD_2);
+				mContext.getApplicationContext(), 60, 130, getWidth(), Constants.BITMAP_CLOUD_2);
 		mCows = new Cow[5];
 
 		addScreenComponent(createBackground());
@@ -64,23 +64,23 @@ public class StartScreen extends Screen {
 	private void addCows() {
 
 		mCows[0] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 23, 0, 0, mWidth, mHeight);
+				mContext.getApplicationContext(), 23, 0, 0, getWidth(), getHeight());
 		addScreenComponent(mCows[0].getImageComponent());
 
 		mCows[1] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, -30, 14, mWidth, mHeight);
+				mContext.getApplicationContext(), 25, -30, 14, getWidth(), getHeight());
 		addScreenComponent(mCows[1].getImageComponent());
 
 		mCows[2] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, 35, 10, mWidth, mHeight);
+				mContext.getApplicationContext(), 25, 35, 10, getWidth(), getHeight());
 		addScreenComponent(mCows[2].getImageComponent());
 
 		mCows[3] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 20, -65, -10, mWidth, mHeight);
+				mContext.getApplicationContext(), 20, -65, -10, getWidth(), getHeight());
 		addScreenComponent(mCows[3].getImageComponent());
 
 		mCows[4] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 29, -60, 40, mWidth, mHeight);
+				mContext.getApplicationContext(), 29, -60, 40, getWidth(), getHeight());
 		addScreenComponent(mCows[4].getImageComponent());
 
 	}
@@ -100,8 +100,8 @@ public class StartScreen extends Screen {
 		int eyesClosed = 1;
 
 		imageComp.setWidthInDpAutoSetHeight(160, mDpi);
-		imageComp.setPositionX(mWidth - imageComp.getWidth());
-		imageComp.setPositionY(mHeight - imageComp.getHeight());
+		imageComp.setPositionX(getWidth() - imageComp.getWidth());
+		imageComp.setPositionY(getHeight() - imageComp.getHeight());
 
 		// Resize the loaded bitmaps with nice algorithms so that they looks
 		// nice.
@@ -127,10 +127,10 @@ public class StartScreen extends Screen {
 	private ScreenComponent createTitle() {
 		Bitmap title = ImageLoader.loadFromResource(
 				mContext.getApplicationContext(), R.drawable.title);
-		ImageComponent imageComp = new ImageComponent(title);
+		ImageComponent imageComp = new ImageComponent(title, false);
 
 		imageComp.setWidthInDpAutoSetHeight(250, mDpi);
-		imageComp.setPositionX((mWidth - imageComp.getWidth()) / 2);
+		imageComp.setPositionX((getWidth() - imageComp.getWidth()) / 2);
 		imageComp.setPositionYInDp(30, mDpi);
 
 		// Resize the loaded bitmap with nice algorithms so that it looks nice.
@@ -172,12 +172,12 @@ public class StartScreen extends Screen {
 			}
 		});
 
-		button.setPositionX(mWidth / 2 - button.getWidth() / 2);
+		button.setPositionX(getWidth() / 2 - button.getWidth() / 2);
 
 		if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-			button.setPositionY(mHeight / 2 - button.getHeight() / 2);
+			button.setPositionY(getHeight() / 2 - button.getHeight() / 2);
 		} else {
-			button.setPositionY(mHeight / 2 - button.getHeight() / 2);
+			button.setPositionY(getHeight() / 2 - button.getHeight() / 2);
 		}
 
 		return button;
@@ -194,13 +194,13 @@ public class StartScreen extends Screen {
 		ImageComponent imageComp = null;
 
 		if (background != null) {
-			imageComp = new ImageComponent(background);
+			imageComp = new ImageComponent(background, false);
 		} else {
 			background = ImageLoader.loadFromResource(
 					mContext.getApplicationContext(), resource);
-			imageComp = new ImageComponent(background);
-			imageComp.setHeight(mHeight);
-			imageComp.setWidth(mWidth);
+			imageComp = new ImageComponent(background, false);
+			imageComp.setHeight(getHeight());
+			imageComp.setWidth(getWidth());
 			imageComp.resizeBitmap();
 			BitmapManager.addBitmap(imageConstant, imageComp.getBitmap());
 		}

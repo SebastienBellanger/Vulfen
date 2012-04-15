@@ -1,7 +1,14 @@
 
-* design av knapparna. Stars och score. Kanske på en egen bakgrunds image som är en del av förra. Gör enfärgade knappar. KISstupid!
+* WORLDSCREEN: funkar bara på en upplösning. Fixa DP storlekar på alla objekt.
+* WORLDSCREEN: #Stars och score. Kanske på en egen bakgrunds image som är en del av förra.
 
--------
+* LEVELSCREEN: skapa låsbild.
 
-* starta med level screen.
+* STARTSCREEN: ser ful ut på galaxy nexus. Fixa DP storlekar på alla objekt.
+
+* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla.
+
+* lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
+
+
 

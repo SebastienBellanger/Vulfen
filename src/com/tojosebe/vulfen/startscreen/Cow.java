@@ -40,7 +40,7 @@ public class Cow {
 
 		Bitmap cow = ImageLoader.loadFromResource(context, resourceId);
 
-		mImageComponent = new ImageComponent(cow);
+		mImageComponent = new ImageComponent(cow, false);
 		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
 
 		mImageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
@@ -108,7 +108,6 @@ public class Cow {
 	public void draw(Canvas canvas) {
 		mImageComponent.setPositionX((int) mPosition.getX());
 		mImageComponent.setPositionY((int) mPosition.getY());
-		mImageComponent.draw(canvas);
 	}
 
 	/**
