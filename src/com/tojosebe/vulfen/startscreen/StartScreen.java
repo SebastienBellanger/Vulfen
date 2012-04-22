@@ -173,12 +173,7 @@ public class StartScreen extends Screen {
 		});
 
 		button.setPositionX(getWidth() / 2 - button.getWidth() / 2);
-
-		if (mOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-			button.setPositionY(getHeight() / 2 - button.getHeight() / 2);
-		} else {
-			button.setPositionY(getHeight() / 2 - button.getHeight() / 2);
-		}
+		button.setPositionY(getHeight() / 2 - button.getHeight() / 2);
 
 		return button;
 	}

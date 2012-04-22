@@ -16,6 +16,8 @@ import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
+import com.vulfox.component.ScreenComponent;
+import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
@@ -24,12 +26,13 @@ public class LevelScreen extends Screen {
 
 	private final int mButtonUpperOffsetDp = 30;
 	private final int mButtonUpperOffset;
+	
 	private int mListHeight;
 
 	private float mScrollY = 0;
 	private float mLastScrollLength = 0;
 	
-	private int mStartSizeDp = 10;
+	private int mStarSizeDp = 10;
 
 	private List<LevelButton> mButtons = new ArrayList<LevelButton>();
 
@@ -48,19 +51,21 @@ public class LevelScreen extends Screen {
 
 	private int mGridMinMarginDp = 15;
 	private int mGridMargin;
+	private int mNbrOfLockedLevels;
 
 	private int mLevelMarginDp = 4;
 	private int mLevelWidthMargin;
 
 	private int mGridCols;
 
-	public LevelScreen(int dpi, Cloud cloud1, Cloud cloud2, int nbrOfLevels,
+	public LevelScreen(int dpi, Cloud cloud1, Cloud cloud2, int nbrOfLevels, int nbrOfLockedLevels,
 			int gridCols) {
 		this.mDpi = dpi;
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
 		this.mNbrOfLevels = nbrOfLevels;
 		this.mGridCols = gridCols;
+		this.mNbrOfLockedLevels = nbrOfLockedLevels;
 
 		mLevelWidthMargin = (int) GraphicsUtil.dpToPixels(mLevelMarginDp, mDpi);
 
@@ -90,14 +95,31 @@ public class LevelScreen extends Screen {
 
 		// Add level images.
 		Bitmap levelbitmap = createLevelBitmap();
+		Bitmap lockedLevelbitmap = createLockedLevelBitmap();
 
-		addLevel("1", levelbitmap);
+		addLevel(1, levelbitmap, false);
 
 		for (int i = 1; i < mNbrOfLevels; ++i) {
-			addLevel("" + (i + 1), levelbitmap);
+			boolean locked = mNbrOfLevels - mNbrOfLockedLevels <= i;
+			if (locked) {
+				addLevel((i + 1), lockedLevelbitmap, locked);
+			} else {
+				addLevel((i + 1), levelbitmap, locked);
+			}
+			
 		}
 		
 		createStars();
+
+		addScreenComponent(createBottomBackground());
+	}
+
+	private Bitmap createLockedLevelBitmap() {
+		Bitmap levelbitmap = ImageLoader.loadFromResource(
+				mContext.getApplicationContext(), R.drawable.level_lock);
+		levelbitmap = GraphicsUtil.resizeBitmap(levelbitmap, mLevelHeight,
+				mLevelWidth);
+		return levelbitmap;
 	}
 
 	private Bitmap createLevelBitmap() {
@@ -113,7 +135,7 @@ public class LevelScreen extends Screen {
 		Bitmap darkStar = BitmapManager
 				.getBitmap(Constants.BITMAP_STAR_DARK);
 		
-		int starSize = (int)GraphicsUtil.dpToPixels(mStartSizeDp, mDpi);
+		int starSize = (int)GraphicsUtil.dpToPixels(mStarSizeDp, mDpi);
 
 		if (darkStar == null) {
 			darkStar = ImageLoader.loadFromResource(
@@ -138,6 +160,18 @@ public class LevelScreen extends Screen {
 	@Override
 	protected void onTop() {
 		// TODO: Reload scores and stuff.
+	}
+	
+	private ScreenComponent createBottomBackground() {
+		
+		StretchableImageButtonComponent bottom = new StretchableImageButtonComponent(mContext,
+				R.drawable.screen_footer, "", 0, 0, 0, 
+				(int)GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
+		
+		bottom.setPositionX(0);
+		bottom.setPositionY(getHeight() - (int)GraphicsUtil.dpToPixels(70, mDpi));
+		
+		return bottom;
 	}
 
 	private ImageComponent createBackground() {
@@ -233,7 +267,7 @@ public class LevelScreen extends Screen {
 		}
 	}
 
-	private void addLevel(String levelIndex, Bitmap levelBitmap) {
+	private void addLevel(int levelIndex, Bitmap levelBitmap, boolean locked) {
 		LevelButton levelButton = null;
 
 		EventListener listener = new EventListener() {
@@ -249,9 +283,12 @@ public class LevelScreen extends Screen {
 			}
 		};
 
-		levelButton = new LevelButton(levelBitmap);
-		levelButton.initValues(levelIndex, mContext, mDpi, mLevelWidth, 2);
-		levelButton.setEventListener(listener);
+		levelButton = new LevelButton(levelBitmap, locked);
+		levelButton.initValues("" + levelIndex, mContext, mDpi, mLevelWidth, 2);
+		
+		if (!locked) {
+			levelButton.setEventListener(listener);
+		}
 
 		boolean newRow = false;
 		if (mButtons.size() > 0) {

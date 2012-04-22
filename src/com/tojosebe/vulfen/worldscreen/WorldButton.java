@@ -1,97 +1,126 @@
 package com.tojosebe.vulfen.worldscreen;
 
+import java.util.Random;
+
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 
 import com.tojosebe.vulfen.R;
+import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.component.StretchableImageButtonComponent;
+import com.vulfox.util.BitmapManager;
+import com.vulfox.util.GraphicsUtil;
 
 public class WorldButton extends StretchableImageButtonComponent {
 
 	private String mWorldName;
-	private int mTotalStages;
-	private int mClearedStages;
 	private String mStagesText;
 	
-	private RectF mBackgroundRect = new RectF();
-	private Paint mBackgroundStrokePaint = new Paint();
-	private Paint mBackgroundFillPaint = new Paint();
+	private Rect mTextRect;
+	private Rect mScoreTextRect;
 	
-	private Paint mWorldNamePaint = new Paint();
-	private Paint mStagesPaint = new Paint();
+	private Paint mTextPaint;
+	private Paint mTextPaintShadow;
+	
+	private Paint mScorePaint;
+	private Paint mScorePaintShadow;
+	
+	private Paint mStarPaint;
+	
+	private int mShadowOffsetDp = 2;
+	private int mShadowOffset;
+
+	private int mScore = new Random(System.currentTimeMillis()).nextInt(1000000);
 	
 	
-	public WorldButton(String worldName, int totalStages, int clearedStages, Context context, int dpi) {
-		
+	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi) {
 		super(context, R.drawable.world, "", 0xFFFF0000,
-				0xFF000000, 20, 175, 175,dpi);
-		
-		mWorldName = worldName;
-		mTotalStages = totalStages;
-		mClearedStages = clearedStages;
-		
-		setWidth(250);
-		setHeight(250);
-		
-		mBackgroundFillPaint.setColor(Color.GRAY);
-		
-		mBackgroundStrokePaint.setColor(Color.WHITE);
-		mBackgroundStrokePaint.setStrokeWidth(5.0f);
-		mBackgroundStrokePaint.setStyle(Paint.Style.STROKE);
-		
-		mWorldNamePaint.setFakeBoldText(true);
-		mWorldNamePaint.setTextSize(32.0f);
-		mWorldNamePaint.setTextAlign(Paint.Align.CENTER);
-		mWorldNamePaint.setColor(0xFFFFFFFF);
-		mWorldNamePaint.setAntiAlias(true);
-		
-		mStagesPaint.setTextSize(26.0f);
-		mStagesPaint.setTextAlign(Paint.Align.CENTER);
-		mStagesPaint.setColor(0xFFFFFFFF);
-		mStagesPaint.setAntiAlias(true);
-		
-		mStagesText = String.format("%d/%d", clearedStages, totalStages);
+				0xFF000000, 20, 175, 152, dpi);
+		init(worldName, dpi, clearedStars, totalStars);
 	}
 	
-	public WorldButton(String worldName, int totalStages, int clearedStages, Context context, int dpi, WorldButton buttonTemplate) {
-		
+	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, WorldButton buttonTemplate) {
 		super((StretchableImageButtonComponent)buttonTemplate);
+		init(worldName, dpi, totalStars, clearedStars);
+	}
+	
+	private void init(String worldName, int dpi, int clearedStars, int totalStars) {
 		
 		mWorldName = worldName;
-		mTotalStages = totalStages;
-		mClearedStages = clearedStages;
 		
-		mBackgroundFillPaint.setColor(Color.GRAY);
+		this.mTextPaint = new Paint();
+		this.mTextPaint.setColor(0xFFFFFFFF);
+		this.mTextPaint.setAntiAlias(true);
+		this.mTextPaint.setTextAlign(Paint.Align.CENTER);
+		this.mTextPaint.setTextSize((int) (20 * (dpi / 160.0f)));
+		this.mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+		this.mTextPaintShadow = new Paint(mTextPaint);
+		this.mTextPaintShadow.setColor(0x44000000);
+		this.mTextRect = new Rect();
+		this.mTextPaint.getTextBounds(worldName, 0, worldName.length(),
+				mTextRect);
 		
-		mBackgroundStrokePaint.setColor(Color.WHITE);
-		mBackgroundStrokePaint.setStrokeWidth(5.0f);
-		mBackgroundStrokePaint.setStyle(Paint.Style.STROKE);
+		this.mShadowOffset = (int) GraphicsUtil.dpToPixels(mShadowOffsetDp, dpi);
 		
-		mWorldNamePaint.setFakeBoldText(true);
-		mWorldNamePaint.setTextSize(32.0f);
-		mWorldNamePaint.setTextAlign(Paint.Align.CENTER);
-		mWorldNamePaint.setColor(0xFFFFFFFF);
-		mWorldNamePaint.setAntiAlias(true);
+		this.mStagesText = String.format("%d/%d", clearedStars, totalStars);
 		
-		mStagesPaint.setTextSize(26.0f);
-		mStagesPaint.setTextAlign(Paint.Align.CENTER);
-		mStagesPaint.setColor(0xFFFFFFFF);
-		mStagesPaint.setAntiAlias(true);
+		this.mScorePaint = new Paint();
+		this.mScorePaint.setColor(0xFFFFFFFF);
+		this.mScorePaint.setAntiAlias(true);
+		this.mScorePaint.setTextSize((int) (14 * (dpi / 160.0f)));
+		this.mScorePaint.setTypeface(Typeface.DEFAULT_BOLD);
+		this.mScorePaintShadow = new Paint(mScorePaint);
+		this.mScorePaintShadow.setColor(0x44000000);
+		this.mScoreTextRect = new Rect();
 		
-		mStagesText = String.format("%d/%d", clearedStages, totalStages);
+		this.mScorePaint.getTextBounds(mStagesText, 0, mStagesText.length(),
+				mScoreTextRect);
+		
+		mStarPaint = new Paint();
+		mStarPaint.setAntiAlias(true);
+		
+		
 	}
 	
 	@Override
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
-//		mBackgroundRect.set(getPositionX(), getPositionY(), getPositionX() + getWidth(), getPositionY() + getHeight());
-//		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundFillPaint);
-//		canvas.drawRoundRect(mBackgroundRect, getWidth()/4.0f, getHeight()/4.0f, mBackgroundStrokePaint);
-		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2, getPositionY() + 90, mWorldNamePaint);		
-		canvas.drawText(mStagesText, getPositionX() + getWidth() / 2, getPositionY() + 160, mStagesPaint);
+
+		// Draw mWorldName shadow text
+		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2 + mShadowOffset,
+				getPositionY() + getHeight() / 4 + mTextRect.height() / 2 + mShadowOffset, mTextPaintShadow);
+		// Draw mWorldName text
+		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2,
+				getPositionY() + getHeight() / 4 + mTextRect.height() / 2, mTextPaint);
+			
+		int leftMargin = getWidth() / 10;
+		int bottomEdge = getPositionY() + getHeight() - getHeight()/5;
+		
+		// Draw Score shadow text
+		canvas.drawText("Score: " + mScore, getPositionX() + mShadowOffset + leftMargin,
+				bottomEdge + mShadowOffset, mScorePaintShadow);
+		// Draw Score text
+		canvas.drawText("Score: " + mScore, getPositionX() + leftMargin,
+				bottomEdge, mScorePaint);
+		
+		Bitmap brightStar = BitmapManager.getBitmap(Constants.BITMAP_STAR_BIG);
+		
+		int starSize = brightStar.getWidth();
+		int left = getPositionX() + leftMargin; 
+		int scoreTextHeight = mScoreTextRect.height();
+		
+		canvas.drawBitmap(brightStar, left, bottomEdge - getHeight()/4 - scoreTextHeight, mStarPaint);
+
+		// Draw mStagesText shadow text
+		canvas.drawText(mStagesText, left + starSize + mShadowOffset + starSize/2,
+				bottomEdge - getHeight()/4 + scoreTextHeight/2 + mShadowOffset, mScorePaintShadow);
+		// Draw mStagesText text
+		canvas.drawText(mStagesText, left + starSize + starSize/2,
+				bottomEdge - getHeight()/4 + scoreTextHeight/2, mScorePaint);
 	}
 
 	

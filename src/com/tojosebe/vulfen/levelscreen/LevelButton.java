@@ -29,12 +29,15 @@ public class LevelButton extends ImageComponent {
 	
 	private int mStarMarginDp = 2;
 	private int mStarMargin;
+	
+	private boolean mLocked;
 
 	/** Text rect. */
 	private Rect mTextRect;
 
-	public LevelButton(Bitmap bitmap) {
-		super(bitmap, true);
+	public LevelButton(Bitmap bitmap, boolean locked) {
+		super(bitmap, !locked);
+		this.mLocked = locked;
 	}
 
 	public void initValues(String levelName, Context context, int dpi,
@@ -69,39 +72,42 @@ public class LevelButton extends ImageComponent {
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
 
-		// Draw shadow text
-		canvas.drawText(mLevelName, getPositionX() + getWidth() / 2 + mShadowOffset,
-				getPositionY() + getHeight() / 2 + mTextRect.height() / 2 + mShadowOffset - mStarMargin*2, mTextPaintShadow);
+		if (!mLocked) {
 
-		// Draw text
-		canvas.drawText(mLevelName, getPositionX() + getWidth() / 2,
-				getPositionY() + getHeight() / 2 + mTextRect.height() / 2 - mStarMargin*2, mTextPaint);
+			// Draw shadow text
+			canvas.drawText(mLevelName, getPositionX() + getWidth() / 2 + mShadowOffset,
+					getPositionY() + getHeight() / 2 + mTextRect.height() / 2 + mShadowOffset - mStarMargin*2, mTextPaintShadow);
 		
-		Bitmap darkStar = BitmapManager
-				.getBitmap(Constants.BITMAP_STAR_DARK);
-		Bitmap brightStar = BitmapManager
-				.getBitmap(Constants.BITMAP_STAR);
-		
-		int textEndY = getPositionY() + getHeight() / 2 + mTextRect.height() / 2;
-		int starSize = darkStar.getWidth();
-		int left = getPositionX() + getWidth() / 2 - starSize - starSize/2 - mStarMargin; 
-		
-		if (mNbrOfStars >= 1) {
-			canvas.drawBitmap(brightStar, left, textEndY + mStarMargin, mStarPaint);
-		} else {
-			canvas.drawBitmap(darkStar, left, textEndY + mStarMargin, mStarPaint);
-		}
-		
-		if (mNbrOfStars >= 2) {
-			canvas.drawBitmap(brightStar, left+starSize+mStarMargin, textEndY + mStarMargin, mStarPaint);
-		} else {
-			canvas.drawBitmap(darkStar, left+starSize+mStarMargin, textEndY + mStarMargin, mStarPaint);
-		}
-		
-		if (mNbrOfStars >= 3) {
-			canvas.drawBitmap(brightStar, left+starSize+starSize+mStarMargin+mStarMargin, textEndY + mStarMargin, mStarPaint);
-		} else {
-			canvas.drawBitmap(darkStar, left+starSize+starSize+mStarMargin+mStarMargin, textEndY + mStarMargin, mStarPaint);
+			// Draw text
+			canvas.drawText(mLevelName, getPositionX() + getWidth() / 2,
+					getPositionY() + getHeight() / 2 + mTextRect.height() / 2 - mStarMargin*2, mTextPaint);
+			
+			Bitmap darkStar = BitmapManager
+					.getBitmap(Constants.BITMAP_STAR_DARK);
+			Bitmap brightStar = BitmapManager
+					.getBitmap(Constants.BITMAP_STAR);
+			
+			int textEndY = getPositionY() + getHeight() / 2 + mTextRect.height() / 2;
+			int starSize = darkStar.getWidth();
+			int left = getPositionX() + getWidth() / 2 - starSize - starSize/2 - mStarMargin; 
+			
+			if (mNbrOfStars >= 1) {
+				canvas.drawBitmap(brightStar, left, textEndY + mStarMargin, mStarPaint);
+			} else {
+				canvas.drawBitmap(darkStar, left, textEndY + mStarMargin, mStarPaint);
+			}
+			
+			if (mNbrOfStars >= 2) {
+				canvas.drawBitmap(brightStar, left+starSize+mStarMargin, textEndY + mStarMargin, mStarPaint);
+			} else {
+				canvas.drawBitmap(darkStar, left+starSize+mStarMargin, textEndY + mStarMargin, mStarPaint);
+			}
+			
+			if (mNbrOfStars >= 3) {
+				canvas.drawBitmap(brightStar, left+starSize+starSize+mStarMargin+mStarMargin, textEndY + mStarMargin, mStarPaint);
+			} else {
+				canvas.drawBitmap(darkStar, left+starSize+starSize+mStarMargin+mStarMargin, textEndY + mStarMargin, mStarPaint);
+			}
 		}
 	}
 }

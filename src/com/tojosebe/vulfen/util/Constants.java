@@ -9,5 +9,6 @@ public class Constants {
 	public static final int BITMAP_CLOUD_2 = 4;
 	public static final int BITMAP_STAR = 5;
 	public static final int BITMAP_STAR_DARK = 6;
+	public static final int BITMAP_STAR_BIG = 7;
 	
 }

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
@@ -19,6 +20,8 @@ import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
 import com.vulfox.component.ButtonComponent;
 import com.vulfox.component.ImageComponent;
+import com.vulfox.component.ScreenComponent;
+import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
@@ -45,10 +48,14 @@ public class WorldScreen extends Screen {
 
 	private Cloud mCloud1;
 	private Cloud mCloud2;
+	
+	private int mStarSizeDp = 20;
+	
+	private StretchableImageButtonComponent mBottomFade;
 
 	private ButtonComponent mPenguinImageRight;
 	private ButtonComponent mPenguinImageLeft;
-	private boolean mPenguinRight = true;
+	private boolean mPenguinIsOnRightSide = true;
 	private int mPenguinTouches = 0;
 
 	public WorldScreen(int dpi, Cloud cloud1, Cloud cloud2) {
@@ -77,6 +84,7 @@ public class WorldScreen extends Screen {
 		});
 
 		addPigs();
+		createStar(); //load star into memory for later use when adding worlds.
 		addScreenComponent(mPenguinImageRight);
 
 		WorldButton worldButton = addWorld("First Battle", 25, 10, null);
@@ -85,15 +93,33 @@ public class WorldScreen extends Screen {
 		addWorld("Custom Levels", 25, 0, worldButton);
 		addWorld("Pinball world", 25, 0, worldButton);
 		addWorld("Hello there :-)", 25, 0, worldButton);
+		
+		addScreenComponent(createBottomBackground());
 
 	}
 
 	@Override
 	protected void onTop() {
 		mPenguinTouches = 0;
+		mPenguinIsOnRightSide = true;
 		mPenguinImageRight.setVisible(true);
+		if (mPenguinImageLeft != null) {
+			mPenguinImageLeft.setVisible(false);
+		}
 		mPig2.wimpPig();
 		mPig1.wimpPig();
+	}
+	
+	private ScreenComponent createBottomBackground() {
+		
+		mBottomFade = new StretchableImageButtonComponent(mContext,
+				R.drawable.screen_footer, "", 0, 0, 0, 
+				(int)GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
+		
+		mBottomFade.setPositionX(0);
+		mBottomFade.setPositionY(getHeight() - (int)GraphicsUtil.dpToPixels(70, mDpi));
+		
+		return mBottomFade;
 	}
 
 	private void addPigs() {
@@ -115,7 +141,7 @@ public class WorldScreen extends Screen {
 			mPenguinImageRight.setVisible(false);
 			mPenguinImageLeft.setVisible(false);
 		} else {
-			if (mPenguinRight) {
+			if (mPenguinIsOnRightSide) {
 				if (mPenguinImageLeft == null) {
 					mPenguinImageLeft = createPenguin(90);
 					addScreenComponent(mPenguinImageLeft);
@@ -129,13 +155,13 @@ public class WorldScreen extends Screen {
 						}
 					});
 				}
-				mPenguinRight = false;
+				mPenguinIsOnRightSide = false;
 				mPenguinImageLeft.setPositionY(getRandom(0, getHeight()
 						- mPenguinImageLeft.getHeight()));
 				mPenguinImageRight.setVisible(false);
 				mPenguinImageLeft.setVisible(true);
 			} else {
-				mPenguinRight = true;
+				mPenguinIsOnRightSide = true;
 				mPenguinImageRight.setPositionY(getRandom(0, getHeight()
 						- mPenguinImageLeft.getHeight()));
 				mPenguinImageRight.setVisible(true);
@@ -324,7 +350,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 4));
+					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 13, 4));
 					
 					return true;
 				}
@@ -352,5 +378,22 @@ public class WorldScreen extends Screen {
 		mListHeight += worldButton.getHeight() + BUTTON_OFFSET;
 
 		return worldButton;
+	}
+	
+	private void createStar() {
+		
+		int starSize = (int)GraphicsUtil.dpToPixels(mStarSizeDp, mDpi);
+		
+		Bitmap brightStar = BitmapManager
+				.getBitmap(Constants.BITMAP_STAR_BIG);
+
+		if (brightStar == null) {
+			brightStar = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.star);
+			brightStar = GraphicsUtil.resizeBitmap(brightStar, starSize,
+					starSize);
+			BitmapManager.addBitmap(Constants.BITMAP_STAR_BIG, brightStar);
+		}
+
 	}
 }

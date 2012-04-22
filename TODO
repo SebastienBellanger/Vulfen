@@ -1,12 +1,7 @@
 
-* WORLDSCREEN: funkar bara på en upplösning. Fixa DP storlekar på alla objekt.
-* WORLDSCREEN: #Stars och score. Kanske på en egen bakgrunds image som är en del av förra.
+* STARTSCREEN: ser ful ut på galaxy nexus. KOLLA PÅ SEBBES MOBIL.
 
-* LEVELSCREEN: skapa låsbild.
-
-* STARTSCREEN: ser ful ut på galaxy nexus. Fixa DP storlekar på alla objekt.
-
-* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla.
+* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
 
 * lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
 
