@@ -50,16 +50,17 @@
     </LinearLayout>
     
             <LinearLayout
-                android:id="@+id/footer"
+                android:id="@+id/button_container"
                 android:layout_width="fill_parent"
                 android:layout_height="60dp"
                 android:paddingTop="5dp"
                 android:layout_gravity="center"
                 android:background="@drawable/footer_dialog"
+                android:baselineAligned="false"
                 android:orientation="horizontal" >
         
                 <LinearLayout
-                android:id="@+id/footer"
+                android:id="@+id/button_left"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -72,12 +73,12 @@
 	                    android:layout_height="fill_parent"
 	                    android:textSize="18sp"
 	                    style="@style/ButtonText"
-	                    android:text="Yes" >
+	                    android:text="@string/yes" >
 					</Button>
     			</LinearLayout>
     			            
                 <LinearLayout
-                android:id="@+id/footer"
+                android:id="@+id/button_right"
                 android:layout_width="fill_parent"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -90,7 +91,7 @@
 	                    android:textSize="18sp"
 	                    android:layout_width="wrap_content"
 	                    android:layout_height="fill_parent"
-	                    android:text="No">
+	                    android:text="@string/no">
 					</Button>
             	</LinearLayout>
             	

@@ -3,6 +3,17 @@
 
 * WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
 
+* GAMESCREEN:
+	- Bakgrundsbild
+	- Launchpads-bakgrund? eller bara transparent fade?
+	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
+	- samma storlek på spelarea på alla mobiler.
+	- dialog som visar score / star innan spel
+	- någon form av redo/exit knappar.
+	
+* LEVELDESIGN:
+	- filstruktur för att beskriva en level. (lista av objekt med properties som position, storlek).
+
 * lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
 
 

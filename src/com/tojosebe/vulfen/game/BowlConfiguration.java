@@ -2,7 +2,7 @@ package com.tojosebe.vulfen.game;
 
 public class BowlConfiguration {
 
-	public int lives = 5;
+	public int lives = 3;
 	
 	public float minSpeed = 500.0f;
 	public float maxSpeed = 1700.0f;

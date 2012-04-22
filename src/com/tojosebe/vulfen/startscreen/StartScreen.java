@@ -2,7 +2,6 @@ package com.tojosebe.vulfen.startscreen;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.view.View;
@@ -32,8 +31,6 @@ public class StartScreen extends Screen {
 	private Cloud mCloud1;
 	private Cloud mCloud2;
 	private Cow[] mCows;
-
-	private int mOrientation;
 
 	private Activity mActivity;
 
