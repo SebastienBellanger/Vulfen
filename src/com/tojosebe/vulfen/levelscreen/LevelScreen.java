@@ -9,8 +9,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
+import com.tojosebe.vulfen.configuration.Level;
+import com.tojosebe.vulfen.configuration.LevelManager;
 import com.tojosebe.vulfen.game.BowlConfiguration;
 import com.tojosebe.vulfen.game.BowlScreen;
+import com.tojosebe.vulfen.game.Pong;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
@@ -19,6 +22,7 @@ import com.vulfox.component.ImageComponent;
 import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
+import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
 
@@ -269,14 +273,17 @@ public class LevelScreen extends Screen {
 
 	private void addLevel(int levelIndex, Bitmap levelBitmap, boolean locked) {
 		LevelButton levelButton = null;
+		
+		final int levelNumber = levelIndex;
 
 		EventListener listener = new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10,
 						mDpi)) {
-					mScreenManager.addScreen(new BowlScreen(
-							new BowlConfiguration()));
+					LevelManager levelManager = LevelManager.getInstance(getWidth(), getHeight());
+					Level level = levelManager.getWorlds().get(0).getLevels().get(levelNumber-1);
+					mScreenManager.addScreen(new BowlScreen(level, mDpi));
 					return true;
 				}
 				return false;
@@ -322,5 +329,38 @@ public class LevelScreen extends Screen {
 
 		addScreenComponent(levelButton);
 		mButtons.add(levelButton);
+	}
+	
+	private Level createLevelConfig(int levelNumber) {
+		
+		Level level = new Level(levelNumber);
+		level.setBowlConfiguration(new BowlConfiguration()); //Default values.
+		level.setEnemies(createEnemiesGameConfiguration());
+		level.setPenguin(createPengiunGameConfiguration());
+		return level;
+	}
+
+	private Pong createPengiunGameConfiguration() {
+		Pong penguin = new Pong();
+		penguin.setImageResource(R.drawable.tojo);
+		
+		penguin.setHeight(70);
+		penguin.setWidth(70);
+		penguin.setPosition(new Vector2f(getWidth()*0.5f, getHeight()*0.9f));
+		//TODO: width height position.
+		return penguin;
+	}
+
+	private List<Pong> createEnemiesGameConfiguration() {
+		List<Pong> enemies = new ArrayList<Pong>();
+		Pong enemy1 = new Pong();
+		enemy1.setImageResource(R.drawable.sebe);
+		enemy1.setHeight(100);
+		enemy1.setWidth(100);
+		enemy1.setPosition(new Vector2f(getWidth()*0.5f, getHeight()*0.5f));
+		enemies.add(enemy1);
+		
+		//TODO: width height position.
+		return enemies;
 	}
 }

@@ -349,7 +349,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 13, 4));
+					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 22, 4));
 					
 					return true;
 				}

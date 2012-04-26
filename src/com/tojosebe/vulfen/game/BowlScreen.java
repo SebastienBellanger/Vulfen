@@ -3,6 +3,7 @@ package com.tojosebe.vulfen.game;
 import java.util.List;
 import java.util.Vector;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
@@ -11,30 +12,29 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
+import com.tojosebe.vulfen.configuration.Level;
 import com.tojosebe.vulfen.game.Pong.Type;
+import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
+import com.vulfox.math.Vector2f;
+import com.vulfox.util.BitmapManager;
+import com.vulfox.util.GraphicsUtil;
 
 public class BowlScreen extends Screen {
 
 	private float mScale;
 
-	private float mRadius;
-
-	private float mPongLength;
-
-	private float mPongOffsetX;
-	private float mPongOffsetY;
+	private Vibrator vibrator;
 
 	private Bitmap mYellow;
 	private Bitmap mRed;
-
-	private Paint mBackgroundTop = new Paint();
-	private Paint mBackgroundbottom = new Paint();
+	private Bitmap mLaunchPad;
 
 	private Paint mTextPaint = new Paint();
 	private Paint mTopPaint = new Paint();
@@ -56,6 +56,8 @@ public class BowlScreen extends Screen {
 
 	private List<Points> mPoints = new Vector<Points>();
 
+	private boolean mVibrationEnabled = true;
+
 	private int mLives;
 	private boolean mGameOver = false;
 
@@ -63,36 +65,90 @@ public class BowlScreen extends Screen {
 
 	private BowlConfiguration mConfig;
 
-	public BowlScreen(BowlConfiguration configuration) {
-		mConfig = configuration;
+	private int mDpi;
+
+	private float mGameAreaHeight;
+	private float mGameAreaWidth;
+	private float mGameAreaAspectRatio = 1.333f;
+	private float mLaunchPadHeight;
+
+	private Level mLevelConfig;
+
+	Paint mLaunchPadPaint = new Paint();
+	RectF mLaunchPadRect = new RectF();
+
+	public BowlScreen(Level levelConfiguration, int dpi) {
+		mConfig = levelConfiguration.getBowlConfiguration();
+		mLevelConfig = levelConfiguration;
+		mDpi = dpi;
 	}
 
 	@Override
 	protected void initialize() {
-		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
-		mTopScore = mSavedTopScore = settings.getInt("mSavedTopScore", 0);
-	
 
-		mYellow = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.sebe);
-		mRed = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.tojo);
+		vibrator = (Vibrator) mContext
+				.getSystemService(Context.VIBRATOR_SERVICE);
+
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext.getApplicationContext());
+		mTopScore = mSavedTopScore = settings.getInt("mSavedTopScore", 0);
 
 		mScale = getWidth() / 480.0f;
-		mPongLength = 64 * mScale;
-		mRadius = mPongLength * 0.5f;
-		mPongOffsetX = mPongOffsetY = mPongLength * 0.5f;
 
-		mBackgroundTop.setColor(Color.LTGRAY);
-		mBackgroundbottom.setColor(Color.GRAY);
+		float penguinPongLength = mLevelConfig.getPenguin().getWidth() * mScale;
+		mLevelConfig.getPenguin().setWidth(penguinPongLength);
+		mLevelConfig.getPenguin().setHeight(penguinPongLength);
+		mLevelConfig.getPenguin().setRadius(penguinPongLength * 0.5f);
+
+		mGameAreaHeight = (int) (getWidth() * mGameAreaAspectRatio);
+		mGameAreaWidth = getWidth();
+		mLaunchPadHeight = getHeight() - mGameAreaHeight;
+		if (mLaunchPadHeight < penguinPongLength * 1.2f) {
+			// launchpad too small. We need to make width smaller. But what the
+			// fuck. Make the launchpad large enough
+			mLaunchPadHeight = penguinPongLength * 1.2f;
+			mGameAreaHeight = getHeight() - mLaunchPadHeight;
+		}
+
+		mLevelConfig.getPenguin().getPosition()
+				.setY(mGameAreaHeight + mLaunchPadHeight / 2.0f);
+
+		mLaunchPadPaint.setAntiAlias(true);
+		mLaunchPadRect.set(0, getHeight() - mLaunchPadHeight, getWidth(),
+				getHeight());
+
+		float enemyLength = mLevelConfig.getEnemies().get(0).getWidth()
+				* mScale;
+		for (Pong enemy : mLevelConfig.getEnemies()) {
+			enemy.setWidth(enemyLength);
+			enemy.setHeight(enemyLength);
+			enemy.setRadius(enemyLength * 0.5f);
+		}
 
 		mTextPaint.setTextSize(32 * mScale);
+		mTextPaint.setAntiAlias(true);
 		mTopPaint.setTextSize(16 * mScale);
+		mTopPaint.setAntiAlias(true);
+
+		mLaunchPad = ImageLoader.loadFromResource(mContext,
+				R.drawable.launcher3);
+		mYellow = getPongBitmap(mLevelConfig.getEnemies().get(0));
+		mRed = getPongBitmap(mLevelConfig.getPenguin());
 
 		reset();
 	}
 
+	private Bitmap getPongBitmap(Pong pong) {
+		int resource = pong.getImageResource();
+		Bitmap bitmap = ImageLoader.loadFromResource(
+				mContext.getApplicationContext(), resource);
+		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) pong.getHeight(),
+				(int) pong.getWidth());
+		return bitmap;
+	}
+
 	private void reset() {
-		mLives = mConfig.lives;
+		mLives = mConfig.getLives();
 		mGameOver = false;
 
 		mTotalScore = 0;
@@ -100,19 +156,10 @@ public class BowlScreen extends Screen {
 		mPoints.clear();
 		mPongs.clear();
 
-		float halfWidth = getWidth() * 0.5f;
-		float pongTop = getHeight() * 0.2f;
-
-		addInitialPong(new Vector2f(halfWidth - 2 * mPongLength, pongTop));
-		addInitialPong(new Vector2f(halfWidth, pongTop));
-		addInitialPong(new Vector2f(halfWidth + 2 * mPongLength, pongTop));
-
-		addInitialPong(new Vector2f(halfWidth - mPongLength, pongTop + 2
-				* mPongLength));
-		addInitialPong(new Vector2f(halfWidth + mPongLength, pongTop + 2
-				* mPongLength));
-
-		addInitialPong(new Vector2f(halfWidth, pongTop + 4 * mPongLength));
+		for (Pong enemy : mLevelConfig.getEnemies()) {
+			addInitialPong(new Vector2f(enemy.getPosition()),
+					(int) enemy.getWidth(), (int) enemy.getHeight());
+		}
 
 		resetLauncher();
 	}
@@ -132,21 +179,21 @@ public class BowlScreen extends Screen {
 			if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
 				mHasPong = false;
 
-				if (motionEvent.getY() > getHeight() * 0.8f) {
+				if (motionEvent.getY() > getHeight() - mLaunchPadHeight) {
 					mHasPong = true;
 
 					mLastMotion.set(x, y);
 					mLastMotionTime = motionEvent.getEventTime();
-					mLaunchPong.Position.set(x, y);
+					mLaunchPong.position.set(x, y);
 				}
 			} else if (mHasPong
 					&& motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-				if (motionEvent.getY() > getHeight() * 0.8f) {
+				if (motionEvent.getY() > getHeight() - mLaunchPadHeight) {
 					mHasPong = true;
 
 					mLastMotion.set(x, y);
 					mLastMotionTime = motionEvent.getEventTime();
-					mLaunchPong.Position.set(x, y);
+					mLaunchPong.position.set(x, y);
 				} else {
 					mHasPong = false;
 
@@ -158,16 +205,19 @@ public class BowlScreen extends Screen {
 					float motionTime = (motionEvent.getEventTime() - mLastMotionTime) / 1000.0f;
 					velocity.mulT(length / motionTime);
 
-					if (velocity.getLength() > mConfig.maxSpeed * mScale)
-						velocity.setLength(mConfig.maxSpeed * mScale);
+					if (velocity.getLength() > mConfig.getMaxSpeed() * mScale)
+						velocity.setLength(mConfig.getMaxSpeed() * mScale);
 
 					if (velocity.getLength() > 100.0f * mScale) {
 						mMotionEnabled = false;
 
 						Pong redPong = new Pong();
-						redPong.PongType = Type.Red;
-						redPong.Position = new Vector2f(mLaunchPong.Position);
-						redPong.Velocity = velocity;
+						redPong.PongType = Type.PENGUIN;
+						redPong.position = new Vector2f(mLaunchPong.position);
+						redPong.velocity = velocity;
+						redPong.setHeight(mLevelConfig.getPenguin().getHeight());
+						redPong.setWidth(mLevelConfig.getPenguin().getWidth());
+						redPong.setRadius(mLevelConfig.getPenguin().getRadius());
 
 						mPongs.add(redPong);
 
@@ -181,7 +231,7 @@ public class BowlScreen extends Screen {
 		}
 
 	}
-	
+
 	@Override
 	public boolean handleBackPressed() {
 		return mScreenManager.removeScreen(this);
@@ -192,87 +242,107 @@ public class BowlScreen extends Screen {
 
 		int moving = 0;
 
+		// UPDATE POSITIONS AND VELOCITY FOR ALL PONGS.
 		for (Pong pong : mPongs) {
 
-			if (pong.Velocity.getLength() == 0.0f)
+			// First check if this pong has stopped.
+			if (pong.velocity.getLength() == 0.0f) {
 				continue;
+			}
 
+			// add one more pong to the move counter.
 			moving++;
 
-			Vector2f delta = pong.Velocity.mul(timeStep);
-			pong.Position.addT(delta);
+			// calculate new velocity
+			Vector2f delta = pong.velocity.mul(timeStep);
+			pong.position.addT(delta);
 
-			if (pong.Position.getX() < mPongOffsetX) {
-				pong.Position.setX(2.0f * mPongOffsetX - pong.Position.getX());
-				pong.Velocity.setX(-pong.Velocity.getX());
-			} else if (pong.Position.getX() > getWidth() - mPongOffsetX) {
-				pong.Position.setX(2.0f * (getWidth() - mPongOffsetX)
-						- pong.Position.getX());
-				pong.Velocity.setX(-pong.Velocity.getX());
+			// Check if pong is too far to the left
+			if (pong.position.getX() < pong.getRadius()) {
+				pong.position.setX(2.0f * pong.getRadius()
+						- pong.position.getX());
+				pong.velocity.setX(-pong.velocity.getX());
+				// Check if pong is too far to the right
+			} else if (pong.position.getX() > getWidth() - pong.getRadius()) {
+				pong.position.setX(2.0f * (getWidth() - pong.getRadius())
+						- pong.position.getX());
+				pong.velocity.setX(-pong.velocity.getX());
 			}
 
-			if (pong.Position.getY() < mPongOffsetY) {
-				pong.Position.setY(2.0f * mPongOffsetY - pong.Position.getY());
-				pong.Velocity.setY(-pong.Velocity.getY());
-			} else if (pong.Position.getY() > getHeight() - mPongOffsetY) {
-				pong.Position.setY(2.0f * (getHeight() - mPongOffsetY)
-						- pong.Position.getY());
-				pong.Velocity.setY(-pong.Velocity.getY());
+			// Check if pong is too far to the top
+			if (pong.position.getY() < pong.getRadius()) {
+				pong.position.setY(2.0f * pong.getRadius()
+						- pong.position.getY());
+				pong.velocity.setY(-pong.velocity.getY());
+				// Check if pong is too far to the bottom
+			} else if (pong.velocity.getY() > 0 /*if direction is down */ &&
+					pong.position.getY() > getHeight() - pong.getRadius()
+					- mLaunchPadHeight) {
+				pong.position.setY(2.0f
+						* (getHeight() - pong.getRadius() - mLaunchPadHeight)
+						- pong.position.getY());
+				pong.velocity.setY(-pong.velocity.getY());
 			}
 
-			Vector2f friction = pong.Velocity.inv();
+			// Calculate velocity retardation
+			Vector2f friction = pong.velocity.inv();
 			friction.normalizeT();
-			friction.mulT(timeStep * mConfig.friction * mScale);
+			friction.mulT(timeStep * mConfig.getFriction() * mScale);
 
-			if (pong.Velocity.getLength() < friction.getLength()) {
-				pong.Velocity.set(0.0f, 0.0f);
+			// Set velocity to zero if friction has made our velocity negative.
+			if (pong.velocity.getLength() < friction.getLength()) {
+				pong.velocity.set(0.0f, 0.0f);
 			} else {
-				pong.Velocity.addT(friction);
+				pong.velocity.addT(friction);
 			}
 		}
 
+		// CHECK IF GAME JUST ENDED
 		if (!mGameOver && mHasLaunched && moving == 0) {
 			resetLauncher();
 
-			if(mTopScore > mSavedTopScore)
-			{
+			if (mTopScore > mSavedTopScore) {
 				saveTopScore();
 			}
 		}
 
+		// CHECK FOR COLLISIONS
 		for (int i = 0; i < mPongs.size(); i++) {
 			for (int j = i + 1; j < mPongs.size(); j++) {
 
 				Pong first = mPongs.get(i);
 				Pong second = mPongs.get(j);
 
-				Vector2f collision = first.Position.sub(second.Position);
+				Vector2f collision = first.position.sub(second.position);
 				float length = collision.getLength();
 
-				if (length >= mRadius * 2.0f)
+				if (length >= first.getRadius() + second.getRadius()) {
 					continue;
+				}
 
 				pongCollision(first, second);
 
-				Vector2f mtd = collision
-						.mul((mRadius * 2.0f - length) / length);
+				Vector2f mtd = collision.mul((first.getRadius()
+						+ second.getRadius() - length)
+						/ length);
 
-				first.Position.addT(mtd.mul(0.505f));
-				second.Position.subT(mtd.mul(0.505f));
+				first.position.addT(mtd.mul(0.505f));
+				second.position.subT(mtd.mul(0.505f));
 
 				collision.normalizeT();
 
-				float aci = first.Velocity.dot(collision);
-				float bci = second.Velocity.dot(collision);
+				float aci = first.velocity.dot(collision);
+				float bci = second.velocity.dot(collision);
 
 				float acf = bci;
 				float bcf = aci;
 
-				first.Velocity.addT(collision.mul((acf - aci) * 0.90f));
-				second.Velocity.addT(collision.mul((bcf - bci) * 0.90f));
+				first.velocity.addT(collision.mul((acf - aci) * 0.90f));
+				second.velocity.addT(collision.mul((bcf - bci) * 0.90f));
 			}
 		}
 
+		// UPDATE FADING SCORES
 		List<Points> pointsCopy = new Vector<Points>(mPoints);
 		for (Points points : pointsCopy) {
 			points.update(timeStep);
@@ -284,28 +354,37 @@ public class BowlScreen extends Screen {
 	@Override
 	public void draw(Canvas canvas) {
 
-		canvas.drawRect(0, 0, getWidth(), getHeight() * 0.8f, mBackgroundTop);
-		canvas.drawRect(0, getHeight() * 0.8f, getWidth(), getHeight(), mBackgroundbottom);
+		Rect mBackgroundRect = new Rect();
+
+		mBackgroundRect.set((int) ((getWidth() - mGameAreaWidth) / 2), 0,
+				(int) (getWidth() - (getWidth() - mGameAreaWidth) / 2),
+				getHeight());
+
+		canvas.drawBitmap(BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND),
+				0, 0, null);
+
+		canvas.drawBitmap(mLaunchPad, null, mLaunchPadRect, mLaunchPadPaint);
 
 		for (Pong pong : mPongs) {
 
-			float x = pong.Position.getX() - mPongOffsetX;
-			float y = pong.Position.getY() - mPongOffsetY;
+			float x = pong.position.getX() - pong.getRadius();
+			float y = pong.position.getY() - pong.getRadius();
 
-			mDrawRect.set(x, y, x + mPongLength, y + mPongLength);
+			mDrawRect.set(x, y, x + pong.getWidth(), y + pong.getWidth());
 
-			if (pong.PongType == Type.Red) {
+			if (pong.PongType == Type.PENGUIN) {
 				canvas.drawBitmap(mRed, null, mDrawRect, null);
-			} else if (pong.PongType == Type.Yellow) {
+			} else if (pong.PongType == Type.COW) {
 				canvas.drawBitmap(mYellow, null, mDrawRect, null);
 			}
 		}
 
 		if (mMotionEnabled) {
-			float x = mLaunchPong.Position.getX() - mPongOffsetX;
-			float y = mLaunchPong.Position.getY() - mPongOffsetY;
+			float x = mLaunchPong.position.getX() - mLaunchPong.getRadius();
+			float y = mLaunchPong.position.getY() - mLaunchPong.getRadius();
 
-			mDrawRect.set(x, y, x + mPongLength, y + mPongLength);
+			mDrawRect.set(x, y, x + mLevelConfig.getPenguin().getWidth(), y
+					+ mLevelConfig.getPenguin().getWidth());
 
 			canvas.drawBitmap(mRed, null, mDrawRect, null);
 		}
@@ -328,9 +407,8 @@ public class BowlScreen extends Screen {
 					10 * mScale + scoreRect.height(), mTextPaint);
 			canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
 					+ topRect.height(), mTopPaint);
-			canvas.drawText(livesLeft,
-					getWidth() - livesRect.width() - 10 * mScale, 10 * mScale
-							+ livesRect.height(), mTextPaint);
+			canvas.drawText(livesLeft, getWidth() - livesRect.width() - 10
+					* mScale, 10 * mScale + livesRect.height(), mTextPaint);
 		} else {
 			String gameOver = "Game Over!";
 			String score = "Final Score: " + mTotalScore;
@@ -345,12 +423,16 @@ public class BowlScreen extends Screen {
 			mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
 			mTextPaint.getTextBounds(tap, 0, tap.length(), tapRect);
 
-			canvas.drawText(gameOver, getWidth() / 2 - gameOverRect.width() / 2,
-					getHeight() / 2 - gameOverRect.height(), mTextPaint);
-			canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2, getHeight()
-					/ 2 + scoreRect.height(), mTextPaint);
-			canvas.drawText(tap, getWidth() / 2 - tapRect.width() / 2, getHeight() / 2
-					+ scoreRect.height() + tapRect.height() * 2, mTextPaint);
+			canvas.drawText(gameOver,
+					getWidth() / 2 - gameOverRect.width() / 2, getHeight() / 2
+							- gameOverRect.height(), mTextPaint);
+			canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
+					getHeight() / 2 + scoreRect.height(), mTextPaint);
+			canvas.drawText(
+					tap,
+					getWidth() / 2 - tapRect.width() / 2,
+					getHeight() / 2 + scoreRect.height() + tapRect.height() * 2,
+					mTextPaint);
 		}
 
 		for (Points points : mPoints) {
@@ -361,33 +443,38 @@ public class BowlScreen extends Screen {
 	private void pongCollision(Pong first, Pong second) {
 		mRoundHits++;
 
-		if (first.PongType == Type.Yellow && second.PongType == Type.Yellow) {
-			int value = mRoundHits * mConfig.yellowYellowValue;
+		if (mVibrationEnabled) {
+			// Vibrate for 30 milliseconds
+			vibrator.vibrate(30);
+		}
+
+		if (first.PongType == Type.COW && second.PongType == Type.COW) {
+			int value = mRoundHits * mConfig.getYellowYellowValue();
 			mTotalScore += value;
 
-			Vector2f position = second.Position.sub(first.Position);
+			Vector2f position = second.position.sub(first.position);
 			position.mulT(0.5f);
-			position.addT(first.Position);
+			position.addT(first.position);
 
 			mPoints.add(new Points(value, position, Color.YELLOW, mScale));
-		} else if ((first.PongType == Type.Yellow && second.PongType == Type.Red)
-				|| (first.PongType == Type.Red && second.PongType == Type.Yellow)) {
-			int value = mRoundHits * mConfig.redYellowValue;
+		} else if ((first.PongType == Type.COW && second.PongType == Type.PENGUIN)
+				|| (first.PongType == Type.PENGUIN && second.PongType == Type.COW)) {
+			int value = mRoundHits * mConfig.getRedYellowValue();
 			mTotalScore += value;
 
-			Vector2f position = second.Position.sub(first.Position);
+			Vector2f position = second.position.sub(first.position);
 			position.mulT(0.5f);
-			position.addT(first.Position);
+			position.addT(first.position);
 
 			mPoints.add(new Points(value, position, Color.rgb(255, 180, 0),
 					mScale));
 		} else {
-			int value = mRoundHits * mConfig.redRedValue;
+			int value = mRoundHits * mConfig.getRedRedValue();
 			mTotalScore += value;
 
-			Vector2f position = second.Position.sub(first.Position);
+			Vector2f position = second.position.sub(first.position);
 			position.mulT(0.5f);
-			position.addT(first.Position);
+			position.addT(first.position);
 
 			mPoints.add(new Points(value, position, Color.RED, mScale));
 		}
@@ -404,9 +491,14 @@ public class BowlScreen extends Screen {
 			return;
 		}
 
-		mLaunchPong.PongType = Type.Red;
-		mLaunchPong.Position = new Vector2f(getWidth() * 0.5f, getHeight() * 0.9f);
-		mLaunchPong.Velocity = new Vector2f();
+		mLaunchPong.PongType = Type.PENGUIN;
+
+		mLaunchPong.position = new Vector2f(mLevelConfig.getPenguin()
+				.getPosition());
+		mLaunchPong.velocity = new Vector2f();
+		mLaunchPong.setHeight(mLevelConfig.getPenguin().getHeight());
+		mLaunchPong.setWidth(mLevelConfig.getPenguin().getWidth());
+		mLaunchPong.setRadius(mLevelConfig.getPenguin().getRadius());
 
 		mMotionEnabled = true;
 		mHasLaunched = false;
@@ -414,20 +506,27 @@ public class BowlScreen extends Screen {
 		mRoundHits = 0;
 	}
 
-	private void addInitialPong(Vector2f position) {
+	/**
+	 * Set up startpositions for the enemies.
+	 */
+	private void addInitialPong(Vector2f position, int width, int height) {
 		Pong pong = new Pong();
-		pong.PongType = Type.Yellow;
-		pong.Position = position;
-		pong.Velocity = new Vector2f();
+		pong.PongType = Type.COW;
+		pong.position = position;
+		pong.velocity = new Vector2f();
+		pong.setHeight(height);
+		pong.setWidth(width);
+		pong.setRadius(width * 0.5f);
 		mPongs.add(pong);
 	}
 
 	private void saveTopScore() {
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
-		Editor editor = settings.edit();		
+		SharedPreferences settings = PreferenceManager
+				.getDefaultSharedPreferences(mContext.getApplicationContext());
+		Editor editor = settings.edit();
 		editor.putInt("mSavedTopScore", mTopScore);
-		editor.commit();		
-		
+		editor.commit();
+
 		mSavedTopScore = mTopScore;
 	}
 }

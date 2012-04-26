@@ -1,20 +1,24 @@
 
-* STARTSCREEN: ser ful ut på galaxy nexus. KOLLA PÅ SEBBES MOBIL.
 
-* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
 
 * GAMESCREEN:
-	- Bakgrundsbild
-	- Launchpads-bakgrund? eller bara transparent fade?
-	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
-	- samma storlek på spelarea på alla mobiler.
 	- dialog som visar score / star innan spel
 	- någon form av redo/exit knappar.
+	- designa 5 levlar åtminstonde till en prototyp.
+	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
+	- Bakgrundsbild snyggare
+	
+	- Fasta object.
+	- Power ups (gör större, gör mindre. Gör så delar sig, spräng, extra liv)
 	
 * LEVELDESIGN:
-	- filstruktur för att beskriva en level. (lista av objekt med properties som position, storlek).
+	- ...
 
 * lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
 
 
+LOW PRIO:
+* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
+* STARTSCREEN: ser ful ut på galaxy nexus. KOLLA PÅ SEBBES MOBIL.
+* Gör det 100% rättvist genom att ha exakt samma aspect ratio på alla skärmstorlekar och samma storlek på objecten.
 

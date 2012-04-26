@@ -5,6 +5,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
+import com.vulfox.math.Vector2f;
+
 public class Points {
 
 	private final float FADE = 0.6f;

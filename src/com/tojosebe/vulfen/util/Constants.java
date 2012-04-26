@@ -10,5 +10,6 @@ public class Constants {
 	public static final int BITMAP_STAR = 5;
 	public static final int BITMAP_STAR_DARK = 6;
 	public static final int BITMAP_STAR_BIG = 7;
+	public static final int BITMAP_BACKGROUND_GAME = 8;
 	
 }
