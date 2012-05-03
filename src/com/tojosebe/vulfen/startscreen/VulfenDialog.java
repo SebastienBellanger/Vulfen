@@ -73,18 +73,20 @@ public class VulfenDialog extends Dialog {
 				doCopy = true;
 			}
 			negativeButton.setBackgroundDrawable(negativeButtonDrawable);
+		} else {
+			findViewById(R.id.button_right).setVisibility(View.GONE);
 		}
 		
 		//TODO: Neutral button not supported today
-		if (neutralButton != null) {
-			if (doCopy) {
-				Bitmap backgroundCopy = background.copy(background.getConfig(), background.isMutable() ? true : false);
-				neutralButtonDrawable = new BitmapDrawable(backgroundCopy);
-			} else {
-				negativeButtonDrawable = new BitmapDrawable(background);
-			}
-			neutralButton.setBackgroundDrawable(neutralButtonDrawable);
-		}
+//		if (neutralButton != null) {
+//			if (doCopy) {
+//				Bitmap backgroundCopy = background.copy(background.getConfig(), background.isMutable() ? true : false);
+//				neutralButtonDrawable = new BitmapDrawable(backgroundCopy);
+//			} else {
+//				negativeButtonDrawable = new BitmapDrawable(background);
+//			}
+//			neutralButton.setBackgroundDrawable(neutralButtonDrawable);
+//		}
 		
 		if (positiveButton != null) {
 			positiveButton.setOnTouchListener(new OnTouchListener() {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -56,11 +57,13 @@ public class WorldScreen extends Screen {
 	private ButtonComponent mPenguinImageLeft;
 	private boolean mPenguinIsOnRightSide = true;
 	private int mPenguinTouches = 0;
+	private Activity mActivity;
 
-	public WorldScreen(int dpi, Cloud cloud1, Cloud cloud2) {
+	public WorldScreen(int dpi, Cloud cloud1, Cloud cloud2, Activity activity) {
 		this.mDpi = dpi;
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
+		this.mActivity = activity;
 		BUTTON_OFFSET = (int)GraphicsUtil.dpToPixels(BUTTON_OFFSET_DP, mDpi);
 		mListHeight = BUTTON_OFFSET;
 	}
@@ -86,12 +89,12 @@ public class WorldScreen extends Screen {
 		createStar(); //load star into memory for later use when adding worlds.
 		addScreenComponent(mPenguinImageRight);
 
-		WorldButton worldButton = addWorld("First Battle", 25, 10, null);
-		addWorld("World 2", 25, 0, worldButton);
-		addWorld("Extras", 25, 0, worldButton);
-		addWorld("Custom Levels", 25, 0, worldButton);
-		addWorld("Pinball world", 25, 0, worldButton);
-		addWorld("Hello there :-)", 25, 0, worldButton);
+		WorldButton worldButton = addWorld("First Battle", 25, 10, null, 1);
+		addWorld("World 2", 25, 0, worldButton, 2);
+		addWorld("Extras", 25, 0, worldButton, 3);
+		addWorld("Custom Levels", 25, 0, worldButton, 4);
+		addWorld("Pinball world", 25, 0, worldButton, 5);
+		addWorld("Hello there :-)", 25, 0, worldButton, 6);
 		
 		addScreenComponent(createBottomBackground());
 
@@ -342,14 +345,15 @@ public class WorldScreen extends Screen {
 	}
 
 	private WorldButton addWorld(String worldName, int totalStages,
-			int clearedStages, WorldButton worldButtonTemplate) {
+			int clearedStages, WorldButton worldButtonTemplate, final int worldNumber) {
 
+		
 		WorldButton worldButton = null;
 		EventListener listener = new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 22, 4));
+					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 21, 4, worldNumber, mActivity));
 					
 					return true;
 				}

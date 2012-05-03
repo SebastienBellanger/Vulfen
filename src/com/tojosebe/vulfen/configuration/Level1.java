@@ -43,8 +43,8 @@ public class Level1 extends Level {
 		List<Pong> enemies = new ArrayList<Pong>();
 		Pong enemy1 = new Pong();
 		enemy1.setImageResource(R.drawable.sebe);
-		enemy1.setHeight(100);
-		enemy1.setWidth(100);
+		enemy1.setHeight(85);
+		enemy1.setWidth(85);
 		enemy1.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.5f));
 		enemies.add(enemy1);
 

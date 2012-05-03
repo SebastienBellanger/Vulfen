@@ -12,6 +12,7 @@ import com.vulfox.GameActivity;
 public class VulfenActivity extends GameActivity {
 	
 	public static final int DIALOG_REALLY_EXIT = 1;
+	public static final int DIALOG_SCORE_TO_BEAT = 2;
 	
 	private StartScreen startScreen;
 	
@@ -42,10 +43,6 @@ public class VulfenActivity extends GameActivity {
 	
 	protected Dialog onCreateDialog(int id) {
 		
-	    switch(id) {
-	    case DIALOG_REALLY_EXIT:
-	    	return startScreen.onCreateDialog(id);
-	    }
-	    return null;
+		return getScreenManager().onCreateDialog(id);
 	}
 }

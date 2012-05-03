@@ -38,19 +38,21 @@ public class LevelManager {
 		World world1 = new World();
 		Level level1 = new Level1(1, mWidth, mHeight);
 		Level level2 = new Level2(2, mWidth, mHeight);
+		Level level3 = new Level3(3, mWidth, mHeight);
 		world1.addLevel(level1);
 		world1.addLevel(level2);
+		world1.addLevel(level3);
 		worlds.add(world1);
 	}
 
 	public int getNumberOfWorlds() {
 		return worlds.size();
 	}
-
-	/**
-	 * @return the worlds
-	 */
-	public List<World> getWorlds() {
-		return worlds;
+	
+	public Level getLevel(int worldNum, int levelNum) {
+		Level level = worlds.get(worldNum-1).getLevels().get(levelNum-1);
+		Level copy = level.getCopy();
+		return copy;
 	}
+
 }

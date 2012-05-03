@@ -1,8 +1,12 @@
 package com.tojosebe.vulfen.game;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -15,13 +19,21 @@ import android.graphics.RectF;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.tojosebe.vulfen.R;
+import com.tojosebe.vulfen.VulfenActivity;
 import com.tojosebe.vulfen.configuration.Level;
+import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.tojosebe.vulfen.game.Pong.Type;
+import com.tojosebe.vulfen.startscreen.VulfenDialog;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
+import com.vulfox.component.ImageComponent;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
@@ -32,21 +44,24 @@ public class BowlScreen extends Screen {
 
 	private Vibrator vibrator;
 
-	private Bitmap mYellow;
 	private Bitmap mRed;
+	private Bitmap mYellow;
 	private Bitmap mLaunchPad;
 
 	private Paint mTextPaint = new Paint();
 	private Paint mTopPaint = new Paint();
 
 	private List<Pong> mPongs = new Vector<Pong>();
-	private Pong mLaunchPong = new Pong();
+	private List<BonusItem> mBonusItems = new Vector<BonusItem>();
+	private Pong mLaunchPong = new Penguin();
 	private boolean mHasLaunched = false;
 
 	private boolean mMotionEnabled = true;
 	private boolean mHasPong = false;
 	private Vector2f mLastMotion = new Vector2f();
 	private long mLastMotionTime = 0;
+
+	private int bonusItemDpWidth = 32;
 
 	private int mTotalScore = 0;
 	private int mRoundHits = 0;
@@ -68,19 +83,65 @@ public class BowlScreen extends Screen {
 	private int mDpi;
 
 	private float mGameAreaHeight;
-	private float mGameAreaWidth;
+
 	private float mGameAreaAspectRatio = 1.333f;
 	private float mLaunchPadHeight;
 
 	private Level mLevelConfig;
 
-	Paint mLaunchPadPaint = new Paint();
-	RectF mLaunchPadRect = new RectF();
+	private boolean mBallsAreMoving;
 
-	public BowlScreen(Level levelConfiguration, int dpi) {
+	private BonusItemRandomizer mBonusItemRandomizer;
+
+	Paint mGenericPaint = new Paint();
+	RectF mLaunchPadRect = new RectF();
+	Rect mItemRect = new Rect();
+	
+	private Activity mActivity;
+
+	public BowlScreen(Level levelConfiguration, int dpi, Activity activity) {
 		mConfig = levelConfiguration.getBowlConfiguration();
 		mLevelConfig = levelConfiguration;
 		mDpi = dpi;
+		mActivity = activity;
+	}
+	
+	@Override
+	protected void onTop() {
+//		mActivity.showDialog(VulfenActivity.DIALOG_SCORE_TO_BEAT); TODO: fixa till dialogen. gör en layout som inflatas.
+	}
+
+	private BonusItem getRandomBonusItem() {
+
+		BonusItem item = new BonusItem();
+		Bitmap bitmap = null;
+
+		Random rand = new Random(System.currentTimeMillis());
+		int randomNumber = rand.nextInt(2);
+
+		if (randomNumber == 0) {
+			bitmap = ImageLoader.loadFromResource(mContext, R.drawable.fish);
+			item.setItemType(BonusItemType.GROWER);
+		} else if (randomNumber == 1) {
+			bitmap = ImageLoader.loadFromResource(mContext,
+					R.drawable.fish_dead);
+			item.setItemType(BonusItemType.SHRINKER);
+		}
+
+		float itemWidth = GraphicsUtil.dpToPixels(bonusItemDpWidth, mDpi);
+		int xPosition = rand.nextInt(getWidth() - (int) itemWidth);
+		xPosition += itemWidth * 0.5f;
+
+		float multiplyer = itemWidth / bitmap.getWidth();
+		item.setRadius(bitmap.getWidth() * 0.5f * multiplyer);
+		item.setWidth(bitmap.getWidth() * multiplyer);
+		item.setHeight(bitmap.getHeight() * multiplyer);
+
+		item.setBitmap(bitmap);
+
+		item.setPosition(new Vector2f(xPosition, -item.getHeight()));
+
+		return item;
 	}
 
 	@Override
@@ -101,7 +162,7 @@ public class BowlScreen extends Screen {
 		mLevelConfig.getPenguin().setRadius(penguinPongLength * 0.5f);
 
 		mGameAreaHeight = (int) (getWidth() * mGameAreaAspectRatio);
-		mGameAreaWidth = getWidth();
+
 		mLaunchPadHeight = getHeight() - mGameAreaHeight;
 		if (mLaunchPadHeight < penguinPongLength * 1.2f) {
 			// launchpad too small. We need to make width smaller. But what the
@@ -113,7 +174,8 @@ public class BowlScreen extends Screen {
 		mLevelConfig.getPenguin().getPosition()
 				.setY(mGameAreaHeight + mLaunchPadHeight / 2.0f);
 
-		mLaunchPadPaint.setAntiAlias(true);
+		mGenericPaint.setAntiAlias(true);
+
 		mLaunchPadRect.set(0, getHeight() - mLaunchPadHeight, getWidth(),
 				getHeight());
 
@@ -131,11 +193,54 @@ public class BowlScreen extends Screen {
 		mTopPaint.setAntiAlias(true);
 
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
-				R.drawable.launcher3);
+				R.drawable.launcher4);
 		mYellow = getPongBitmap(mLevelConfig.getEnemies().get(0));
 		mRed = getPongBitmap(mLevelConfig.getPenguin());
 
 		reset();
+
+		createBackground();
+		
+	}
+	
+	public Dialog onCreateDialog(int id) {
+
+		switch (id) {
+		case VulfenActivity.DIALOG_SCORE_TO_BEAT:
+
+			// CREATE DIALOG
+			final VulfenDialog dialog = new VulfenDialog(mActivity,
+					R.style.CustomDialogTheme);
+
+			// INIT DIALOG BUTTONS
+			Button yesButton = (Button) dialog
+					.findViewById(R.id.button_positive);
+			yesButton.setText(android.R.string.ok);
+			dialog.setPositiveButton(yesButton);
+
+			// SET DIALOG HEADER
+			((TextView) dialog.findViewById(R.id.dialog_header_text))
+					.setText(mActivity.getString(R.string.quit) + " " + mLevelConfig.getLevelNumber());
+
+			// SET DIALOG CONTENT
+//			((TextView) dialog.findViewById(R.id.dialog_content))
+//					.setText(R.string.);
+
+			// INIT DIALOG SIZES
+			int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
+			int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
+			dialog.initDialog(mActivity, R.drawable.button, h, w);
+
+			yesButton.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					dialog.dismiss();
+				}
+			});
+
+			return dialog;
+		}
+		return null;
 	}
 
 	private Bitmap getPongBitmap(Pong pong) {
@@ -144,7 +249,37 @@ public class BowlScreen extends Screen {
 				mContext.getApplicationContext(), resource);
 		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) pong.getHeight(),
 				(int) pong.getWidth());
+		if (pong.getType() == Type.COW) {
+			switch (pong.getCurrentGroth()) {
+			case -1:
+				BitmapManager.addBitmap(Constants.BITMAP_COW_MINUS_1, bitmap); break;
+			case 0:
+				BitmapManager.addBitmap(Constants.BITMAP_COW_0, bitmap); break;
+			case 1:
+				BitmapManager.addBitmap(Constants.BITMAP_COW_1, bitmap); break;
+			case 2:
+				BitmapManager.addBitmap(Constants.BITMAP_COW_2, bitmap); break;
+			}
+		}
 		return bitmap;
+	}
+
+	private void createBackground() {
+
+		if (BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND_GAME) == null) {
+
+			ImageComponent imageComp = null;
+
+			Bitmap background = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.background4);
+			imageComp = new ImageComponent(background, false);
+			imageComp.setHeight(getHeight());
+			imageComp.setWidth(getWidth());
+			imageComp.resizeBitmap();
+			BitmapManager.addBitmap(Constants.BITMAP_BACKGROUND_GAME,
+					imageComp.getBitmap());
+		}
+
 	}
 
 	private void reset() {
@@ -158,7 +293,7 @@ public class BowlScreen extends Screen {
 
 		for (Pong enemy : mLevelConfig.getEnemies()) {
 			addInitialPong(new Vector2f(enemy.getPosition()),
-					(int) enemy.getWidth(), (int) enemy.getHeight());
+					(int) enemy.getWidth(), (int) enemy.getHeight(), enemy.getImageResource());
 		}
 
 		resetLauncher();
@@ -211,8 +346,7 @@ public class BowlScreen extends Screen {
 					if (velocity.getLength() > 100.0f * mScale) {
 						mMotionEnabled = false;
 
-						Pong redPong = new Pong();
-						redPong.PongType = Type.PENGUIN;
+						Pong redPong = new Penguin();
 						redPong.position = new Vector2f(mLaunchPong.position);
 						redPong.velocity = velocity;
 						redPong.setHeight(mLevelConfig.getPenguin().getHeight());
@@ -222,6 +356,10 @@ public class BowlScreen extends Screen {
 						mPongs.add(redPong);
 
 						mHasLaunched = true;
+						mBallsAreMoving = true;
+
+						mBonusItemRandomizer = new BonusItemRandomizer(1);
+						mBonusItemRandomizer.start();
 					}
 				}
 			} else if (mHasPong
@@ -234,7 +372,16 @@ public class BowlScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
+		stopMovement();
 		return mScreenManager.removeScreen(this);
+	}
+
+	private void stopMovement() {
+		if (mBonusItemRandomizer != null && mBallsAreMoving) {
+			mBonusItemRandomizer.stopThread();
+			mBonusItemRandomizer = null;
+			mBallsAreMoving = false;
+		}
 	}
 
 	@Override
@@ -275,9 +422,9 @@ public class BowlScreen extends Screen {
 						- pong.position.getY());
 				pong.velocity.setY(-pong.velocity.getY());
 				// Check if pong is too far to the bottom
-			} else if (pong.velocity.getY() > 0 /*if direction is down */ &&
-					pong.position.getY() > getHeight() - pong.getRadius()
-					- mLaunchPadHeight) {
+			} else if (pong.velocity.getY() > 0 /* if direction is down */
+					&& pong.position.getY() > getHeight() - pong.getRadius()
+							- mLaunchPadHeight) {
 				pong.position.setY(2.0f
 						* (getHeight() - pong.getRadius() - mLaunchPadHeight)
 						- pong.position.getY());
@@ -297,6 +444,23 @@ public class BowlScreen extends Screen {
 			}
 		}
 
+		// UPDATE POSITIONS AND VELOCITY FOR ALL BONUSITEMS.
+		Iterator<BonusItem> iterator = mBonusItems.iterator();
+		while (iterator.hasNext()) {
+
+			BonusItem bonusItem = iterator.next();
+
+			// calculate new velocity
+			Vector2f delta = bonusItem.getVelocity().mul(timeStep);
+			bonusItem.getPosition().addT(delta);
+
+			// Check if bonusItem is too far to the bottom
+			if (bonusItem.getVelocity().getY() > 0 /* if direction is down */
+					&& bonusItem.getPosition().getY() > getHeight()) {
+				mBonusItems.remove(bonusItem);
+			}
+		}
+
 		// CHECK IF GAME JUST ENDED
 		if (!mGameOver && mHasLaunched && moving == 0) {
 			resetLauncher();
@@ -308,6 +472,31 @@ public class BowlScreen extends Screen {
 
 		// CHECK FOR COLLISIONS
 		for (int i = 0; i < mPongs.size(); i++) {
+
+			// for each pong. Check for collision with the bonusitems.
+			for (int k = 0; k < mBonusItems.size(); k++) {
+				BonusItem bonusItem = mBonusItems.get(k);
+				Pong pong = mPongs.get(i);
+				Vector2f collision = pong.position.sub(bonusItem.getPosition());
+				float length = collision.getLength();
+				if (length < pong.getRadius() + bonusItem.getRadius()) {
+					// PICK UP ITEM!
+					if (bonusItem.getItemType() == BonusItemType.GROWER && pong.getCurrentGroth() < pong.getMaxGroth()) {
+						pong.setWidth(pong.getWidth() * 1.5f);
+						pong.setRadius(pong.getRadius() * 1.5f);
+						mBonusItems.remove(bonusItem);
+						pong.setCurrentGroth(pong.getCurrentGroth()+1);
+						break;
+					} else if (bonusItem.getItemType() == BonusItemType.SHRINKER & pong.getCurrentGroth() > -pong.getMaxShrink()) {
+						pong.setWidth(pong.getWidth() * 0.666666f);
+						pong.setRadius(pong.getRadius() * 0.666666f);
+						mBonusItems.remove(bonusItem);
+						pong.setCurrentGroth(pong.getCurrentGroth()-1);
+						break;
+					}
+				}
+			}
+
 			for (int j = i + 1; j < mPongs.size(); j++) {
 
 				Pong first = mPongs.get(i);
@@ -349,21 +538,32 @@ public class BowlScreen extends Screen {
 			if (points.isDone())
 				mPoints.remove(points);
 		}
+
+		if (moving == 0) {
+			stopMovement();
+		}
 	}
 
 	@Override
 	public void draw(Canvas canvas) {
 
-		Rect mBackgroundRect = new Rect();
+		canvas.drawBitmap(
+				BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND_GAME), 0,
+				0, null);
 
-		mBackgroundRect.set((int) ((getWidth() - mGameAreaWidth) / 2), 0,
-				(int) (getWidth() - (getWidth() - mGameAreaWidth) / 2),
-				getHeight());
+		for (BonusItem bonusItem : mBonusItems) {
+			mItemRect.set((int) (bonusItem.getPosition().getX() - bonusItem
+					.getWidth() * 0.5f),
+					(int) (bonusItem.getPosition().getY() - bonusItem
+							.getHeight() * 0.5f),
+					(int) (bonusItem.getPosition().getX() + bonusItem
+							.getWidth() * 0.5f), (int) (bonusItem.getPosition()
+							.getY() + bonusItem.getHeight() * 0.5f));
+			canvas.drawBitmap(bonusItem.getBitmap(), null, mItemRect,
+					mGenericPaint);
+		}
 
-		canvas.drawBitmap(BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND),
-				0, 0, null);
-
-		canvas.drawBitmap(mLaunchPad, null, mLaunchPadRect, mLaunchPadPaint);
+		canvas.drawBitmap(mLaunchPad, null, mLaunchPadRect, mGenericPaint);
 
 		for (Pong pong : mPongs) {
 
@@ -372,9 +572,9 @@ public class BowlScreen extends Screen {
 
 			mDrawRect.set(x, y, x + pong.getWidth(), y + pong.getWidth());
 
-			if (pong.PongType == Type.PENGUIN) {
+			if (pong.getType() == Type.PENGUIN) {
 				canvas.drawBitmap(mRed, null, mDrawRect, null);
-			} else if (pong.PongType == Type.COW) {
+			} else if (pong.getType() == Type.COW) {
 				canvas.drawBitmap(mYellow, null, mDrawRect, null);
 			}
 		}
@@ -448,7 +648,7 @@ public class BowlScreen extends Screen {
 			vibrator.vibrate(30);
 		}
 
-		if (first.PongType == Type.COW && second.PongType == Type.COW) {
+		if (first.getType() == Type.COW && second.getType() == Type.COW) {
 			int value = mRoundHits * mConfig.getYellowYellowValue();
 			mTotalScore += value;
 
@@ -457,8 +657,8 @@ public class BowlScreen extends Screen {
 			position.addT(first.position);
 
 			mPoints.add(new Points(value, position, Color.YELLOW, mScale));
-		} else if ((first.PongType == Type.COW && second.PongType == Type.PENGUIN)
-				|| (first.PongType == Type.PENGUIN && second.PongType == Type.COW)) {
+		} else if ((first.getType() == Type.COW && second.getType() == Type.PENGUIN)
+				|| (first.getType() == Type.PENGUIN && second.getType() == Type.COW)) {
 			int value = mRoundHits * mConfig.getRedYellowValue();
 			mTotalScore += value;
 
@@ -488,10 +688,9 @@ public class BowlScreen extends Screen {
 
 		if (mLives < 0) {
 			mGameOver = true;
+			mBonusItems.clear();
 			return;
 		}
-
-		mLaunchPong.PongType = Type.PENGUIN;
 
 		mLaunchPong.position = new Vector2f(mLevelConfig.getPenguin()
 				.getPosition());
@@ -504,19 +703,21 @@ public class BowlScreen extends Screen {
 		mHasLaunched = false;
 
 		mRoundHits = 0;
+
 	}
 
 	/**
 	 * Set up startpositions for the enemies.
+	 * @param i 
 	 */
-	private void addInitialPong(Vector2f position, int width, int height) {
-		Pong pong = new Pong();
-		pong.PongType = Type.COW;
+	private void addInitialPong(Vector2f position, int width, int height, int imageResource) {
+		Pong pong = new Cow();
 		pong.position = position;
 		pong.velocity = new Vector2f();
 		pong.setHeight(height);
 		pong.setWidth(width);
 		pong.setRadius(width * 0.5f);
+		pong.setImageResource(imageResource);
 		mPongs.add(pong);
 	}
 
@@ -529,4 +730,48 @@ public class BowlScreen extends Screen {
 
 		mSavedTopScore = mTopScore;
 	}
+
+	private class BonusItemRandomizer extends Thread {
+
+		private boolean mRun = true;
+		private int mItemsToRandomize = 1;
+		private int mSuccesInt = 1;
+
+		public BonusItemRandomizer(int itemsToRandomize) {
+			mItemsToRandomize = itemsToRandomize;
+		}
+
+		public void run() {
+
+			Random rand = new Random(System.currentTimeMillis());
+
+			while (mRun) {
+				try {
+					Thread.sleep(1000);
+
+					int randomInt = rand.nextInt(10);
+
+					if (randomInt <= mSuccesInt) {
+						if (mItemsToRandomize == 1) {
+							mRun = false;
+						}
+						mItemsToRandomize--;
+						mBonusItems.add(getRandomBonusItem());
+					} else {
+						mSuccesInt++;
+					}
+
+				} catch (InterruptedException e) {
+
+				}
+			}
+		}
+
+		public void stopThread() {
+			mRun = false;
+			this.interrupt();
+		}
+
+	}
+
 }

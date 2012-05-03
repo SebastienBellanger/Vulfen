@@ -3,14 +3,19 @@ package com.tojosebe.vulfen.game;
 import com.vulfox.math.Vector2f;
 
 public class Pong {
-
+	
 	public enum Type {
 		COW, PENGUIN
 	};
-
-	public Type PongType;
+	
+	private int maxGroth = +2;
+	private int maxShrink = +4;
+	
 	public Vector2f position;
 	public Vector2f velocity;
+	private Type mType;
+	
+	private int mCurrentGroth = 0;
 
 	private int mImageResource;
 	private float mWidth;
@@ -20,9 +25,21 @@ public class Pong {
 	private float mFriction = 35.0f;
 	private float mRadius;
 
-	public Pong() {
-
+	public Pong(Pong pong) {
+		position = pong.position;
+		velocity = pong.velocity;
+		mImageResource = pong.mImageResource;
+		mWidth = pong.mWidth;
+		mHeight = pong.mHeight;
+		mMinSpeed = pong.mMinSpeed;
+		mMaxSpeed = pong.mMaxSpeed;
+		mFriction = pong.mFriction;
+		mRadius = pong.mRadius;
 	}
+
+	public Pong() {
+	}
+
 	/**
 	 * @return the imageResource
 	 */
@@ -141,6 +158,62 @@ public class Pong {
 	 */
 	public void setRadius(float mRadius) {
 		this.mRadius = mRadius;
+	}
+
+	/**
+	 * @return the currentGroth
+	 */
+	public int getCurrentGroth() {
+		return mCurrentGroth;
+	}
+
+	/**
+	 * @param currentGroth the currentGroth to set
+	 */
+	public void setCurrentGroth(int currentGroth) {
+		this.mCurrentGroth = currentGroth;
+	}
+
+	/**
+	 * @return the type
+	 */
+	public Type getType() {
+		return mType;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(Type type) {
+		this.mType = type;
+	}
+
+	/**
+	 * @return the maxGroth
+	 */
+	public int getMaxGroth() {
+		return maxGroth;
+	}
+
+	/**
+	 * @param maxGroth the maxGroth to set
+	 */
+	public void setMaxGroth(int maxGroth) {
+		this.maxGroth = maxGroth;
+	}
+
+	/**
+	 * @return the maxShrink
+	 */
+	public int getMaxShrink() {
+		return maxShrink;
+	}
+
+	/**
+	 * @param maxShrink the maxShrink to set
+	 */
+	public void setMaxShrink(int maxShrink) {
+		this.maxShrink = maxShrink;
 	}
 
 }

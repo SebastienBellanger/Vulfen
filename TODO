@@ -1,15 +1,22 @@
-k
 
+- dialog som visar score / star innan spel
 
 * GAMESCREEN:
-	- dialog som visar score / star innan spel
 	- någon form av redo/exit knappar.
 	- designa 5 levlar åtminstonde till en prototyp.
 	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
 	- Bakgrundsbild snyggare
 	
+	- fixa så att bilderna är snyggare (ko och pingvin) vid shrink och grow är de pixliga!
+	
 	- Fasta object.
 	- Power ups (gör större, gör mindre. Gör så delar sig, spräng, extra liv)
+	
+	- Skapa klass CollidableObject eller nåt. som har boundingbox som används vid kollisionsberäkningar.
+	
+	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
+	
+	- när någon tar en bonusitem ska (allt stanna upp och) det ska animeras.
 	
 * LEVELDESIGN:
 	- ...

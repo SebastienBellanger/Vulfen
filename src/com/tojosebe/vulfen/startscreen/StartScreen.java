@@ -164,7 +164,7 @@ public class StartScreen extends Screen {
 		button.setEventListener(new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
-				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1, mCloud2));
+				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1, mCloud2, mActivity));
 				return true;
 			}
 		});

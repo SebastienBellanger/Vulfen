@@ -13,6 +13,19 @@ public class BowlConfiguration {
 	private int redYellowValue = 25;
 	private int redRedValue = 100;
 	
+	public BowlConfiguration(BowlConfiguration bowlConfiguration) {
+		lives = bowlConfiguration.lives;
+		minSpeed = bowlConfiguration.minSpeed;
+		maxSpeed = bowlConfiguration.maxSpeed;
+		friction = bowlConfiguration.friction;
+		yellowYellowValue = bowlConfiguration.yellowYellowValue;
+		redYellowValue = bowlConfiguration.redYellowValue;
+		redRedValue = bowlConfiguration.redRedValue;
+	}
+	
+	public BowlConfiguration() {
+	}
+	
 	/**
 	 * @return the lives
 	 */

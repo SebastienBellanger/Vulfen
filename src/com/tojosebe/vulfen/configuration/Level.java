@@ -1,5 +1,6 @@
 package com.tojosebe.vulfen.configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tojosebe.vulfen.game.BowlConfiguration;
@@ -71,5 +72,17 @@ public class Level {
 	 */
 	public int getLevelNumber() {
 		return mLevelNumber;
+	}
+
+	public Level getCopy() {
+		Level levelCopy = new Level(mLevelNumber);
+		levelCopy.mBowlConfiguration = new BowlConfiguration(mBowlConfiguration);
+		levelCopy.mEnemies = new ArrayList<Pong>();
+		for (Pong pong : mEnemies) {
+			Pong pongCopy = new Pong(pong);
+			levelCopy.mEnemies.add(pongCopy);
+		}
+		levelCopy.mPenguin = new Pong(mPenguin);
+		return levelCopy;
 	}
 }
