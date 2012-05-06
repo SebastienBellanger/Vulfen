@@ -15,14 +15,21 @@ public class Level {
 
 	private int mLevelNumber;
 	
+	private int mThreeStarsScore;
+	private int mTwoStarsScore;
+	private int mOneStarScore;
+	
 	private BowlConfiguration mBowlConfiguration;
 
 	private List<Pong> mEnemies;
 	
 	private Pong mPenguin;
 	
-	public Level(int levelNumber) {
+	public Level(int levelNumber, int threeStarsScore, int twoStarsScore, int oneStarScore) {
 		mLevelNumber = levelNumber;
+		mThreeStarsScore = threeStarsScore;
+		mTwoStarsScore = twoStarsScore;
+		mOneStarScore = oneStarScore;
 	}
 	
 	/**
@@ -75,7 +82,7 @@ public class Level {
 	}
 
 	public Level getCopy() {
-		Level levelCopy = new Level(mLevelNumber);
+		Level levelCopy = new Level(mLevelNumber, mThreeStarsScore, mTwoStarsScore, mOneStarScore);
 		levelCopy.mBowlConfiguration = new BowlConfiguration(mBowlConfiguration);
 		levelCopy.mEnemies = new ArrayList<Pong>();
 		for (Pong pong : mEnemies) {
@@ -84,5 +91,18 @@ public class Level {
 		}
 		levelCopy.mPenguin = new Pong(mPenguin);
 		return levelCopy;
+	
+	}
+
+	public int getThreeStarsScore() {
+		return mThreeStarsScore;
+	}
+
+	public int getTwoStarsScore() {
+		return mTwoStarsScore;
+	}
+
+	public int getOneStarScore() {
+		return mOneStarScore;
 	}
 }

@@ -334,5 +334,5 @@ public class LevelScreen extends Screen {
 		addScreenComponent(levelButton);
 		mButtons.add(levelButton);
 	}
-	
+
 }

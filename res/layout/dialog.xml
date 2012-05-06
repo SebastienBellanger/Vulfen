@@ -45,6 +45,7 @@
               android:textStyle="normal"
               android:padding="10dp"
               android:gravity="center"
+              android:visibility="gone"
               />
     
     </LinearLayout>

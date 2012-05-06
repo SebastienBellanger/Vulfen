@@ -14,7 +14,7 @@ public class Level3 extends Level {
 	private int mHeight;
 
 	public Level3(int levelNumber, int width, int height) {
-		super(levelNumber);
+		super(levelNumber, 30000, 25000, 18000);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();
@@ -25,7 +25,6 @@ public class Level3 extends Level {
 	private void createLevelConfig() {
 		BowlConfiguration b = new BowlConfiguration();
 		b.setLives(2);
-		b.setMaxSpeed(2500);
 		setBowlConfiguration(b);
 		setEnemies(createEnemiesGameConfiguration());
 		setPenguin(createPengiunGameConfiguration());

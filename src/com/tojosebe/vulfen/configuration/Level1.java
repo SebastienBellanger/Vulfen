@@ -14,7 +14,7 @@ public class Level1 extends Level {
 	private int mHeight;
 
 	public Level1(int levelNumber, int width, int height) {
-		super(levelNumber);
+		super(levelNumber, 60000, 40000, 20000);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();
@@ -23,7 +23,9 @@ public class Level1 extends Level {
 	}
 
 	private void createLevelConfig() {
-		setBowlConfiguration(new BowlConfiguration()); // Default values.
+		BowlConfiguration b = new BowlConfiguration();
+		b.setLives(1);
+		setBowlConfiguration(b);
 		setEnemies(createEnemiesGameConfiguration());
 		setPenguin(createPengiunGameConfiguration());
 	}

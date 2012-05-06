@@ -16,17 +16,26 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.VulfenActivity;
 import com.tojosebe.vulfen.configuration.Level;
+import com.tojosebe.vulfen.dialog.CanvasDialog;
+import com.tojosebe.vulfen.dialog.CanvasDialogCounterString;
+import com.tojosebe.vulfen.dialog.CanvasDialogRegularString;
+import com.tojosebe.vulfen.dialog.CanvasDialogString;
+import com.tojosebe.vulfen.dialog.CanvasDialogString.TextSize;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.tojosebe.vulfen.game.Pong.Type;
 import com.tojosebe.vulfen.startscreen.VulfenDialog;
@@ -34,11 +43,16 @@ import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
+import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
 
 public class BowlScreen extends Screen {
+
+	private static final String SCORE = "Score: ";
+
+	private static final String TOP_SCORE = "Top Score: ";
 
 	private float mScale;
 
@@ -49,6 +63,7 @@ public class BowlScreen extends Screen {
 	private Bitmap mLaunchPad;
 
 	private Paint mTextPaint = new Paint();
+	private Paint mStrokePaint = new Paint(); // text border
 	private Paint mTopPaint = new Paint();
 
 	private List<Pong> mPongs = new Vector<Pong>();
@@ -61,13 +76,25 @@ public class BowlScreen extends Screen {
 	private Vector2f mLastMotion = new Vector2f();
 	private long mLastMotionTime = 0;
 
-	private int bonusItemDpWidth = 32;
+	private int mBonusItemDpWidth = 32;
+
+	private int mLivesLeftDpWidth = 10;
+
+	// Random bonus items variables.
+	private long mRoundStartedTime;
+	private int mBonusItemSuccessInt = 1;
+	private boolean mBonusItemHasLaunched = false;
+	private Random mBonusItemRandom = new Random(System.currentTimeMillis());
+	private long mSecondsSinceLaunch = 0;
 
 	private int mTotalScore = 0;
 	private int mRoundHits = 0;
 
 	private int mTopScore = 0;
 	private int mSavedTopScore = 0;
+
+	// Game ended animation
+	private long mGameEndedTime = 0;
 
 	private List<Points> mPoints = new Vector<Points>();
 
@@ -89,14 +116,10 @@ public class BowlScreen extends Screen {
 
 	private Level mLevelConfig;
 
-	private boolean mBallsAreMoving;
-
-	private BonusItemRandomizer mBonusItemRandomizer;
-
 	Paint mGenericPaint = new Paint();
 	RectF mLaunchPadRect = new RectF();
 	Rect mItemRect = new Rect();
-	
+
 	private Activity mActivity;
 
 	public BowlScreen(Level levelConfiguration, int dpi, Activity activity) {
@@ -105,10 +128,10 @@ public class BowlScreen extends Screen {
 		mDpi = dpi;
 		mActivity = activity;
 	}
-	
+
 	@Override
 	protected void onTop() {
-//		mActivity.showDialog(VulfenActivity.DIALOG_SCORE_TO_BEAT); TODO: fixa till dialogen. gör en layout som inflatas.
+//		mActivity.showDialog(VulfenActivity.DIALOG_SCORE_TO_BEAT);
 	}
 
 	private BonusItem getRandomBonusItem() {
@@ -116,20 +139,23 @@ public class BowlScreen extends Screen {
 		BonusItem item = new BonusItem();
 		Bitmap bitmap = null;
 
-		Random rand = new Random(System.currentTimeMillis());
-		int randomNumber = rand.nextInt(2);
+		item.getVelocity().setY(getWidth() / 5);
+
+		int randomNumber = mBonusItemRandom.nextInt(2);
 
 		if (randomNumber == 0) {
 			bitmap = ImageLoader.loadFromResource(mContext, R.drawable.fish);
 			item.setItemType(BonusItemType.GROWER);
+			item.setScore(500);
 		} else if (randomNumber == 1) {
 			bitmap = ImageLoader.loadFromResource(mContext,
 					R.drawable.fish_dead);
 			item.setItemType(BonusItemType.SHRINKER);
+			item.setScore(-500);
 		}
 
-		float itemWidth = GraphicsUtil.dpToPixels(bonusItemDpWidth, mDpi);
-		int xPosition = rand.nextInt(getWidth() - (int) itemWidth);
+		float itemWidth = GraphicsUtil.dpToPixels(mBonusItemDpWidth, mDpi);
+		int xPosition = mBonusItemRandom.nextInt(getWidth() - (int) itemWidth);
 		xPosition += itemWidth * 0.5f;
 
 		float multiplyer = itemWidth / bitmap.getWidth();
@@ -187,10 +213,20 @@ public class BowlScreen extends Screen {
 			enemy.setRadius(enemyLength * 0.5f);
 		}
 
-		mTextPaint.setTextSize(32 * mScale);
-		mTextPaint.setAntiAlias(true);
 		mTopPaint.setTextSize(16 * mScale);
 		mTopPaint.setAntiAlias(true);
+
+		mTextPaint.setARGB(255, 255, 255, 255);
+		mTextPaint.setAntiAlias(true);
+		mTextPaint.setTextSize(24 * mScale);
+		mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+
+		mStrokePaint.setARGB(255, 30, 30, 30);
+		mStrokePaint.setTextSize(24 * mScale);
+		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
+		mStrokePaint.setStyle(Paint.Style.STROKE);
+		mStrokePaint.setAntiAlias(true);
+		mStrokePaint.setStrokeWidth(4);
 
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
 				R.drawable.launcher4);
@@ -200,45 +236,68 @@ public class BowlScreen extends Screen {
 		reset();
 
 		createBackground();
-		
+
+		createLifeLeftImage();
 	}
-	
-	public Dialog onCreateDialog(int id) {
+
+	@Override
+	protected Dialog onCreateDialog(int id, Dialog dialogIn, Bundle args) {
 
 		switch (id) {
 		case VulfenActivity.DIALOG_SCORE_TO_BEAT:
 
-			// CREATE DIALOG
-			final VulfenDialog dialog = new VulfenDialog(mActivity,
-					R.style.CustomDialogTheme);
+			final VulfenDialog newDialog;
+
+			if (dialogIn == null) {
+				// CREATE DIALOG
+				newDialog = new VulfenDialog(mActivity,
+						R.style.CustomDialogTheme);
+			} else {
+				newDialog = (VulfenDialog) dialogIn;
+			}
 
 			// INIT DIALOG BUTTONS
-			Button yesButton = (Button) dialog
+			Button yesButton = (Button) newDialog
 					.findViewById(R.id.button_positive);
 			yesButton.setText(android.R.string.ok);
-			dialog.setPositiveButton(yesButton);
+			newDialog.setPositiveButton(yesButton);
 
 			// SET DIALOG HEADER
-			((TextView) dialog.findViewById(R.id.dialog_header_text))
-					.setText(mActivity.getString(R.string.quit) + " " + mLevelConfig.getLevelNumber());
+			((TextView) newDialog.findViewById(R.id.dialog_header_text))
+					.setText(mActivity.getString(R.string.level) + " "
+							+ mLevelConfig.getLevelNumber());
 
-			// SET DIALOG CONTENT
-//			((TextView) dialog.findViewById(R.id.dialog_content))
-//					.setText(R.string.);
+			if (dialogIn == null) {
+				// SET DIALOG CONTENT
+				LayoutInflater inflaterOne = (LayoutInflater) mActivity
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-			// INIT DIALOG SIZES
-			int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
-			int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
-			dialog.initDialog(mActivity, R.drawable.button, h, w);
+				ViewGroup contentView = (ViewGroup) newDialog
+						.findViewById(R.id.content);
+				View dialogContent = inflaterOne.inflate(
+						R.layout.scores_n_stars, contentView);
+
+				((TextView) dialogContent.findViewById(R.id.text_three_stars))
+						.setText("" + mLevelConfig.getThreeStarsScore());
+				((TextView) dialogContent.findViewById(R.id.text_two_stars))
+						.setText("" + mLevelConfig.getTwoStarsScore());
+				((TextView) dialogContent.findViewById(R.id.text_one_star))
+						.setText("" + mLevelConfig.getOneStarScore());
+
+				// INIT DIALOG SIZES
+				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
+				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
+				newDialog.initDialog(mActivity, R.drawable.button, h, w);
+			}
 
 			yesButton.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					dialog.dismiss();
+					newDialog.dismiss();
 				}
 			});
 
-			return dialog;
+			return newDialog;
 		}
 		return null;
 	}
@@ -252,13 +311,17 @@ public class BowlScreen extends Screen {
 		if (pong.getType() == Type.COW) {
 			switch (pong.getCurrentGroth()) {
 			case -1:
-				BitmapManager.addBitmap(Constants.BITMAP_COW_MINUS_1, bitmap); break;
+				BitmapManager.addBitmap(Constants.BITMAP_COW_MINUS_1, bitmap);
+				break;
 			case 0:
-				BitmapManager.addBitmap(Constants.BITMAP_COW_0, bitmap); break;
+				BitmapManager.addBitmap(Constants.BITMAP_COW_0, bitmap);
+				break;
 			case 1:
-				BitmapManager.addBitmap(Constants.BITMAP_COW_1, bitmap); break;
+				BitmapManager.addBitmap(Constants.BITMAP_COW_1, bitmap);
+				break;
 			case 2:
-				BitmapManager.addBitmap(Constants.BITMAP_COW_2, bitmap); break;
+				BitmapManager.addBitmap(Constants.BITMAP_COW_2, bitmap);
+				break;
 			}
 		}
 		return bitmap;
@@ -282,6 +345,17 @@ public class BowlScreen extends Screen {
 
 	}
 
+	private void createLifeLeftImage() {
+
+		if (BitmapManager.getBitmap(Constants.BITMAP_PENGUIN_LIFE) == null) {
+
+			Bitmap lifeBitmap = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.penguin_life);
+			BitmapManager.addBitmap(Constants.BITMAP_PENGUIN_LIFE, lifeBitmap);
+		}
+
+	}
+
 	private void reset() {
 		mLives = mConfig.getLives();
 		mGameOver = false;
@@ -293,8 +367,11 @@ public class BowlScreen extends Screen {
 
 		for (Pong enemy : mLevelConfig.getEnemies()) {
 			addInitialPong(new Vector2f(enemy.getPosition()),
-					(int) enemy.getWidth(), (int) enemy.getHeight(), enemy.getImageResource());
+					(int) enemy.getWidth(), (int) enemy.getHeight(),
+					enemy.getImageResource());
 		}
+
+		mGameEndedTime = 0;
 
 		resetLauncher();
 	}
@@ -302,10 +379,10 @@ public class BowlScreen extends Screen {
 	@Override
 	public void handleInput(MotionEvent motionEvent) {
 
-		if (mGameOver) {
-			if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
-				reset();
-		}
+//		if (mGameOver) {
+//			if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+//				reset();
+//		}
 
 		if (mMotionEnabled) {
 			float x = motionEvent.getX();
@@ -356,10 +433,10 @@ public class BowlScreen extends Screen {
 						mPongs.add(redPong);
 
 						mHasLaunched = true;
-						mBallsAreMoving = true;
-
-						mBonusItemRandomizer = new BonusItemRandomizer(1);
-						mBonusItemRandomizer.start();
+						mRoundStartedTime = System.currentTimeMillis();
+						mBonusItemSuccessInt = 1;
+						mBonusItemHasLaunched = false;
+						mSecondsSinceLaunch = 0;
 					}
 				}
 			} else if (mHasPong
@@ -372,16 +449,7 @@ public class BowlScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
-		stopMovement();
 		return mScreenManager.removeScreen(this);
-	}
-
-	private void stopMovement() {
-		if (mBonusItemRandomizer != null && mBallsAreMoving) {
-			mBonusItemRandomizer.stopThread();
-			mBonusItemRandomizer = null;
-			mBallsAreMoving = false;
-		}
 	}
 
 	@Override
@@ -445,6 +513,7 @@ public class BowlScreen extends Screen {
 		}
 
 		// UPDATE POSITIONS AND VELOCITY FOR ALL BONUSITEMS.
+
 		Iterator<BonusItem> iterator = mBonusItems.iterator();
 		while (iterator.hasNext()) {
 
@@ -456,7 +525,7 @@ public class BowlScreen extends Screen {
 
 			// Check if bonusItem is too far to the bottom
 			if (bonusItem.getVelocity().getY() > 0 /* if direction is down */
-					&& bonusItem.getPosition().getY() > getHeight()) {
+					&& bonusItem.getPosition().getY() > getHeight() - mLaunchPadHeight) {
 				mBonusItems.remove(bonusItem);
 			}
 		}
@@ -474,25 +543,44 @@ public class BowlScreen extends Screen {
 		for (int i = 0; i < mPongs.size(); i++) {
 
 			// for each pong. Check for collision with the bonusitems.
-			for (int k = 0; k < mBonusItems.size(); k++) {
-				BonusItem bonusItem = mBonusItems.get(k);
-				Pong pong = mPongs.get(i);
-				Vector2f collision = pong.position.sub(bonusItem.getPosition());
-				float length = collision.getLength();
-				if (length < pong.getRadius() + bonusItem.getRadius()) {
-					// PICK UP ITEM!
-					if (bonusItem.getItemType() == BonusItemType.GROWER && pong.getCurrentGroth() < pong.getMaxGroth()) {
-						pong.setWidth(pong.getWidth() * 1.5f);
-						pong.setRadius(pong.getRadius() * 1.5f);
-						mBonusItems.remove(bonusItem);
-						pong.setCurrentGroth(pong.getCurrentGroth()+1);
-						break;
-					} else if (bonusItem.getItemType() == BonusItemType.SHRINKER & pong.getCurrentGroth() > -pong.getMaxShrink()) {
-						pong.setWidth(pong.getWidth() * 0.666666f);
-						pong.setRadius(pong.getRadius() * 0.666666f);
-						mBonusItems.remove(bonusItem);
-						pong.setCurrentGroth(pong.getCurrentGroth()-1);
-						break;
+			Pong pong = mPongs.get(i);
+			if(pong.getType() == Type.PENGUIN) {
+				for (int k = 0; k < mBonusItems.size(); k++) {
+					BonusItem bonusItem = mBonusItems.get(k);
+					
+					Vector2f collision = pong.position.sub(bonusItem.getPosition());
+					float length = collision.getLength();
+					if (length < pong.getRadius() + bonusItem.getRadius()) {
+						// PICK UP ITEM!
+						if (bonusItem.getItemType() == BonusItemType.GROWER
+								&& pong.getCurrentGroth() < pong.getMaxGroth()) {
+							pong.setWidth(pong.getWidth() * 1.5f);
+							pong.setRadius(pong.getRadius() * 1.5f);
+							pong.setCurrentGroth(pong.getCurrentGroth() + 1);
+							
+							mTotalScore += bonusItem.getScore();
+							Vector2f position = bonusItem.getPosition(); //reusing this vector2f.					
+
+							mPoints.add(new Points(bonusItem.getScore(), position, Color.GREEN, mScale));
+							
+							mBonusItems.remove(bonusItem);
+							
+							break;
+						} else if (bonusItem.getItemType() == BonusItemType.SHRINKER
+								& pong.getCurrentGroth() > -pong.getMaxShrink()) {
+							pong.setWidth(pong.getWidth() * 0.666666f);
+							pong.setRadius(pong.getRadius() * 0.666666f);
+							pong.setCurrentGroth(pong.getCurrentGroth() - 1);
+							
+							mTotalScore += bonusItem.getScore();
+							Vector2f position = bonusItem.getPosition(); //reusing this vector2f.
+
+							mPoints.add(new Points(bonusItem.getScore(), position, Color.DKGRAY, mScale));
+							
+							mBonusItems.remove(bonusItem);
+							
+							break;
+						}
 					}
 				}
 			}
@@ -532,16 +620,19 @@ public class BowlScreen extends Screen {
 		}
 
 		// UPDATE FADING SCORES
-		List<Points> pointsCopy = new Vector<Points>(mPoints);
+		List<Points> pointsCopy = new Vector<Points>(mPoints); // TODO: kan man
+																// undvika new
+																// här?
 		for (Points points : pointsCopy) {
 			points.update(timeStep);
 			if (points.isDone())
 				mPoints.remove(points);
 		}
 
-		if (moving == 0) {
-			stopMovement();
+		if (mHasLaunched && !mGameOver) {
+			randomizeBonusItem();
 		}
+
 	}
 
 	@Override
@@ -551,7 +642,9 @@ public class BowlScreen extends Screen {
 				BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND_GAME), 0,
 				0, null);
 
-		for (BonusItem bonusItem : mBonusItems) {
+		Iterator<BonusItem> bonusItemsIterator = mBonusItems.iterator();
+		while (bonusItemsIterator.hasNext()) {
+			BonusItem bonusItem = bonusItemsIterator.next();
 			mItemRect.set((int) (bonusItem.getPosition().getX() - bonusItem
 					.getWidth() * 0.5f),
 					(int) (bonusItem.getPosition().getY() - bonusItem
@@ -590,54 +683,192 @@ public class BowlScreen extends Screen {
 		}
 
 		if (!mGameOver) {
-			String score = "Score: " + mTotalScore;
-			String top = "Top Score: " + mTopScore;
-			String livesLeft = "Left: " + mLives;
-
-			Rect scoreRect = new Rect();
-			Rect topRect = new Rect();
-			Rect livesRect = new Rect();
-
-			mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
-			mTextPaint.getTextBounds(top, 0, top.length(), topRect);
-			mTextPaint.getTextBounds(livesLeft, 0, livesLeft.length(),
-					livesRect);
-
-			canvas.drawText(score, 10 * mScale,
-					10 * mScale + scoreRect.height(), mTextPaint);
-			canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
-					+ topRect.height(), mTopPaint);
-			canvas.drawText(livesLeft, getWidth() - livesRect.width() - 10
-					* mScale, 10 * mScale + livesRect.height(), mTextPaint);
+			drawStatusBar(canvas);
 		} else {
-			String gameOver = "Game Over!";
-			String score = "Final Score: " + mTotalScore;
-			String tap = "Touch to restart";
-
-			Rect gameOverRect = new Rect();
-			Rect scoreRect = new Rect();
-			Rect tapRect = new Rect();
-
-			mTextPaint.getTextBounds(gameOver, 0, gameOver.length(),
-					gameOverRect);
-			mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
-			mTextPaint.getTextBounds(tap, 0, tap.length(), tapRect);
-
-			canvas.drawText(gameOver,
-					getWidth() / 2 - gameOverRect.width() / 2, getHeight() / 2
-							- gameOverRect.height(), mTextPaint);
-			canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
-					getHeight() / 2 + scoreRect.height(), mTextPaint);
-			canvas.drawText(
-					tap,
-					getWidth() / 2 - tapRect.width() / 2,
-					getHeight() / 2 + scoreRect.height() + tapRect.height() * 2,
-					mTextPaint);
+			drawStatusBar(canvas);
+			addGameOverDialog(canvas);
 		}
 
 		for (Points points : mPoints) {
 			points.draw(canvas);
 		}
+	}
+
+	private void drawStatusBar(Canvas canvas) {
+		String score = SCORE + mTotalScore;
+		String top = TOP_SCORE + mTopScore;
+
+		Rect scoreRect = new Rect();
+		Rect topRect = new Rect();
+
+		mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
+		mTextPaint.getTextBounds(top, 0, top.length(), topRect);
+
+		canvas.drawText(score, 10 * mScale, 10 * mScale + scoreRect.height(),
+				mStrokePaint);
+		canvas.drawText(score, 10 * mScale, 10 * mScale + scoreRect.height(),
+				mTextPaint);
+
+		canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
+				+ topRect.height() * 1.3f, mStrokePaint);
+		canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
+				+ topRect.height() * 1.3f, mTextPaint);
+
+		Bitmap lifePenguin = BitmapManager
+				.getBitmap(Constants.BITMAP_PENGUIN_LIFE);
+		for (int i = 0; i < mLives; i++) {
+
+			float bitmapWidth = GraphicsUtil
+					.dpToPixels(mLivesLeftDpWidth, mDpi);
+			float rightMargin = bitmapWidth * 0.3f;
+
+			mItemRect.set(
+					(int) (getWidth() - bitmapWidth * (i + 1) - rightMargin),
+					(int) (bitmapWidth * 0.5f), (int) (getWidth() - bitmapWidth
+							* (i) - rightMargin),
+					(int) (bitmapWidth * 0.5f + bitmapWidth));
+			canvas.drawBitmap(lifePenguin, null, mItemRect, mGenericPaint);
+		}
+	}
+
+	private void addGameOverDialog(Canvas canvas) {
+		
+		if (mGameEndedTime == 0) {
+
+			mGameEndedTime = System.currentTimeMillis();
+			
+			EventListener listener = new EventListener() {
+				@Override
+				public boolean handleButtonClicked() {
+					mScreenManager.removeTopScreen();
+					reset();
+					return true;
+				}
+			};
+			
+			boolean fail = mTotalScore < mLevelConfig.getOneStarScore();
+			
+			int numButtons = 3;
+			CanvasDialogString[] dialogRows = new CanvasDialogString[2];
+			
+			if (fail) {
+				numButtons = 2;
+				dialogRows[0] = new CanvasDialogRegularString("LEVEL FAILED!", TextSize.MEDIUM);
+			} else {
+				dialogRows[0] = new CanvasDialogRegularString("LEVEL COMPLETED!", TextSize.MEDIUM);
+			}
+			dialogRows[1] = new CanvasDialogCounterString(mTotalScore, TextSize.MEDIUM);
+			
+			ImageComponent[] buttons = new ImageComponent[numButtons];
+
+			Bitmap bitmapNext = ImageLoader.loadFromResource(mContext, R.drawable.button_next);
+			Bitmap bitmapReplay = ImageLoader.loadFromResource(mContext, R.drawable.button_replay);
+			Bitmap bitmapMenu = ImageLoader.loadFromResource(mContext, R.drawable.button_menu);
+			
+			if (!fail) {
+				ImageComponent nextLevelButton = new ImageComponent(bitmapNext, true);
+				nextLevelButton.setWidth((int)(70*mScale));
+				nextLevelButton.setHeight((int)(70*mScale));
+				nextLevelButton.setEventListener(listener);
+				nextLevelButton.resizeBitmap();
+				buttons[2] = nextLevelButton;
+			}
+			
+			ImageComponent replayLevelButton = new ImageComponent(bitmapReplay, true);
+			replayLevelButton.setWidth((int)(70*mScale));
+			replayLevelButton.setHeight((int)(70*mScale));
+			replayLevelButton.setEventListener(listener);
+			replayLevelButton.resizeBitmap();
+			buttons[1] = replayLevelButton;
+			
+			ImageComponent menuButton = new ImageComponent(bitmapMenu, true);
+			menuButton.setWidth((int)(70*mScale));
+			menuButton.setHeight((int)(70*mScale));
+			menuButton.setEventListener(listener);
+			menuButton.resizeBitmap();
+			buttons[0] = menuButton;
+
+			CanvasDialog gameOverDialog = new CanvasDialog(getWidth(),
+					getHeight(),
+					mScale,
+					mGameEndedTime,
+					dialogRows,
+					buttons,
+					false);
+
+			mScreenManager.addScreen(gameOverDialog);
+		}
+
+//		// 1. ANIMATE BACKGROUND
+//		if (mGameEndedTime == 0) {
+//			mGameEndedTime = System.currentTimeMillis();
+//		}
+//
+//		Paint paint = new Paint();
+//		int alphaStepsPerSecond = 400;
+//		long timeSinceEnd = System.currentTimeMillis() - mGameEndedTime;
+//		int steps = (int) ((timeSinceEnd / 1000.0f) * alphaStepsPerSecond);
+//
+//		if (steps > gameOverFinalAlphaBackground) {
+//			steps = gameOverFinalAlphaBackground;
+//		}
+//
+//		paint.setColor(steps << 24);
+//		canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+//
+//		// 2. DRAW "DIALOG"
+//		RectF dialogRect = new RectF();
+//		int padding = (int) (getWidth() * 0.2f);
+//		int dialogWidth = getWidth() - padding;
+//		int dialogHeight = (int)(150*mScale); // DEPENDS ON CONTENT!!! TODO: meassure content.
+//		int dialogStartY = (getHeight() - dialogHeight) / 2;
+//		paint.setColor(0xFFFFFFAA);
+//		dialogRect.set(padding * 0.5f,
+//				dialogStartY,
+//				padding * 0.5f + dialogWidth,
+//				dialogStartY + dialogHeight);
+//		
+//		int colorBefore = mStrokePaint.getColor();
+//		float strokeWidthBefore = mStrokePaint.getStrokeWidth();
+//		
+//		mStrokePaint.setStrokeWidth(10*mScale);
+//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
+//		mStrokePaint.setStrokeWidth(8*mScale);
+//		mStrokePaint.setColor(0xFFf49000);
+//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
+//		mStrokePaint.setStrokeWidth(3*mScale);
+//		mStrokePaint.setColor(0xFF444411);
+//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
+//		canvas.drawRoundRect(dialogRect, 10, 10, paint);
+//		
+//		//Restore paint.
+//		mStrokePaint.setColor(colorBefore);
+//		mStrokePaint.setStrokeWidth(strokeWidthBefore);
+//		
+////		canvas.drawRect(padding * 0.5f, dialogStartY, padding * 0.5f
+////				+ dialogWidth, dialogStartY + dialogHeight, mStrokePaint);
+////		canvas.drawRect(padding * 0.5f, dialogStartY, padding * 0.5f
+////				+ dialogWidth, dialogStartY + dialogHeight, paint);
+//
+//		
+//		String score = "Final Score: " + mTotalScore;
+//		
+//		Rect gameOverRect = new Rect();
+//		Rect scoreRect = new Rect();
+//		Rect tapRect = new Rect();
+//
+////		mTextPaint.getTextBounds(gameOver, 0, gameOver.length(), gameOverRect);
+//		mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
+////		mTextPaint.getTextBounds(tap, 0, tap.length(), tapRect);
+//
+////		canvas.drawText(gameOver, getWidth() / 2 - gameOverRect.width() / 2,
+////				getHeight() / 2 - gameOverRect.height(), mStrokePaint);
+//		canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
+//				getHeight() / 2 + scoreRect.height(), mStrokePaint);
+//		canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
+//				getHeight() / 2 + scoreRect.height(), mTextPaint);
+////		canvas.drawText(tap, getWidth() / 2 - tapRect.width() / 2, getHeight()
+////				/ 2 + scoreRect.height() + tapRect.height() * 2, mStrokePaint);
 	}
 
 	private void pongCollision(Pong first, Pong second) {
@@ -708,9 +939,11 @@ public class BowlScreen extends Screen {
 
 	/**
 	 * Set up startpositions for the enemies.
-	 * @param i 
+	 * 
+	 * @param i
 	 */
-	private void addInitialPong(Vector2f position, int width, int height, int imageResource) {
+	private void addInitialPong(Vector2f position, int width, int height,
+			int imageResource) {
 		Pong pong = new Cow();
 		pong.position = position;
 		pong.velocity = new Vector2f();
@@ -731,47 +964,21 @@ public class BowlScreen extends Screen {
 		mSavedTopScore = mTopScore;
 	}
 
-	private class BonusItemRandomizer extends Thread {
+	private void randomizeBonusItem() {
 
-		private boolean mRun = true;
-		private int mItemsToRandomize = 1;
-		private int mSuccesInt = 1;
+		long secondsSinceLaunch = (System.currentTimeMillis() - mRoundStartedTime) / 1000;
 
-		public BonusItemRandomizer(int itemsToRandomize) {
-			mItemsToRandomize = itemsToRandomize;
-		}
-
-		public void run() {
-
-			Random rand = new Random(System.currentTimeMillis());
-
-			while (mRun) {
-				try {
-					Thread.sleep(1000);
-
-					int randomInt = rand.nextInt(10);
-
-					if (randomInt <= mSuccesInt) {
-						if (mItemsToRandomize == 1) {
-							mRun = false;
-						}
-						mItemsToRandomize--;
-						mBonusItems.add(getRandomBonusItem());
-					} else {
-						mSuccesInt++;
-					}
-
-				} catch (InterruptedException e) {
-
-				}
+		if (mSecondsSinceLaunch == secondsSinceLaunch || mBonusItemHasLaunched) {
+			return;
+		} else {
+			mSecondsSinceLaunch = secondsSinceLaunch;
+			int randomInt = mBonusItemRandom.nextInt(5);
+			if (randomInt <= mBonusItemSuccessInt) {
+				mBonusItems.add(getRandomBonusItem());
+				mBonusItemHasLaunched = true;
+			} else {
+				mBonusItemSuccessInt++;
 			}
 		}
-
-		public void stopThread() {
-			mRun = false;
-			this.interrupt();
-		}
-
 	}
-
 }

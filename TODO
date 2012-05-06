@@ -1,15 +1,23 @@
 
-- dialog som visar score / star innan spel
+
+dialog för när banan är slut. <-- FORTSÄTT HÄR.
+	- animerad poäng ska räknas upp.
+	- texterna ska skrivas ut på rätt ställen.
+	- stjärnor ska visas. (Hur görs det i en generisk dialog??!?!?)
+
+infrastruktur för att spara rekord per bana och vilka banor som är avklarade.
+
+när man växer studsar man inte automatiskt mot väggen om man står still.
 
 * GAMESCREEN:
 	- någon form av redo/exit knappar.
-	- designa 5 levlar åtminstonde till en prototyp.
 	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
 	- Bakgrundsbild snyggare
 	
 	- fixa så att bilderna är snyggare (ko och pingvin) vid shrink och grow är de pixliga!
 	
-	- Fasta object.
+	- Fasta object. Och fasta object som snurrar runt en punkt?
+	
 	- Power ups (gör större, gör mindre. Gör så delar sig, spräng, extra liv)
 	
 	- Skapa klass CollidableObject eller nåt. som har boundingbox som används vid kollisionsberäkningar.
@@ -18,10 +26,20 @@
 	
 	- när någon tar en bonusitem ska (allt stanna upp och) det ska animeras.
 	
+	- fixa så man inte kan dra pingvinen så långt utanför skärmen.
+	
+	- pausknapp eller menyknapp i spelet. Man vill kunna starta om på enkelt sätt.
+	
 * LEVELDESIGN:
 	- ...
 
 * lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
+
+LJUD
+	- precis innan det kommer en bonusitem
+	- varje gång det krockas.
+	- som feedback när man klickar på saker?
+	- applåder när man klarar.
 
 
 LOW PRIO:

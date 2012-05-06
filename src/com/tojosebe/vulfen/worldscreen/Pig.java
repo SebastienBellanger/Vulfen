@@ -76,15 +76,18 @@ public class Pig {
 	
 			mPosition.addT(positionDelta);
 			
-			mVelocity.setY(mVelocity.getY()+(int)((1.0/mDpi)*350000*timeStep));
+			int scale = mScreenHeight / 2;
+			mVelocity.setY(mVelocity.getY()+(int)(3*timeStep*scale));
 	
 			Vector2fPool.getInstance().release(positionDelta);
 			
 		} else {
 			int random = getRandom(1,upperRandomLimit);
+			
+			int scale = mScreenHeight / 2;
 			if (random == 1) {
 				//Jump!
-				mVelocity.setY(-500);
+				mVelocity.setY(-scale);
 				mMoving = true;
 			}
 		}

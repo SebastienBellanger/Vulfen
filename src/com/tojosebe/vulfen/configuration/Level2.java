@@ -14,7 +14,7 @@ public class Level2 extends Level {
 	private int mHeight;
 
 	public Level2(int levelNumber, int width, int height) {
-		super(levelNumber);
+		super(levelNumber, 50000, 35000, 28000);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();

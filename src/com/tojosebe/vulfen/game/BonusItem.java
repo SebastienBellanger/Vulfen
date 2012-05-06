@@ -16,6 +16,8 @@ public class BonusItem {
 	private Vector2f mVelocity = new Vector2f(0, 100.f);
 
 	private Bitmap mBitmap;
+	
+	private int mScore;
 
 	private float mWidth;
 	private float mHeight;
@@ -123,6 +125,20 @@ public class BonusItem {
 	 */
 	public void setVelocity(Vector2f velocity) {
 		this.mVelocity = velocity;
+	}
+
+	/**
+	 * @return the mScore
+	 */
+	public int getScore() {
+		return mScore;
+	}
+
+	/**
+	 * @param score the score to set
+	 */
+	public void setScore(int score) {
+		this.mScore = score;
 	}
 
 }

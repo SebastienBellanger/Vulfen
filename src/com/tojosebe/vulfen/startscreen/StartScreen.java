@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -206,15 +208,22 @@ public class StartScreen extends Screen {
 
 		return true;
 	}
+	
 
-	public Dialog onCreateDialog(int id) {
+	@Override
+	protected Dialog onCreateDialog(int id, Dialog inDialog, Bundle args) {
 
 		switch (id) {
 		case VulfenActivity.DIALOG_REALLY_EXIT:
 
-			// CREATE DIALOG
-			final VulfenDialog dialog = new VulfenDialog(mActivity,
-					R.style.CustomDialogTheme);
+			final VulfenDialog dialog;
+			
+			if (inDialog == null) {
+				dialog = new VulfenDialog(mActivity,
+						R.style.CustomDialogTheme);
+			} else {
+				dialog = (VulfenDialog)inDialog;
+			}
 
 			// INIT DIALOG BUTTONS
 			Button noButton = (Button) dialog
@@ -233,11 +242,14 @@ public class StartScreen extends Screen {
 			// SET DIALOG CONTENT
 			((TextView) dialog.findViewById(R.id.dialog_content))
 					.setText(R.string.really_quit);
+			((TextView) dialog.findViewById(R.id.dialog_content)).setVisibility(View.VISIBLE);
 
-			// INIT DIALOG SIZES
-			int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
-			int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
-			dialog.initDialog(mActivity, R.drawable.button, h, w);
+			if (inDialog == null) {
+				// INIT DIALOG SIZES
+				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
+				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
+				dialog.initDialog(mActivity, R.drawable.button, h, w);
+			}
 
 			noButton.setOnClickListener(new OnClickListener() {
 				@Override

@@ -13,7 +13,8 @@ public class VulfenActivity extends GameActivity {
 	
 	public static final int DIALOG_REALLY_EXIT = 1;
 	public static final int DIALOG_SCORE_TO_BEAT = 2;
-	
+	public static final int DIALOG_GAME_ENDED = 3;
+		
 	private StartScreen startScreen;
 	
 	
@@ -42,7 +43,10 @@ public class VulfenActivity extends GameActivity {
 	}
 	
 	protected Dialog onCreateDialog(int id) {
-		
-		return getScreenManager().onCreateDialog(id);
+		return getScreenManager().onCreateDialog(id, null, null);
+	}
+	
+	protected void onPrepareDialog(int id, Dialog dialog, Bundle args) {
+		getScreenManager().onCreateDialog(id, dialog, args);
 	}
 }
