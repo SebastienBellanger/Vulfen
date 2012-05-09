@@ -275,18 +275,18 @@ public class LevelScreen extends Screen {
 		}
 	}
 
-	private void addLevel(int levelIndex, Bitmap levelBitmap, boolean locked) {
+	private void addLevel(final int levelIndex, Bitmap levelBitmap, boolean locked) {
 		LevelButton levelButton = null;
-		
-		final int levelNumber = levelIndex;
 
 		EventListener listener = new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10,
 						mDpi)) {
-					LevelManager levelManager = LevelManager.getInstance(getWidth(), getHeight());
-					Level level = levelManager.getLevel(mWorldNumber, levelNumber);
+					float scale = getWidth() / 480.0f;
+					int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
+					LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
+					Level level = levelManager.getLevel(mWorldNumber, levelIndex);
 					mScreenManager.addScreen(new BowlScreen(level, mDpi, mActivity));
 					return true;
 				}

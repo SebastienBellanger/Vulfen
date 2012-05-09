@@ -1,13 +1,17 @@
 
+next level knapp.
 
-dialog för när banan är slut. <-- FORTSÄTT HÄR.
-	- animerad poäng ska räknas upp.
-	- texterna ska skrivas ut på rätt ställen.
-	- stjärnor ska visas. (Hur görs det i en generisk dialog??!?!?)
+top score ska sparas per bana
+stars ska sparas per bana
+hur långt man kommit i levlar ska sparas. (senare)
 
 infrastruktur för att spara rekord per bana och vilka banor som är avklarade.
 
-när man växer studsar man inte automatiskt mot väggen om man står still.
+visa star n points dialog.
+
+när man växer studsar man inte automatiskt mot väggen om man står still. Samma om man växer längst ned. 
+
+Om man släpper och aldrig lämnar "boet" är man kvar i boet.
 
 * GAMESCREEN:
 	- någon form av redo/exit knappar.

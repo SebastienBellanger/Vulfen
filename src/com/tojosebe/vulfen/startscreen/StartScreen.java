@@ -1,19 +1,15 @@
 package com.tojosebe.vulfen.startscreen;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.VulfenActivity;
 import com.tojosebe.vulfen.component.animation.AnimateableImageComponent;
+import com.tojosebe.vulfen.dialog.CanvasDialog;
+import com.tojosebe.vulfen.dialog.CanvasDialogRegularString;
+import com.tojosebe.vulfen.dialog.CanvasDialogString;
+import com.tojosebe.vulfen.dialog.CanvasDialogString.TextSize;
 import com.tojosebe.vulfen.util.Constants;
 import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
@@ -23,7 +19,6 @@ import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
-import com.vulfox.util.GraphicsUtil;
 
 public class StartScreen extends Screen {
 
@@ -34,20 +29,31 @@ public class StartScreen extends Screen {
 	private Cloud mCloud2;
 	private Cow[] mCows;
 
+	private boolean showExitDialog = false;
+	private long mDialogShowStart = 0;
+
 	private Activity mActivity;
 
 	public StartScreen(int dpi, Activity activity) {
 		this.mDpi = dpi;
 		this.mActivity = activity;
 	}
+	
+	@Override
+	protected void onTop() {
+		mDialogShowStart = 0;
+		showExitDialog = false;
+	}
 
 	@Override
 	protected void initialize() {
 
 		mCloud1 = new Cloud(R.drawable.cloud1, mDpi,
-				mContext.getApplicationContext(), 200, 70, getWidth(), Constants.BITMAP_CLOUD_1);
+				mContext.getApplicationContext(), 200, 70, getWidth(),
+				Constants.BITMAP_CLOUD_1);
 		mCloud2 = new Cloud(R.drawable.cloud2, mDpi,
-				mContext.getApplicationContext(), 60, 130, getWidth(), Constants.BITMAP_CLOUD_2);
+				mContext.getApplicationContext(), 60, 130, getWidth(),
+				Constants.BITMAP_CLOUD_2);
 		mCows = new Cow[5];
 
 		addScreenComponent(createBackground());
@@ -63,23 +69,28 @@ public class StartScreen extends Screen {
 	private void addCows() {
 
 		mCows[0] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 23, 0, 0, getWidth(), getHeight());
+				mContext.getApplicationContext(), 23, 0, 0, getWidth(),
+				getHeight());
 		addScreenComponent(mCows[0].getImageComponent());
 
 		mCows[1] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, -30, 14, getWidth(), getHeight());
+				mContext.getApplicationContext(), 25, -30, 14, getWidth(),
+				getHeight());
 		addScreenComponent(mCows[1].getImageComponent());
 
 		mCows[2] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, 35, 10, getWidth(), getHeight());
+				mContext.getApplicationContext(), 25, 35, 10, getWidth(),
+				getHeight());
 		addScreenComponent(mCows[2].getImageComponent());
 
 		mCows[3] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 20, -65, -10, getWidth(), getHeight());
+				mContext.getApplicationContext(), 20, -65, -10, getWidth(),
+				getHeight());
 		addScreenComponent(mCows[3].getImageComponent());
 
 		mCows[4] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 29, -60, 40, getWidth(), getHeight());
+				mContext.getApplicationContext(), 29, -60, 40, getWidth(),
+				getHeight());
 		addScreenComponent(mCows[4].getImageComponent());
 
 	}
@@ -105,10 +116,11 @@ public class StartScreen extends Screen {
 		// Resize the loaded bitmaps with nice algorithms so that they looks
 		// nice.
 		imageComp.resizeBitmaps();
-		
+
 		Bitmap[] rezisedBitmaps = imageComp.getBitmaps();
-		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN,rezisedBitmaps[0]);
-		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN_BLINKING, rezisedBitmaps[1]);
+		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN, rezisedBitmaps[0]);
+		BitmapManager.addBitmap(Constants.BITMAP_PENGUIN_BLINKING,
+				rezisedBitmaps[1]);
 
 		// blink sequence
 		imageComp.addScene(eyesOpen, 1000);
@@ -154,19 +166,24 @@ public class StartScreen extends Screen {
 		for (Cow cow : mCows) {
 			cow.draw(canvas);
 		}
+		
+		if (showExitDialog && mDialogShowStart == 0) {
+			mDialogShowStart = System.currentTimeMillis();
+			addExitDialog(canvas);
+		}
 	}
 
 	private ScreenComponent createPlayButton() {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
-				mContext.getApplicationContext(), R.drawable.button,
-				"Play", 0xFFFFFFFF, 0x44000000, 30,
-				150, 50, mDpi);
+				mContext.getApplicationContext(), R.drawable.button, "Play",
+				0xFFFFFFFF, 0x44000000, 30, 150, 50, mDpi);
 
 		button.setEventListener(new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
-				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1, mCloud2, mActivity));
+				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1,
+						mCloud2, mActivity));
 				return true;
 			}
 		});
@@ -203,70 +220,63 @@ public class StartScreen extends Screen {
 
 	@Override
 	protected boolean handleBackPressed() {
-
-		mActivity.showDialog(VulfenActivity.DIALOG_REALLY_EXIT);
-
+		showExitDialog = true;
 		return true;
 	}
-	
 
-	@Override
-	protected Dialog onCreateDialog(int id, Dialog inDialog, Bundle args) {
+	private void addExitDialog(Canvas canvas) {
 
-		switch (id) {
-		case VulfenActivity.DIALOG_REALLY_EXIT:
-
-			final VulfenDialog dialog;
-			
-			if (inDialog == null) {
-				dialog = new VulfenDialog(mActivity,
-						R.style.CustomDialogTheme);
-			} else {
-				dialog = (VulfenDialog)inDialog;
+		EventListener exitListener = new EventListener() {
+			@Override
+			public boolean handleButtonClicked() {
+				mActivity.finish();
+				return true;
 			}
-
-			// INIT DIALOG BUTTONS
-			Button noButton = (Button) dialog
-					.findViewById(R.id.button_negative);
-			Button yesButton = (Button) dialog
-					.findViewById(R.id.button_positive);
-			noButton.setText(R.string.no);
-			yesButton.setText(R.string.yes);
-			dialog.setPositiveButton(yesButton);
-			dialog.setNegativeButton(noButton);
-
-			// SET DIALOG HEADER
-			((TextView) dialog.findViewById(R.id.dialog_header_text))
-					.setText(R.string.quit);
-
-			// SET DIALOG CONTENT
-			((TextView) dialog.findViewById(R.id.dialog_content))
-					.setText(R.string.really_quit);
-			((TextView) dialog.findViewById(R.id.dialog_content)).setVisibility(View.VISIBLE);
-
-			if (inDialog == null) {
-				// INIT DIALOG SIZES
-				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
-				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
-				dialog.initDialog(mActivity, R.drawable.button, h, w);
+		};
+		EventListener cancelListener = new EventListener() {
+			@Override
+			public boolean handleButtonClicked() {
+				mScreenManager.removeTopScreen();
+				showExitDialog = false;
+				mDialogShowStart = 0;
+				return true;
 			}
+		};
 
-			noButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					dialog.dismiss();
-				}
-			});
-			yesButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mActivity.finish();
-				}
-			});
+		int numButtons = 2;
+		CanvasDialogString[] dialogRows = new CanvasDialogString[1];
 
-			return dialog;
-		}
-		return null;
+		dialogRows[0] = new CanvasDialogRegularString("EXIT GAME?",
+				TextSize.MEDIUM, 0xFFffffff, new int[]{20,0,20,0});
+
+		ImageComponent[] buttons = new ImageComponent[numButtons];
+
+		Bitmap bitmapYes = ImageLoader.loadFromResource(mContext,
+				R.drawable.button_yes);
+		Bitmap bitmapNo = ImageLoader.loadFromResource(mContext,
+				R.drawable.button_no);
+
+		float mScale = 1.0f;
+
+		ImageComponent okButton = new ImageComponent(bitmapYes, true);
+		okButton.setWidth((int) (70 * mScale));
+		okButton.setHeight((int) (70 * mScale));
+		okButton.setEventListener(exitListener);
+		okButton.resizeBitmap();
+		buttons[0] = okButton;
+		ImageComponent cancelButton = new ImageComponent(bitmapNo,
+				true);
+		cancelButton.setWidth((int) (70 * mScale));
+		cancelButton.setHeight((int) (70 * mScale));
+		cancelButton.setEventListener(cancelListener);
+		cancelButton.resizeBitmap();
+		buttons[1] = cancelButton;
+
+		CanvasDialog exitDialog = new CanvasDialog(getWidth(), getHeight(),
+				mScale, mDialogShowStart, dialogRows, buttons, null,
+				true);
+
+		mScreenManager.addScreen(exitDialog);
 	}
 
 }

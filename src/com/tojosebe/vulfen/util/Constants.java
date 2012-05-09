@@ -22,5 +22,6 @@ public class Constants {
 	public static final int BITMAP_COW_2 = 17;
 	public static final int BITMAP_COW_MINUS_1 = 18;
 	public static final int BITMAP_PENGUIN_LIFE = 19;
+	public static final int BITMAP_STAR_2 = 20;
 	
 }

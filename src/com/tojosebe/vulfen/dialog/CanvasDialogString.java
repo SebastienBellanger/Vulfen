@@ -11,4 +11,8 @@ public interface CanvasDialogString {
 	String getContent();
 	
 	TextSize getTextSize();
+	
+	int getColor();
+	
+	int[] getPadding();
 }

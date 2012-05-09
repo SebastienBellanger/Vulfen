@@ -12,19 +12,23 @@ public class Level1 extends Level {
 
 	private int mWidth;
 	private int mHeight;
+	private int mLives = 2;
+	private float mPenguinSize = 70;
+	private float mCowSize = 85;
 
-	public Level1(int levelNumber, int width, int height) {
-		super(levelNumber, 60000, 40000, 20000);
+	public Level1(int levelNumber, int width, int height, float scale, int world) {
+		super(levelNumber, 4000, 2500, 1000, scale, world);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();
 		createPengiunGameConfiguration();
 		createPengiunGameConfiguration();
+		setBonusItemSequence(null); // No bonus items for first level
 	}
 
 	private void createLevelConfig() {
 		BowlConfiguration b = new BowlConfiguration();
-		b.setLives(1);
+		b.setLives(mLives);
 		setBowlConfiguration(b);
 		setEnemies(createEnemiesGameConfiguration());
 		setPenguin(createPengiunGameConfiguration());
@@ -33,20 +37,21 @@ public class Level1 extends Level {
 	private Pong createPengiunGameConfiguration() {
 		Pong penguin = new Pong();
 		penguin.setImageResource(R.drawable.tojo);
-
-		penguin.setHeight(70);
-		penguin.setWidth(70);
-		penguin.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.9f));
 		
+		penguin.setHeight(mPenguinSize);
+		penguin.setWidth(mPenguinSize);
+		penguin.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.9f));
+
 		return penguin;
 	}
 
 	private List<Pong> createEnemiesGameConfiguration() {
 		List<Pong> enemies = new ArrayList<Pong>();
 		Pong enemy1 = new Pong();
+
 		enemy1.setImageResource(R.drawable.sebe);
-		enemy1.setHeight(85);
-		enemy1.setWidth(85);
+		enemy1.setHeight(mCowSize);
+		enemy1.setWidth(mCowSize);
 		enemy1.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.5f));
 		enemies.add(enemy1);
 

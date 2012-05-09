@@ -6,7 +6,6 @@ import java.util.Random;
 import java.util.Vector;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -17,20 +16,13 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.VulfenActivity;
 import com.tojosebe.vulfen.configuration.Level;
+import com.tojosebe.vulfen.configuration.LevelManager;
 import com.tojosebe.vulfen.dialog.CanvasDialog;
 import com.tojosebe.vulfen.dialog.CanvasDialogCounterString;
 import com.tojosebe.vulfen.dialog.CanvasDialogRegularString;
@@ -38,7 +30,6 @@ import com.tojosebe.vulfen.dialog.CanvasDialogString;
 import com.tojosebe.vulfen.dialog.CanvasDialogString.TextSize;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.tojosebe.vulfen.game.Pong.Type;
-import com.tojosebe.vulfen.startscreen.VulfenDialog;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
@@ -86,6 +77,7 @@ public class BowlScreen extends Screen {
 	private boolean mBonusItemHasLaunched = false;
 	private Random mBonusItemRandom = new Random(System.currentTimeMillis());
 	private long mSecondsSinceLaunch = 0;
+	private int mBounusItemCounter = 0;
 
 	private int mTotalScore = 0;
 	private int mRoundHits = 0;
@@ -111,27 +103,25 @@ public class BowlScreen extends Screen {
 
 	private float mGameAreaHeight;
 
-	private float mGameAreaAspectRatio = 1.333f;
+	public static final float GAME_AREA_ASPECT_RATIO = 1.333f;
 	private float mLaunchPadHeight;
 
 	private Level mLevelConfig;
+	
+	private CanvasDialogCounterString mCounterStringGameOver; 
 
 	Paint mGenericPaint = new Paint();
 	RectF mLaunchPadRect = new RectF();
 	Rect mItemRect = new Rect();
 
-	private Activity mActivity;
-
 	public BowlScreen(Level levelConfiguration, int dpi, Activity activity) {
 		mConfig = levelConfiguration.getBowlConfiguration();
 		mLevelConfig = levelConfiguration;
 		mDpi = dpi;
-		mActivity = activity;
 	}
 
 	@Override
 	protected void onTop() {
-//		mActivity.showDialog(VulfenActivity.DIALOG_SCORE_TO_BEAT);
 	}
 
 	private BonusItem getRandomBonusItem() {
@@ -141,13 +131,13 @@ public class BowlScreen extends Screen {
 
 		item.getVelocity().setY(getWidth() / 5);
 
-		int randomNumber = mBonusItemRandom.nextInt(2);
-
-		if (randomNumber == 0) {
+		int sequenceNumber = mBounusItemCounter % mLevelConfig.getBonusItemSequence().length;
+		BonusItemType type = mLevelConfig.getBonusItemSequence()[sequenceNumber];
+		if (type == BonusItemType.GROWER) {
 			bitmap = ImageLoader.loadFromResource(mContext, R.drawable.fish);
 			item.setItemType(BonusItemType.GROWER);
 			item.setScore(500);
-		} else if (randomNumber == 1) {
+		} else if (type == BonusItemType.SHRINKER) {
 			bitmap = ImageLoader.loadFromResource(mContext,
 					R.drawable.fish_dead);
 			item.setItemType(BonusItemType.SHRINKER);
@@ -187,7 +177,7 @@ public class BowlScreen extends Screen {
 		mLevelConfig.getPenguin().setHeight(penguinPongLength);
 		mLevelConfig.getPenguin().setRadius(penguinPongLength * 0.5f);
 
-		mGameAreaHeight = (int) (getWidth() * mGameAreaAspectRatio);
+		mGameAreaHeight = (int) (getWidth() * GAME_AREA_ASPECT_RATIO);
 
 		mLaunchPadHeight = getHeight() - mGameAreaHeight;
 		if (mLaunchPadHeight < penguinPongLength * 1.2f) {
@@ -240,67 +230,67 @@ public class BowlScreen extends Screen {
 		createLifeLeftImage();
 	}
 
-	@Override
-	protected Dialog onCreateDialog(int id, Dialog dialogIn, Bundle args) {
-
-		switch (id) {
-		case VulfenActivity.DIALOG_SCORE_TO_BEAT:
-
-			final VulfenDialog newDialog;
-
-			if (dialogIn == null) {
-				// CREATE DIALOG
-				newDialog = new VulfenDialog(mActivity,
-						R.style.CustomDialogTheme);
-			} else {
-				newDialog = (VulfenDialog) dialogIn;
-			}
-
-			// INIT DIALOG BUTTONS
-			Button yesButton = (Button) newDialog
-					.findViewById(R.id.button_positive);
-			yesButton.setText(android.R.string.ok);
-			newDialog.setPositiveButton(yesButton);
-
-			// SET DIALOG HEADER
-			((TextView) newDialog.findViewById(R.id.dialog_header_text))
-					.setText(mActivity.getString(R.string.level) + " "
-							+ mLevelConfig.getLevelNumber());
-
-			if (dialogIn == null) {
-				// SET DIALOG CONTENT
-				LayoutInflater inflaterOne = (LayoutInflater) mActivity
-						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-				ViewGroup contentView = (ViewGroup) newDialog
-						.findViewById(R.id.content);
-				View dialogContent = inflaterOne.inflate(
-						R.layout.scores_n_stars, contentView);
-
-				((TextView) dialogContent.findViewById(R.id.text_three_stars))
-						.setText("" + mLevelConfig.getThreeStarsScore());
-				((TextView) dialogContent.findViewById(R.id.text_two_stars))
-						.setText("" + mLevelConfig.getTwoStarsScore());
-				((TextView) dialogContent.findViewById(R.id.text_one_star))
-						.setText("" + mLevelConfig.getOneStarScore());
-
-				// INIT DIALOG SIZES
-				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
-				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
-				newDialog.initDialog(mActivity, R.drawable.button, h, w);
-			}
-
-			yesButton.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					newDialog.dismiss();
-				}
-			});
-
-			return newDialog;
-		}
-		return null;
-	}
+//	@Override
+//	protected Dialog onCreateDialog(int id, Dialog dialogIn, Bundle args) {
+//
+//		switch (id) {
+//		case VulfenActivity.DIALOG_SCORE_TO_BEAT:
+//
+//			final VulfenDialog newDialog;
+//
+//			if (dialogIn == null) {
+//				// CREATE DIALOG
+//				newDialog = new VulfenDialog(mActivity,
+//						R.style.CustomDialogTheme);
+//			} else {
+//				newDialog = (VulfenDialog) dialogIn;
+//			}
+//
+//			// INIT DIALOG BUTTONS
+//			Button yesButton = (Button) newDialog
+//					.findViewById(R.id.button_positive);
+//			yesButton.setText(android.R.string.ok);
+//			newDialog.setPositiveButton(yesButton);
+//
+//			// SET DIALOG HEADER
+//			((TextView) newDialog.findViewById(R.id.dialog_header_text))
+//					.setText(mActivity.getString(R.string.level) + " "
+//							+ mLevelConfig.getLevelNumber());
+//
+//			if (dialogIn == null) {
+//				// SET DIALOG CONTENT
+//				LayoutInflater inflaterOne = (LayoutInflater) mActivity
+//						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//
+//				ViewGroup contentView = (ViewGroup) newDialog
+//						.findViewById(R.id.content);
+//				View dialogContent = inflaterOne.inflate(
+//						R.layout.scores_n_stars, contentView);
+//
+//				((TextView) dialogContent.findViewById(R.id.text_three_stars))
+//						.setText("" + mLevelConfig.getThreeStarsScore());
+//				((TextView) dialogContent.findViewById(R.id.text_two_stars))
+//						.setText("" + mLevelConfig.getTwoStarsScore());
+//				((TextView) dialogContent.findViewById(R.id.text_one_star))
+//						.setText("" + mLevelConfig.getOneStarScore());
+//
+//				// INIT DIALOG SIZES
+//				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
+//				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
+//				newDialog.initDialog(mActivity, R.drawable.button, h, w);
+//			}
+//
+//			yesButton.setOnClickListener(new OnClickListener() {
+//				@Override
+//				public void onClick(View v) {
+//					newDialog.dismiss();
+//				}
+//			});
+//
+//			return newDialog;
+//		}
+//		return null;
+//	}
 
 	private Bitmap getPongBitmap(Pong pong) {
 		int resource = pong.getImageResource();
@@ -361,6 +351,7 @@ public class BowlScreen extends Screen {
 		mGameOver = false;
 
 		mTotalScore = 0;
+		mBounusItemCounter = 0;
 
 		mPoints.clear();
 		mPongs.clear();
@@ -559,7 +550,10 @@ public class BowlScreen extends Screen {
 							pong.setCurrentGroth(pong.getCurrentGroth() + 1);
 							
 							mTotalScore += bonusItem.getScore();
-							Vector2f position = bonusItem.getPosition(); //reusing this vector2f.					
+							
+							Vector2f position = bonusItem.getPosition().sub(pong.position);
+							position.mulT(0.5f);
+							position.addT(pong.position);
 
 							mPoints.add(new Points(bonusItem.getScore(), position, Color.GREEN, mScale));
 							
@@ -573,7 +567,10 @@ public class BowlScreen extends Screen {
 							pong.setCurrentGroth(pong.getCurrentGroth() - 1);
 							
 							mTotalScore += bonusItem.getScore();
-							Vector2f position = bonusItem.getPosition(); //reusing this vector2f.
+							
+							Vector2f position = bonusItem.getPosition().sub(pong.position);
+							position.mulT(0.5f);
+							position.addT(pong.position);
 
 							mPoints.add(new Points(bonusItem.getScore(), position, Color.DKGRAY, mScale));
 							
@@ -666,9 +663,9 @@ public class BowlScreen extends Screen {
 			mDrawRect.set(x, y, x + pong.getWidth(), y + pong.getWidth());
 
 			if (pong.getType() == Type.PENGUIN) {
-				canvas.drawBitmap(mRed, null, mDrawRect, null);
+				canvas.drawBitmap(mRed, null, mDrawRect, mGenericPaint);
 			} else if (pong.getType() == Type.COW) {
-				canvas.drawBitmap(mYellow, null, mDrawRect, null);
+				canvas.drawBitmap(mYellow, null, mDrawRect, mGenericPaint);
 			}
 		}
 
@@ -679,13 +676,12 @@ public class BowlScreen extends Screen {
 			mDrawRect.set(x, y, x + mLevelConfig.getPenguin().getWidth(), y
 					+ mLevelConfig.getPenguin().getWidth());
 
-			canvas.drawBitmap(mRed, null, mDrawRect, null);
+			canvas.drawBitmap(mRed, null, mDrawRect, mGenericPaint);
 		}
 
 		if (!mGameOver) {
 			drawStatusBar(canvas);
 		} else {
-			drawStatusBar(canvas);
 			addGameOverDialog(canvas);
 		}
 
@@ -730,6 +726,16 @@ public class BowlScreen extends Screen {
 			canvas.drawBitmap(lifePenguin, null, mItemRect, mGenericPaint);
 		}
 	}
+	
+	private void loadNextLevel() {
+		float scale = getWidth() / 480.0f;
+		int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
+		LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
+		Level level = levelManager.getLevel(mLevelConfig.getWorldNumber(), mLevelConfig.getLevelNumber()+1);
+		mLevelConfig = level;
+		mConfig = mLevelConfig.getBowlConfiguration();
+		initialize();
+	}
 
 	private void addGameOverDialog(Canvas canvas) {
 		
@@ -737,11 +743,27 @@ public class BowlScreen extends Screen {
 
 			mGameEndedTime = System.currentTimeMillis();
 			
-			EventListener listener = new EventListener() {
+			EventListener nextLevelListener = new EventListener() {
+				@Override
+				public boolean handleButtonClicked() {
+					mScreenManager.removeTopScreen();
+					loadNextLevel();
+					return true;
+				}
+			};
+			EventListener replayListener = new EventListener() {
 				@Override
 				public boolean handleButtonClicked() {
 					mScreenManager.removeTopScreen();
 					reset();
+					return true;
+				}
+			};
+			EventListener menuListener = new EventListener() {
+				@Override
+				public boolean handleButtonClicked() {
+					mScreenManager.removeTopScreen();
+					mScreenManager.removeTopScreen();
 					return true;
 				}
 			};
@@ -751,13 +773,18 @@ public class BowlScreen extends Screen {
 			int numButtons = 3;
 			CanvasDialogString[] dialogRows = new CanvasDialogString[2];
 			
+			GameEndedCanvasDialogDrawArea drawArea = null;
+			
 			if (fail) {
 				numButtons = 2;
-				dialogRows[0] = new CanvasDialogRegularString("LEVEL FAILED!", TextSize.MEDIUM);
+				dialogRows[0] = new CanvasDialogRegularString("LEVEL FAILED!", TextSize.SMALL, 0xFFffffff, null);
+				dialogRows[1] = new CanvasDialogRegularString(""+mTotalScore, TextSize.LARGE, 0xFFffffff, null);
 			} else {
-				dialogRows[0] = new CanvasDialogRegularString("LEVEL COMPLETED!", TextSize.MEDIUM);
+				dialogRows[0] = new CanvasDialogRegularString("LEVEL COMPLETED!", TextSize.SMALL, 0xFFffffff, null);
+				mCounterStringGameOver = new CanvasDialogCounterString(mTotalScore, TextSize.LARGE, 0xFFffffff, new int[]{20,0,0,0});
+				dialogRows[1] = mCounterStringGameOver;
+				drawArea = new GameEndedCanvasDialogDrawArea(100, mLevelConfig, mContext, mCounterStringGameOver, mScale);
 			}
-			dialogRows[1] = new CanvasDialogCounterString(mTotalScore, TextSize.MEDIUM);
 			
 			ImageComponent[] buttons = new ImageComponent[numButtons];
 
@@ -769,7 +796,7 @@ public class BowlScreen extends Screen {
 				ImageComponent nextLevelButton = new ImageComponent(bitmapNext, true);
 				nextLevelButton.setWidth((int)(70*mScale));
 				nextLevelButton.setHeight((int)(70*mScale));
-				nextLevelButton.setEventListener(listener);
+				nextLevelButton.setEventListener(nextLevelListener);
 				nextLevelButton.resizeBitmap();
 				buttons[2] = nextLevelButton;
 			}
@@ -777,16 +804,17 @@ public class BowlScreen extends Screen {
 			ImageComponent replayLevelButton = new ImageComponent(bitmapReplay, true);
 			replayLevelButton.setWidth((int)(70*mScale));
 			replayLevelButton.setHeight((int)(70*mScale));
-			replayLevelButton.setEventListener(listener);
+			replayLevelButton.setEventListener(replayListener);
 			replayLevelButton.resizeBitmap();
 			buttons[1] = replayLevelButton;
 			
 			ImageComponent menuButton = new ImageComponent(bitmapMenu, true);
 			menuButton.setWidth((int)(70*mScale));
 			menuButton.setHeight((int)(70*mScale));
-			menuButton.setEventListener(listener);
+			menuButton.setEventListener(menuListener);
 			menuButton.resizeBitmap();
 			buttons[0] = menuButton;
+			
 
 			CanvasDialog gameOverDialog = new CanvasDialog(getWidth(),
 					getHeight(),
@@ -794,81 +822,11 @@ public class BowlScreen extends Screen {
 					mGameEndedTime,
 					dialogRows,
 					buttons,
+					drawArea, 
 					false);
 
 			mScreenManager.addScreen(gameOverDialog);
 		}
-
-//		// 1. ANIMATE BACKGROUND
-//		if (mGameEndedTime == 0) {
-//			mGameEndedTime = System.currentTimeMillis();
-//		}
-//
-//		Paint paint = new Paint();
-//		int alphaStepsPerSecond = 400;
-//		long timeSinceEnd = System.currentTimeMillis() - mGameEndedTime;
-//		int steps = (int) ((timeSinceEnd / 1000.0f) * alphaStepsPerSecond);
-//
-//		if (steps > gameOverFinalAlphaBackground) {
-//			steps = gameOverFinalAlphaBackground;
-//		}
-//
-//		paint.setColor(steps << 24);
-//		canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
-//
-//		// 2. DRAW "DIALOG"
-//		RectF dialogRect = new RectF();
-//		int padding = (int) (getWidth() * 0.2f);
-//		int dialogWidth = getWidth() - padding;
-//		int dialogHeight = (int)(150*mScale); // DEPENDS ON CONTENT!!! TODO: meassure content.
-//		int dialogStartY = (getHeight() - dialogHeight) / 2;
-//		paint.setColor(0xFFFFFFAA);
-//		dialogRect.set(padding * 0.5f,
-//				dialogStartY,
-//				padding * 0.5f + dialogWidth,
-//				dialogStartY + dialogHeight);
-//		
-//		int colorBefore = mStrokePaint.getColor();
-//		float strokeWidthBefore = mStrokePaint.getStrokeWidth();
-//		
-//		mStrokePaint.setStrokeWidth(10*mScale);
-//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
-//		mStrokePaint.setStrokeWidth(8*mScale);
-//		mStrokePaint.setColor(0xFFf49000);
-//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
-//		mStrokePaint.setStrokeWidth(3*mScale);
-//		mStrokePaint.setColor(0xFF444411);
-//		canvas.drawRoundRect(dialogRect, 10, 10, mStrokePaint);
-//		canvas.drawRoundRect(dialogRect, 10, 10, paint);
-//		
-//		//Restore paint.
-//		mStrokePaint.setColor(colorBefore);
-//		mStrokePaint.setStrokeWidth(strokeWidthBefore);
-//		
-////		canvas.drawRect(padding * 0.5f, dialogStartY, padding * 0.5f
-////				+ dialogWidth, dialogStartY + dialogHeight, mStrokePaint);
-////		canvas.drawRect(padding * 0.5f, dialogStartY, padding * 0.5f
-////				+ dialogWidth, dialogStartY + dialogHeight, paint);
-//
-//		
-//		String score = "Final Score: " + mTotalScore;
-//		
-//		Rect gameOverRect = new Rect();
-//		Rect scoreRect = new Rect();
-//		Rect tapRect = new Rect();
-//
-////		mTextPaint.getTextBounds(gameOver, 0, gameOver.length(), gameOverRect);
-//		mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
-////		mTextPaint.getTextBounds(tap, 0, tap.length(), tapRect);
-//
-////		canvas.drawText(gameOver, getWidth() / 2 - gameOverRect.width() / 2,
-////				getHeight() / 2 - gameOverRect.height(), mStrokePaint);
-//		canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
-//				getHeight() / 2 + scoreRect.height(), mStrokePaint);
-//		canvas.drawText(score, getWidth() / 2 - scoreRect.width() / 2,
-//				getHeight() / 2 + scoreRect.height(), mTextPaint);
-////		canvas.drawText(tap, getWidth() / 2 - tapRect.width() / 2, getHeight()
-////				/ 2 + scoreRect.height() + tapRect.height() * 2, mStrokePaint);
 	}
 
 	private void pongCollision(Pong first, Pong second) {
@@ -966,6 +924,10 @@ public class BowlScreen extends Screen {
 
 	private void randomizeBonusItem() {
 
+		if (mLevelConfig.getBonusItemSequence() == null) {
+			return;
+		}
+		
 		long secondsSinceLaunch = (System.currentTimeMillis() - mRoundStartedTime) / 1000;
 
 		if (mSecondsSinceLaunch == secondsSinceLaunch || mBonusItemHasLaunched) {
@@ -976,9 +938,11 @@ public class BowlScreen extends Screen {
 			if (randomInt <= mBonusItemSuccessInt) {
 				mBonusItems.add(getRandomBonusItem());
 				mBonusItemHasLaunched = true;
+				mBounusItemCounter++;
 			} else {
 				mBonusItemSuccessInt++;
 			}
 		}
 	}
+	
 }

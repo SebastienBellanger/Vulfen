@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.tojosebe.vulfen.game.BowlConfiguration;
 import com.tojosebe.vulfen.game.Pong;
+import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 
 /**
  * This class represents a level. It holds all properties that is needed for
@@ -25,11 +26,19 @@ public class Level {
 	
 	private Pong mPenguin;
 	
-	public Level(int levelNumber, int threeStarsScore, int twoStarsScore, int oneStarScore) {
+	private float mScale;
+	
+	private int mWorldNumber;
+	
+	private BonusItemType[] mBonusItemSequence = null;
+	
+	public Level(int levelNumber, int threeStarsScore, int twoStarsScore, int oneStarScore, float scale, int worldNumber) {
 		mLevelNumber = levelNumber;
 		mThreeStarsScore = threeStarsScore;
 		mTwoStarsScore = twoStarsScore;
 		mOneStarScore = oneStarScore;
+		mScale = scale;
+		mWorldNumber = worldNumber;
 	}
 	
 	/**
@@ -82,7 +91,7 @@ public class Level {
 	}
 
 	public Level getCopy() {
-		Level levelCopy = new Level(mLevelNumber, mThreeStarsScore, mTwoStarsScore, mOneStarScore);
+		Level levelCopy = new Level(mLevelNumber, mThreeStarsScore, mTwoStarsScore, mOneStarScore, mScale, mWorldNumber);
 		levelCopy.mBowlConfiguration = new BowlConfiguration(mBowlConfiguration);
 		levelCopy.mEnemies = new ArrayList<Pong>();
 		for (Pong pong : mEnemies) {
@@ -90,6 +99,15 @@ public class Level {
 			levelCopy.mEnemies.add(pongCopy);
 		}
 		levelCopy.mPenguin = new Pong(mPenguin);
+		
+		BonusItemType[] bonusSequense = null;
+		if (mBonusItemSequence != null) {
+			bonusSequense = new BonusItemType[mBonusItemSequence.length];
+			for (int i = 0; i < mBonusItemSequence.length; i++) {
+				bonusSequense[i] = mBonusItemSequence[i];
+			}
+		}
+		levelCopy.mBonusItemSequence = bonusSequense;
 		return levelCopy;
 	
 	}
@@ -104,5 +122,47 @@ public class Level {
 
 	public int getOneStarScore() {
 		return mOneStarScore;
+	}
+
+	/**
+	 * @return the bonusItemSequence
+	 */
+	public BonusItemType[] getBonusItemSequence() {
+		return mBonusItemSequence;
+	}
+
+	/**
+	 * @param bonusItemSequence the bonusItemSequence to set
+	 */
+	public void setBonusItemSequence(BonusItemType[] bonusItemSequence) {
+		this.mBonusItemSequence = bonusItemSequence;
+	}
+
+	/**
+	 * @return the scale
+	 */
+	public float getScale() {
+		return mScale;
+	}
+
+	/**
+	 * @param scale the scale to set
+	 */
+	public void setScale(float scale) {
+		this.mScale = scale;
+	}
+
+	/**
+	 * @return the worldNumber
+	 */
+	public int getWorldNumber() {
+		return mWorldNumber;
+	}
+
+	/**
+	 * @param worldNumber the worldNumber to set
+	 */
+	public void setWorldNumber(int worldNumber) {
+		this.mWorldNumber = worldNumber;
 	}
 }
