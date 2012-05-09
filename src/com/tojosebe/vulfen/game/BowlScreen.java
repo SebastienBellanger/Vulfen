@@ -219,7 +219,7 @@ public class BowlScreen extends Screen {
 		mStrokePaint.setStrokeWidth(4);
 
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
-				R.drawable.launcher4);
+				R.drawable.launcher3);
 		mYellow = getPongBitmap(mLevelConfig.getEnemies().get(0));
 		mRed = getPongBitmap(mLevelConfig.getPenguin());
 
@@ -229,68 +229,6 @@ public class BowlScreen extends Screen {
 
 		createLifeLeftImage();
 	}
-
-//	@Override
-//	protected Dialog onCreateDialog(int id, Dialog dialogIn, Bundle args) {
-//
-//		switch (id) {
-//		case VulfenActivity.DIALOG_SCORE_TO_BEAT:
-//
-//			final VulfenDialog newDialog;
-//
-//			if (dialogIn == null) {
-//				// CREATE DIALOG
-//				newDialog = new VulfenDialog(mActivity,
-//						R.style.CustomDialogTheme);
-//			} else {
-//				newDialog = (VulfenDialog) dialogIn;
-//			}
-//
-//			// INIT DIALOG BUTTONS
-//			Button yesButton = (Button) newDialog
-//					.findViewById(R.id.button_positive);
-//			yesButton.setText(android.R.string.ok);
-//			newDialog.setPositiveButton(yesButton);
-//
-//			// SET DIALOG HEADER
-//			((TextView) newDialog.findViewById(R.id.dialog_header_text))
-//					.setText(mActivity.getString(R.string.level) + " "
-//							+ mLevelConfig.getLevelNumber());
-//
-//			if (dialogIn == null) {
-//				// SET DIALOG CONTENT
-//				LayoutInflater inflaterOne = (LayoutInflater) mActivity
-//						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//
-//				ViewGroup contentView = (ViewGroup) newDialog
-//						.findViewById(R.id.content);
-//				View dialogContent = inflaterOne.inflate(
-//						R.layout.scores_n_stars, contentView);
-//
-//				((TextView) dialogContent.findViewById(R.id.text_three_stars))
-//						.setText("" + mLevelConfig.getThreeStarsScore());
-//				((TextView) dialogContent.findViewById(R.id.text_two_stars))
-//						.setText("" + mLevelConfig.getTwoStarsScore());
-//				((TextView) dialogContent.findViewById(R.id.text_one_star))
-//						.setText("" + mLevelConfig.getOneStarScore());
-//
-//				// INIT DIALOG SIZES
-//				int h = (int) GraphicsUtil.dpToPixels(70, mDpi);
-//				int w = (int) GraphicsUtil.dpToPixels(120, mDpi);
-//				newDialog.initDialog(mActivity, R.drawable.button, h, w);
-//			}
-//
-//			yesButton.setOnClickListener(new OnClickListener() {
-//				@Override
-//				public void onClick(View v) {
-//					newDialog.dismiss();
-//				}
-//			});
-//
-//			return newDialog;
-//		}
-//		return null;
-//	}
 
 	private Bitmap getPongBitmap(Pong pong) {
 		int resource = pong.getImageResource();
