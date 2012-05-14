@@ -3,7 +3,6 @@ package com.tojosebe.vulfen.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tojosebe.vulfen.game.BowlConfiguration;
 import com.tojosebe.vulfen.game.Pong;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 

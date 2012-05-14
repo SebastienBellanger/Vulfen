@@ -1,4 +1,4 @@
-package com.tojosebe.vulfen.game;
+package com.tojosebe.vulfen.configuration;
 
 public class BowlConfiguration {
 
@@ -7,10 +7,10 @@ public class BowlConfiguration {
 	private float minSpeed = 500.0f;
 	private float maxSpeed = 1700.0f;
 	
-	private float friction = 100.0f;
+	private float friction = 150.0f;
 	
-	private int yellowYellowValue = 10;
-	private int redYellowValue = 25;
+	private int yellowYellowValue = 50;
+	private int redYellowValue = 200;
 	private int redRedValue = 100;
 	
 	public BowlConfiguration(BowlConfiguration bowlConfiguration) {

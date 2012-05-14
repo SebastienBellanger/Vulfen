@@ -60,13 +60,13 @@ public class GameEndedCanvasDialogDrawArea extends CanvasDialogDrawArea {
 
 		int currentScore = mCounterStringGameOver.getCurrentValue();
 
-		if (star1Started == 0 && currentScore > mLevel.getOneStarScore()) {
+		if (star1Started == 0 && currentScore >= mLevel.getOneStarScore()) {
 			star1Started = System.currentTimeMillis();
 		}
-		if (star2Started == 0 && currentScore > mLevel.getTwoStarsScore()) {
+		if (star2Started == 0 && currentScore >= mLevel.getTwoStarsScore()) {
 			star2Started = System.currentTimeMillis();
 		}
-		if (star3Started == 0 && currentScore > mLevel.getThreeStarsScore()) {
+		if (star3Started == 0 && currentScore >= mLevel.getThreeStarsScore()) {
 			star3Started = System.currentTimeMillis();
 		}
 

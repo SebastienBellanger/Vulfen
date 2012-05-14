@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.game.BowlConfiguration;
 import com.tojosebe.vulfen.game.Pong;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.vulfox.math.Vector2f;
@@ -18,7 +17,7 @@ public class Level2 extends Level {
 	private float mCowSize = 85;
 
 	public Level2(int levelNumber, int width, int height, float scale, int world) {
-		super(levelNumber, 18000, 14000, 10000, scale, world);
+		super(levelNumber, 3000, 2000, -1000, scale, world);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();

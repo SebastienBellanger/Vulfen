@@ -10,6 +10,8 @@ public class Pong {
 	
 	private int maxGroth = +2;
 	private int maxShrink = +4;
+	private int mShrinkSteps = 2;
+	private int mTimesShrinken = 0;
 	
 	public Vector2f position;
 	public Vector2f velocity;
@@ -214,6 +216,34 @@ public class Pong {
 	 */
 	public void setMaxShrink(int maxShrink) {
 		this.maxShrink = maxShrink;
+	}
+
+	/**
+	 * @return the shrinkSteps
+	 */
+	public int getShrinkSteps() {
+		return mShrinkSteps;
+	}
+
+	/**
+	 * @param shrinkSteps the shrinkSteps to set
+	 */
+	public void setShrinkSteps(int shrinkSteps) {
+		this.mShrinkSteps = shrinkSteps;
+	}
+
+	/**
+	 * @return the timesShrinken
+	 */
+	public int getTimesShrinken() {
+		return mTimesShrinken;
+	}
+
+	/**
+	 * @param timesShrinken the timesShrinken to set
+	 */
+	public void setTimesShrinken(int timesShrinken) {
+		this.mTimesShrinken = timesShrinken;
 	}
 
 }
