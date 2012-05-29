@@ -8,8 +8,8 @@ import android.graphics.Rect;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.configuration.Level;
-import com.tojosebe.vulfen.dialog.CanvasDialogCounterString;
-import com.tojosebe.vulfen.dialog.CanvasDialogDrawArea;
+import com.tojosebe.vulfen.dialog.DialogCounterString;
+import com.tojosebe.vulfen.dialog.DialogDrawArea;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.util.BitmapManager;
@@ -20,12 +20,12 @@ import com.vulfox.util.GraphicsUtil;
  * draws stars.
  * 
  */
-public class GameEndedCanvasDialogDrawArea extends CanvasDialogDrawArea {
+public class GameEndedDialogDrawArea extends DialogDrawArea {
 
 	private Bitmap mStarBitmap;
 	private Paint mStarPaint;
 	private Level mLevel;
-	private CanvasDialogCounterString mCounterStringGameOver;
+	private DialogCounterString mCounterStringGameOver;
 
 	private float starAnimationTime = 250.0f; // in milliseconds
 	private long star1Started = 0;
@@ -33,10 +33,12 @@ public class GameEndedCanvasDialogDrawArea extends CanvasDialogDrawArea {
 	private long star3Started = 0;
 	private float starSize = 100;
 
-	public GameEndedCanvasDialogDrawArea(int height, Level level,
-			Context context, CanvasDialogCounterString counterString,
+
+	public GameEndedDialogDrawArea(int height, Level level,
+			Context context, DialogCounterString counterString,
 			float scale) {
-		super((int)(height * scale));
+		setHeight((int)(height * scale));
+
 
 		mLevel = level;
 		mCounterStringGameOver = counterString;
@@ -104,6 +106,7 @@ public class GameEndedCanvasDialogDrawArea extends CanvasDialogDrawArea {
 		}
 
 		drawStars(canvas, size1, size2, size3, width, x, y);
+
 	}
 
 	private void drawStars(Canvas canvas, float size1, float size2,

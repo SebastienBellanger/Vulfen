@@ -12,7 +12,7 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.component.animation.AnimateableImageComponent;
+import com.tojosebe.vulfen.animation.AnimateableImageComponent;
 import com.tojosebe.vulfen.levelscreen.LevelScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
@@ -353,7 +353,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 21, 4, worldNumber, mActivity));
+					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 18, 4, worldNumber, mActivity));
 					
 					return true;
 				}

@@ -1,5 +1,9 @@
 package com.tojosebe.vulfen.game;
 
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+
+import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
 
 public class Pong {
@@ -26,6 +30,12 @@ public class Pong {
 	private float mMaxSpeed = 1700.0f;
 	private float mFriction = 35.0f;
 	private float mRadius;
+	
+	private Bitmap mBitmap;
+	
+	private SpriteComponent spriteComponent;
+	
+	private Rect mRect = new Rect();
 
 	public Pong(Pong pong) {
 		position = pong.position;
@@ -37,6 +47,11 @@ public class Pong {
 		mMaxSpeed = pong.mMaxSpeed;
 		mFriction = pong.mFriction;
 		mRadius = pong.mRadius;
+		createSprite();
+	}
+
+	private void createSprite() {
+		spriteComponent = new SpriteComponent(mRect, mBitmap, false, false, true, 200);
 	}
 
 	public Pong() {
@@ -244,6 +259,18 @@ public class Pong {
 	 */
 	public void setTimesShrinken(int timesShrinken) {
 		this.mTimesShrinken = timesShrinken;
+	}
+
+	/**
+	 * @return the spriteComponent
+	 */
+	public SpriteComponent getSpriteComponent() {
+		return spriteComponent;
+	}
+
+	public void setPosition(float x, float y) {
+		this.position.setX(x);
+		this.position.setY(y);
 	}
 
 }

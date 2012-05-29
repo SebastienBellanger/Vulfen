@@ -5,11 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.component.animation.AnimateableImageComponent;
-import com.tojosebe.vulfen.dialog.CanvasDialog;
-import com.tojosebe.vulfen.dialog.CanvasDialogRegularString;
-import com.tojosebe.vulfen.dialog.CanvasDialogString;
-import com.tojosebe.vulfen.dialog.CanvasDialogString.TextSize;
+import com.tojosebe.vulfen.animation.AnimateableImageComponent;
+import com.tojosebe.vulfen.dialog.DialogScreen;
+import com.tojosebe.vulfen.dialog.DialogRegularString;
+import com.tojosebe.vulfen.dialog.DialogString;
+import com.tojosebe.vulfen.dialog.DialogString.TextSize;
 import com.tojosebe.vulfen.util.Constants;
 import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
@@ -244,9 +244,9 @@ public class StartScreen extends Screen {
 		};
 
 		int numButtons = 2;
-		CanvasDialogString[] dialogRows = new CanvasDialogString[1];
+		DialogString[] dialogRows = new DialogString[1];
 
-		dialogRows[0] = new CanvasDialogRegularString("EXIT GAME?",
+		dialogRows[0] = new DialogRegularString("EXIT GAME?",
 				TextSize.MEDIUM, 0xFFffffff, new int[]{20,0,20,0});
 
 		ImageComponent[] buttons = new ImageComponent[numButtons];
@@ -272,7 +272,7 @@ public class StartScreen extends Screen {
 		cancelButton.resizeBitmap();
 		buttons[1] = cancelButton;
 
-		CanvasDialog exitDialog = new CanvasDialog(getWidth(), getHeight(),
+		DialogScreen exitDialog = new DialogScreen(getWidth(), getHeight(),
 				mScale, mDialogShowStart, dialogRows, buttons, null,
 				true);
 

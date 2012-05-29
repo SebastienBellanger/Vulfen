@@ -1,4 +1,4 @@
-package com.tojosebe.vulfen.component.animation;
+package com.tojosebe.vulfen.animation;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -107,6 +107,10 @@ public class AnimateableImageComponent extends ButtonComponent {
 	
 	public Bitmap[] getBitmaps() {
 		return mBitmap;
+	}
+
+	@Override
+	public void update(float timeStep) {
 	}
 	
 }

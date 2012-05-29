@@ -1,6 +1,6 @@
 package com.tojosebe.vulfen.dialog;
 
-public interface CanvasDialogString {
+public interface DialogString {
 
 	enum TextSize {
 		SMALL,

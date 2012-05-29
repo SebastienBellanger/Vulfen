@@ -1,19 +1,25 @@
 
-nytt koncept i egen bowlscreen.
-	- fixa klara banan grejen. MEtod för checkGameFinished
+PONG ÄÄÄÄR EN SCREEN COMPONENT. FIXA SÅ DEN ÄRVER AV SCREENCOMPONENT 
+eller SpriteComponent OCH MODDA BOWLSCREEN.
 
+animera stjärnorna när de kommer M.H.A. SpriteComponent!!
 
-top score ska sparas per bana
+refaktorisera bowlScreen med fler components.
+ta bort alla new i bowlScreen som går.
+bowlScreen ska INTE vara > 1000 rader.
+
+koppla in storage.
+
 stars ska sparas per bana
 hur långt man kommit i levlar ska sparas. (senare)
 
-infrastruktur för att spara rekord per bana och vilka banor som är avklarade.
+Sprites med animering etc.
 
-visa star n points dialog.
+spara vilka banor som är avklarade.
 
 när man växer studsar man inte automatiskt mot väggen om man står still. Samma om man växer längst ned. 
 
-Om man släpper och aldrig lämnar "boet" är man kvar i boet.
+Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
 
 * GAMESCREEN:
 	- någon form av redo/exit knappar.

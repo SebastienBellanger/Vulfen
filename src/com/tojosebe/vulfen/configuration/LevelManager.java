@@ -41,9 +41,15 @@ public class LevelManager {
 		Level level1 = new Level1(1, mWidth, mHeight, mScale, 1);
 		Level level2 = new Level2(2, mWidth, mHeight, mScale, 1);
 		Level level3 = new Level3(3, mWidth, mHeight, mScale, 1);
+		Level level4 = new Level4(4, mWidth, mHeight, mScale, 1);
+		Level level5 = new Level5(5, mWidth, mHeight, mScale, 1);
+		Level level6 = new Level6(6, mWidth, mHeight, mScale, 1);
 		world1.addLevel(level1);
 		world1.addLevel(level2);
 		world1.addLevel(level3);
+		world1.addLevel(level4);
+		world1.addLevel(level5);
+		world1.addLevel(level6);
 		worlds.add(world1);
 	}
 

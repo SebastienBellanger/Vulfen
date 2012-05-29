@@ -4,25 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tojosebe.vulfen.R;
-import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.tojosebe.vulfen.game.Pong;
+import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.vulfox.math.Vector2f;
 
-public class Level2 extends Level {
+public class Level4 extends Level {
 
 	private int mWidth;
 	private int mHeight;
-	private int mLives = 3;
+	private int mLives = 4;
 	private float mPenguinSize = 70;
 	private float mCowSize = 85;
 
-	public Level2(int levelNumber, int width, int height, float scale, int world) {
-		super(levelNumber, 4000, 3000, 2000, scale, world);
+	public Level4(int levelNumber, int width, int height, float scale, int world) {
+		super(levelNumber, 9000, 8000, 7000, scale, world);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();
 		setBonusItemSequence(new BonusItemType[] { BonusItemType.GROWER,
-				BonusItemType.SHRINKER });
+				BonusItemType.GROWER });
 	}
 
 	private void createLevelConfig() {
@@ -34,6 +34,7 @@ public class Level2 extends Level {
 	}
 
 	private Pong createPengiunGameConfiguration() {
+		
 		Pong penguin = new Pong();
 		penguin.setImageResource(R.drawable.tojo);
 
@@ -65,11 +66,41 @@ public class Level2 extends Level {
 		enemy3.setImageResource(R.drawable.sebe);
 		enemy3.setHeight(mCowSize);
 		enemy3.setWidth(mCowSize);
-		enemy3.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.6f));
+		enemy3.setPosition(new Vector2f(mWidth * 0.3f, mHeight * 0.6f));
+
+		Pong enemy4 = new Pong();
+		enemy4.setImageResource(R.drawable.sebe);
+		enemy4.setHeight(mCowSize);
+		enemy4.setWidth(mCowSize);
+		enemy4.setPosition(new Vector2f(mWidth * 0.5f, mHeight * 0.6f));
+
+		Pong enemy5 = new Pong();
+		enemy5.setImageResource(R.drawable.sebe);
+		enemy5.setHeight(mCowSize);
+		enemy5.setWidth(mCowSize);
+		enemy5.setPosition(new Vector2f(mWidth * 0.7f, mHeight * 0.6f));
+		
+		Pong enemy6 = new Pong();
+		enemy6.setImageResource(R.drawable.sebe);
+		enemy6.setHeight(mCowSize);
+		enemy6.setWidth(mCowSize);
+		enemy6.setPosition(new Vector2f(mWidth - mCowSize, mCowSize));
+
+		
+		Pong enemy7 = new Pong();
+		enemy7.setImageResource(R.drawable.sebe);
+		enemy7.setHeight(mCowSize);
+		enemy7.setWidth(mCowSize);
+		enemy7.setPosition(new Vector2f(mCowSize, mCowSize));
+
 
 		enemies.add(enemy1);
 		enemies.add(enemy2);
 		enemies.add(enemy3);
+		enemies.add(enemy4);
+		enemies.add(enemy5);
+		enemies.add(enemy6);
+		enemies.add(enemy7);
 
 		return enemies;
 	}

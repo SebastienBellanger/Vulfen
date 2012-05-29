@@ -10,8 +10,8 @@ public class BowlConfiguration {
 	private float friction = 150.0f;
 	
 	private int yellowYellowValue = 50;
-	private int redYellowValue = 200;
-	private int redRedValue = 100;
+	private int redYellowValue = 100;
+	private int redRedValue = 50;
 	
 	public BowlConfiguration(BowlConfiguration bowlConfiguration) {
 		lives = bowlConfiguration.lives;

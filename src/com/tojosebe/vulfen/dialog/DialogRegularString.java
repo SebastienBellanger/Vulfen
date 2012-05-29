@@ -1,6 +1,6 @@
 package com.tojosebe.vulfen.dialog;
 
-public class CanvasDialogRegularString implements CanvasDialogString {
+public class DialogRegularString implements DialogString {
 
 	private String mContent;
 
@@ -10,7 +10,7 @@ public class CanvasDialogRegularString implements CanvasDialogString {
 
 	private int[] mPadding;
 
-	public CanvasDialogRegularString(String content, TextSize textSize,
+	public DialogRegularString(String content, TextSize textSize,
 			int color, int[] padding) {
 		mContent = content;
 		mTextSize = textSize;

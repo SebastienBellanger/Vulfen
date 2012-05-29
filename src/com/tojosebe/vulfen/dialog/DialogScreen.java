@@ -6,11 +6,11 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 
-import com.tojosebe.vulfen.dialog.CanvasDialogString.TextSize;
+import com.tojosebe.vulfen.dialog.DialogString.TextSize;
 import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
 
-public class CanvasDialog extends Screen {
+public class DialogScreen extends Screen {
 
 	private int mWidth;
 	private int mHeight;
@@ -25,19 +25,19 @@ public class CanvasDialog extends Screen {
 	private int mDialogHeight;
 	private ImageComponent[] mButtons;
 	private boolean mCancelable;
-	private CanvasDialogString[] mDialogText;
+	private DialogString[] mDialogText;
 	private int mDialogWidth;
 	private int mLargeTextSize = 40;
 	private int mMediumTextSize = 30;
 	private int mSmallTextSize = 20;
 	private float mButtonsAreaHeight;
 	private float mTextAreaHeight;
-	private CanvasDialogDrawArea mDrawArea;
+	private DialogDrawArea mDrawArea;
 	private float mPaddingLeft;
 
-	public CanvasDialog(int width, int height, float scale,
-			long dialogStartTime, CanvasDialogString[] dialogText,
-			ImageComponent[] buttons, CanvasDialogDrawArea drawArea,
+	public DialogScreen(int width, int height, float scale,
+			long dialogStartTime, DialogString[] dialogText,
+			ImageComponent[] buttons, DialogDrawArea drawArea,
 			boolean cancelable) {
 		mWidth = width;
 		mHeight = height;
@@ -52,12 +52,12 @@ public class CanvasDialog extends Screen {
 		mSmallTextSize *= scale;
 		mDrawArea = drawArea;
 
-		mStrokePaint.setARGB(255, 255, 255, 255);
+		mTextPaint.setARGB(255, 30, 30, 30);
 		mTextPaint.setAntiAlias(true);
 		mTextPaint.setTextSize(24 * mScale);
 		mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-
-		mTextPaint.setARGB(255, 30, 30, 30);
+		
+		mStrokePaint.setARGB(255, 255, 255, 255);
 		mStrokePaint.setTextSize(24 * mScale);
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		mStrokePaint.setStyle(Paint.Style.STROKE);
@@ -88,7 +88,7 @@ public class CanvasDialog extends Screen {
 			mTextAreaHeight = margin + margin;
 
 			for (int i = 0; i < mDialogText.length; i++) {
-				CanvasDialogString canvasDialogString = mDialogText[i];
+				DialogString canvasDialogString = mDialogText[i];
 				if (canvasDialogString.getTextSize() == TextSize.LARGE) {
 					mTextAreaHeight += mLargeTextSize * 1.5f;
 				} else if (canvasDialogString.getTextSize() == TextSize.MEDIUM) {
@@ -124,7 +124,6 @@ public class CanvasDialog extends Screen {
 				addScreenComponent(button);
 			}
 		}
-
 	}
 
 	@Override
@@ -172,7 +171,7 @@ public class CanvasDialog extends Screen {
 			float currentY = dialogStartY;
 			for (int i = 0; i < mDialogText.length; i++) {
 
-				CanvasDialogString canvasDialogString = mDialogText[i];
+				DialogString canvasDialogString = mDialogText[i];
 
 				if (canvasDialogString.getTextSize() == TextSize.LARGE) {
 					mTextPaint.setTextSize(mLargeTextSize);
@@ -184,14 +183,16 @@ public class CanvasDialog extends Screen {
 					mTextPaint.setTextSize(mSmallTextSize);
 					mStrokePaint.setTextSize(mSmallTextSize);
 				}
-
-				if (canvasDialogString instanceof CanvasDialogCounterString) {
-					CanvasDialogCounterString canvasDialogCounter = (CanvasDialogCounterString) canvasDialogString;
-					if (canvasDialogCounter.getCurrentValue() != canvasDialogCounter
-							.getEndValue()) {
-						animateCounter(canvasDialogCounter);
-					}
-				}
+				
+				if (canvasDialogString instanceof DialogCounterString) {
+					DialogCounterString canvasDialogCounter = (DialogCounterString) canvasDialogString;
+					canvasDialogCounter.animate(mDialogStartTime);
+				} else if (canvasDialogString instanceof DialogPulsingString) {
+					DialogPulsingString dialogPulsingString = (DialogPulsingString) canvasDialogString;
+					dialogPulsingString.animate(mDialogStartTime);
+					mTextPaint.setTextSize((float)(mSmallTextSize * dialogPulsingString.getTextSizeMultiplyer()));
+					mStrokePaint.setTextSize((float)(mSmallTextSize * dialogPulsingString.getTextSizeMultiplyer()));
+				} 
 
 				currentY += (mTextPaint.getTextSize() * 1.25f);
 				currentY += canvasDialogString.getPadding()[0] * mScale; //upper padding
@@ -221,26 +222,6 @@ public class CanvasDialog extends Screen {
 					(int) (dialogStartY + mTextAreaHeight), mDialogWidth);
 		}
 
-	}
-
-	private void animateCounter(CanvasDialogCounterString canvasDialogCounter) {
-
-		long timeSinceStart = System.currentTimeMillis() - mDialogStartTime;
-
-		if (timeSinceStart < canvasDialogCounter.getCounterAnimationDelay()) {
-			return;
-		}
-
-		int endValue = canvasDialogCounter.getEndValue();
-		int stepsPerSecond = (int) (endValue / canvasDialogCounter
-				.getSecondsToAnimate());
-		int steps = (int) ((timeSinceStart / 1000.0f) * stepsPerSecond);
-
-		if (steps > endValue) {
-			steps = endValue;
-		}
-
-		canvasDialogCounter.setCurrentAnimationValue(steps);
 	}
 
 	private void animateBackground(Canvas canvas, Paint paint) {

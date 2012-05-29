@@ -23,5 +23,8 @@ public class Constants {
 	public static final int BITMAP_COW_3 = 18;
 	public static final int BITMAP_PENGUIN_LIFE = 19;
 	public static final int BITMAP_STAR_2 = 20;
+	public static final int BITMAP_SCORE_BAR_BACK = 21;
+	public static final int BITMAP_SCORE_BAR_GRAY_OVERLAY = 22;
+	public static final int BITMAP_SCORE_BAR_STARS_OVERLAY = 23;
 	
 }

@@ -1,7 +1,7 @@
 package com.tojosebe.vulfen.dialog;
 
 
-public class CanvasDialogCounterString implements CanvasDialogString {
+public class DialogCounterString implements DialogString {
 	
 	private int mEndValue;
 	
@@ -15,7 +15,7 @@ public class CanvasDialogCounterString implements CanvasDialogString {
 	
 	private int[] mPadding;
 	
-	public CanvasDialogCounterString(int endValue, TextSize textSize, int color, int[] padding) {
+	public DialogCounterString(int endValue, TextSize textSize, int color, int[] padding) {
 		mEndValue = endValue;
 		mTextSize = textSize;
 		mColor = color;
@@ -23,6 +23,28 @@ public class CanvasDialogCounterString implements CanvasDialogString {
 			mPadding = new int[] { 0, 0, 0, 0 };
 		} else {
 			mPadding = padding;
+		}
+	}
+	
+	public void animate(long startTime) {
+
+		if (getCurrentValue() != getEndValue()) {
+		
+			long timeSinceStart = System.currentTimeMillis() - startTime;
+	
+			if (timeSinceStart < getCounterAnimationDelay()) {
+				return;
+			}
+	
+			int endValue = getEndValue();
+			int stepsPerSecond = (int) (endValue / getSecondsToAnimate());
+			int steps = (int) ((timeSinceStart / 1000.0f) * stepsPerSecond);
+	
+			if (steps > endValue) {
+				steps = endValue;
+			}
+	
+			setCurrentAnimationValue(steps);
 		}
 	}
 

@@ -12,7 +12,7 @@ import android.view.MotionEvent;
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.configuration.Level;
 import com.tojosebe.vulfen.configuration.LevelManager;
-import com.tojosebe.vulfen.game.BowlScreen2;
+import com.tojosebe.vulfen.game.BowlScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
@@ -284,10 +284,10 @@ public class LevelScreen extends Screen {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10,
 						mDpi)) {
 					float scale = getWidth() / 480.0f;
-					int gameAreaHeight = (int) (getWidth() * BowlScreen2.GAME_AREA_ASPECT_RATIO);
+					int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
 					LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
 					Level level = levelManager.getLevel(mWorldNumber, levelIndex);
-					mScreenManager.addScreen(new BowlScreen2(level, mDpi, mActivity));
+					mScreenManager.addScreen(new BowlScreen(level, mDpi, mActivity));
 					return true;
 				}
 				return false;

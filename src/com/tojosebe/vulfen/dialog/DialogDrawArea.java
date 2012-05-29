@@ -2,15 +2,11 @@ package com.tojosebe.vulfen.dialog;
 
 import android.graphics.Canvas;
 
-public abstract class CanvasDialogDrawArea {
+public abstract class DialogDrawArea {
 
 	private int mWidth;
 
 	private int mHeight;
-
-	public CanvasDialogDrawArea(int height) {
-		mHeight = height;
-	}
 
 	public abstract void draw(Canvas canvas, int x, int y, int width);
 

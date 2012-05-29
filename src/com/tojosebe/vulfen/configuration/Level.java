@@ -31,6 +31,10 @@ public class Level {
 	
 	private BonusItemType[] mBonusItemSequence = null;
 	
+	private int mBonusItemsPerRound = 1;
+	
+	private int mBonusItemPropability = 5; //1 in 5 i.e 20% chance each second.
+	
 	public Level(int levelNumber, int threeStarsScore, int twoStarsScore, int oneStarScore, float scale, int worldNumber) {
 		mLevelNumber = levelNumber;
 		mThreeStarsScore = threeStarsScore;
@@ -107,6 +111,8 @@ public class Level {
 			}
 		}
 		levelCopy.mBonusItemSequence = bonusSequense;
+		levelCopy.mBonusItemsPerRound = mBonusItemsPerRound;
+		levelCopy.mBonusItemPropability = mBonusItemPropability;
 		return levelCopy;
 	
 	}
@@ -164,4 +170,33 @@ public class Level {
 	public void setWorldNumber(int worldNumber) {
 		this.mWorldNumber = worldNumber;
 	}
+
+	/**
+	 * @return the bonusItemsPerRound
+	 */
+	public int getBonusItemsPerRound() {
+		return mBonusItemsPerRound;
+	}
+
+	/**
+	 * @param bonusItemsPerRound the bonusItemsPerRound to set
+	 */
+	public void setBonusItemsPerRound(int bonusItemsPerRound) {
+		this.mBonusItemsPerRound = bonusItemsPerRound;
+	}
+
+	/**
+	 * @return the bonusItemPropability
+	 */
+	public int getBonusItemPropability() {
+		return mBonusItemPropability;
+	}
+
+	/**
+	 * @param bonusItemPropability the bonusItemPropability to set
+	 */
+	public void setBonusItemPropability(int bonusItemPropability) {
+		this.mBonusItemPropability = bonusItemPropability;
+	}
+
 }

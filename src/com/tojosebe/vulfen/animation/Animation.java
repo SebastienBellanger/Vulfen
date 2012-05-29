@@ -1,4 +1,4 @@
-package com.tojosebe.vulfen.component.animation;
+package com.tojosebe.vulfen.animation;
 
 import java.util.ArrayList;
 

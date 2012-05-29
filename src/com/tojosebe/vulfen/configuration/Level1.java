@@ -16,12 +16,10 @@ public class Level1 extends Level {
 	private float mCowSize = 85;
 
 	public Level1(int levelNumber, int width, int height, float scale, int world) {
-		super(levelNumber, 1700, 750, 0, scale, world);
+		super(levelNumber, 1700, 600, 200, scale, world);
 		mWidth = width;
 		mHeight = height;
 		createLevelConfig();
-		createPengiunGameConfiguration();
-		createPengiunGameConfiguration();
 		setBonusItemSequence(null); // No bonus items for first level
 	}
 
