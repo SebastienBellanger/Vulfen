@@ -70,7 +70,7 @@ public class DialogScreen extends Screen {
 	@Override
 	public boolean handleBackPressed() {
 		if (mCancelable) {
-			mScreenManager.removeScreen(this);
+			mScreenManager.removeScreenUI(this);
 		}
 		return true;
 	}
@@ -128,7 +128,7 @@ public class DialogScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
-
+		
 		Paint paint = new Paint();
 
 		animateBackground(canvas, paint);

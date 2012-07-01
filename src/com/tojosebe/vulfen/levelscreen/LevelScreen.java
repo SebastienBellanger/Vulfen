@@ -262,7 +262,7 @@ public class LevelScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
-		return mScreenManager.removeScreen(this);
+		return mScreenManager.removeScreenUI(this);
 	}
 
 	private void recalculateButtons() {
@@ -287,7 +287,7 @@ public class LevelScreen extends Screen {
 					int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
 					LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
 					Level level = levelManager.getLevel(mWorldNumber, levelIndex);
-					mScreenManager.addScreen(new BowlScreen(level, mDpi, mActivity));
+					mScreenManager.addScreenUI(new BowlScreen(level, mDpi, mActivity));
 					return true;
 				}
 				return false;

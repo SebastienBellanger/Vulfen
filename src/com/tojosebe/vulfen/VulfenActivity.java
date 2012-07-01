@@ -21,10 +21,11 @@ public class VulfenActivity extends GameActivity {
     	
         super.onCreate(savedInstanceState);  
        
-        mGameThread.setFixedTimeStep(false);
+        mGameThread.setFixedTimeStep(true);
 
         startScreen = new StartScreen(getDpi(), this);
         addScreen(startScreen);
+        
     }
 
 	private int getDpi() {

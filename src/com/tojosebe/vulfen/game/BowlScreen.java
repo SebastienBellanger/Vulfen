@@ -40,6 +40,7 @@ import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
+import com.vulfox.util.Logger;
 
 public class BowlScreen extends Screen {
 
@@ -420,7 +421,7 @@ public class BowlScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
-		return mScreenManager.removeScreen(this);
+		return mScreenManager.removeScreenUI(this);
 	}
 
 	@Override
@@ -913,7 +914,7 @@ public class BowlScreen extends Screen {
 					drawArea, 
 					false);
 
-			mScreenManager.addScreen(gameOverDialog);
+			mScreenManager.addScreenUI(gameOverDialog);
 		}
 	}
 

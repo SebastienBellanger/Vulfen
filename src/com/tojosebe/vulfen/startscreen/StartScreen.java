@@ -3,11 +3,12 @@ package com.tojosebe.vulfen.startscreen;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.animation.AnimateableImageComponent;
-import com.tojosebe.vulfen.dialog.DialogScreen;
 import com.tojosebe.vulfen.dialog.DialogRegularString;
+import com.tojosebe.vulfen.dialog.DialogScreen;
 import com.tojosebe.vulfen.dialog.DialogString;
 import com.tojosebe.vulfen.dialog.DialogString.TextSize;
 import com.tojosebe.vulfen.util.Constants;
@@ -17,6 +18,7 @@ import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
 import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
+import com.vulfox.component.TextComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
 
@@ -28,11 +30,17 @@ public class StartScreen extends Screen {
 	private Cloud mCloud1;
 	private Cloud mCloud2;
 	private Cow[] mCows;
+	
+	private TextComponent textComponent;
 
 	private boolean showExitDialog = false;
 	private long mDialogShowStart = 0;
 
 	private Activity mActivity;
+	
+	private long fps = 0;
+	private long startTime = System.currentTimeMillis();
+	private long frames = 0;
 
 	public StartScreen(int dpi, Activity activity) {
 		this.mDpi = dpi;
@@ -44,6 +52,7 @@ public class StartScreen extends Screen {
 		mDialogShowStart = 0;
 		showExitDialog = false;
 	}
+	
 
 	@Override
 	protected void initialize() {
@@ -64,6 +73,8 @@ public class StartScreen extends Screen {
 		addScreenComponent(createTitle());
 		addScreenComponent(createPlayButton());
 
+		textComponent = new TextComponent("FPS", 0xFF000000, 10, 50, 50);
+		addScreenComponent(textComponent);
 	}
 
 	private void addCows() {
@@ -171,6 +182,22 @@ public class StartScreen extends Screen {
 			mDialogShowStart = System.currentTimeMillis();
 			addExitDialog(canvas);
 		}
+		
+		frames++;
+		
+		long currentTime = System.currentTimeMillis();
+		
+		long totalTime = currentTime - startTime;
+		
+		totalTime = totalTime / 1000;
+		
+		if (totalTime == 0) {
+			totalTime = 1;
+		}
+				
+		fps = frames / totalTime;
+		
+		textComponent.setText("FPS: " + fps);
 	}
 
 	private ScreenComponent createPlayButton() {
@@ -182,7 +209,7 @@ public class StartScreen extends Screen {
 		button.setEventListener(new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
-				mScreenManager.addScreen(new WorldScreen(mDpi, mCloud1,
+				mScreenManager.addScreenUI(new WorldScreen(mDpi, mCloud1,
 						mCloud2, mActivity));
 				return true;
 			}
@@ -276,7 +303,7 @@ public class StartScreen extends Screen {
 				mScale, mDialogShowStart, dialogRows, buttons, null,
 				true);
 
-		mScreenManager.addScreen(exitDialog);
+		mScreenManager.addScreenUI(exitDialog);
 	}
 
 }

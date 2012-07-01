@@ -333,7 +333,7 @@ public class WorldScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
-		return mScreenManager.removeScreen(this);
+		return mScreenManager.removeScreenUI(this);
 	}
 
 	private void recalulateButtons() {
@@ -353,7 +353,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreen(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 18, 4, worldNumber, mActivity));
+					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 18, 4, worldNumber, mActivity));
 					
 					return true;
 				}
