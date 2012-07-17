@@ -1,4 +1,19 @@
 
+fixa så man kan agera (krocka) med bricks.
+
+placeringen av penguin på launcehrn är inte samma på olika skärmar.
+
+lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
+
+Lägg till back knapp överallt.
+
+bakgrundsbild.
+
+fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
+
+fixa menu med restart om man trycker på menyknappen i spelet.
+
+
 PONG ÄÄÄÄR EN SCREEN COMPONENT. FIXA SÅ DEN ÄRVER AV SCREENCOMPONENT 
 eller SpriteComponent OCH MODDA BOWLSCREEN.
 

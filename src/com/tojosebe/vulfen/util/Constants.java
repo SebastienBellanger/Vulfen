@@ -26,5 +26,8 @@ public class Constants {
 	public static final int BITMAP_SCORE_BAR_BACK = 21;
 	public static final int BITMAP_SCORE_BAR_GRAY_OVERLAY = 22;
 	public static final int BITMAP_SCORE_BAR_STARS_OVERLAY = 23;
+	public static final int BITMAP_BRICK_SOFT = 24;
+	public static final int BITMAP_BRICK_MEDIUM = 25;
+	public static final int BITMAP_BRICK_HARD = 26;
 	
 }

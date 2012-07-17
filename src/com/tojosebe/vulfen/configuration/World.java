@@ -1,31 +1,36 @@
 package com.tojosebe.vulfen.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
+import android.content.res.AssetManager;
 
 public class World {
 
-	List<Level> levels;
-
-	/**
-	 * @return the levels
-	 */
-	public List<Level> getLevels() {
-		return levels;
+	
+	Level[] mLevels;
+	
+	int mWorldNumber;
+	
+	public World(int amountOfLevels, int worldNumber) {
+		mWorldNumber = worldNumber;
+		mLevels = new Level[amountOfLevels];
 	}
 
-	/**
-	 * @param levels
-	 *            the levels to set
-	 */
-	public void setLevels(List<Level> levels) {
-		this.levels = levels;
+	public void addLevel(Level levelToAdd, int index) {
+		mLevels[index] = levelToAdd;
 	}
-
-	public void addLevel(Level level1) {
-		if (this.levels == null) {
-			this.levels = new ArrayList<Level>();
+	
+	public int getNumberOfLevels() {
+		return mLevels.length;
+	}
+	
+	public Level getLevel(int index, float scale, AssetManager mgr) {
+		
+		Level levelToReturn = null;
+		if (mLevels[index] != null) {
+			levelToReturn = mLevels[index];
+		} else {
+			levelToReturn = LevelManager.loadLevel(mWorldNumber, index, scale, mgr);
 		}
-		this.levels.add(level1);
+		
+		return levelToReturn;
 	}
 }

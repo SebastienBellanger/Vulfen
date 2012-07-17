@@ -40,7 +40,6 @@ import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
-import com.vulfox.util.Logger;
 
 public class BowlScreen extends Screen {
 
@@ -53,21 +52,34 @@ public class BowlScreen extends Screen {
 	private float mScale;
 
 	private Vibrator vibrator;
+	
+	private Activity mActivity;
 
-	private Bitmap mRed;
-	private Bitmap mYellow0;
-	private Bitmap mYellow1;
-	private Bitmap mYellow2;
-	private Bitmap mYellow3;
+	private Bitmap mPenguinBmpX005;
+	private Bitmap mPenguinBmpX05;
+	private Bitmap mPenguinBmpX1;
+	private Bitmap mPenguinBmpX2;
+	private Bitmap mPenguinBmpX3;
+	
+	private Bitmap mCow1;
+	private Bitmap mCow2;
+	private Bitmap mCow3;
+	
 	private Bitmap mLaunchPad;
+	
+	private Bitmap mBrickSoft;
+	private Bitmap mBrickMedium;
+	private Bitmap mBrickHard;
 
 	private Paint mTextPaint = new Paint();
 	private Paint mStrokePaint = new Paint(); // text border
 	private Paint mTopPaint = new Paint();
 
 	private List<Pong> mPongs = new Vector<Pong>();
+	private List<Brick> mBricks = new Vector<Brick>();
+	
 	private List<BonusItem> mBonusItems = new Vector<BonusItem>();
-	private Pong mLaunchPong = new Penguin();
+	private Pong mLaunchPong;
 	private boolean mHasLaunched = false;
 
 	private boolean mMotionEnabled = true;
@@ -98,14 +110,12 @@ public class BowlScreen extends Screen {
 	private long mLivesLeftAnimationStart = 0;
 	private int mTimeStepsSinceGameEnded = 0;
 
-	private List<Points> mPoints = new Vector<Points>();
-
+	private List<Score> mPoints = new Vector<Score>();
+	
 	private boolean mVibrationEnabled = true;
 
 	private int mLives;
 	private boolean mGameOver = false;
-
-	private RectF mDrawRect = new RectF();
 
 	private BowlConfiguration mConfig;
 
@@ -132,6 +142,7 @@ public class BowlScreen extends Screen {
 		mConfig = levelConfiguration.getBowlConfiguration();
 		mLevelConfig = levelConfiguration;
 		mDpi = dpi;
+		mActivity = activity;
 	}
 
 	@Override
@@ -185,10 +196,7 @@ public class BowlScreen extends Screen {
 
 		mScale = getWidth() / 480.0f;
 
-		float penguinPongLength = mLevelConfig.getPenguin().getWidth() * mScale;
-		mLevelConfig.getPenguin().setWidth(penguinPongLength);
-		mLevelConfig.getPenguin().setHeight(penguinPongLength);
-		mLevelConfig.getPenguin().setRadius(penguinPongLength * 0.5f);
+		float penguinPongLength = mLevelConfig.getPenguin().getWidth();
 
 		mGameAreaHeight = (int) (getWidth() * GAME_AREA_ASPECT_RATIO);
 
@@ -200,21 +208,12 @@ public class BowlScreen extends Screen {
 			mGameAreaHeight = getHeight() - mLaunchPadHeight;
 		}
 
-		mLevelConfig.getPenguin().getPosition()
-				.setY(mGameAreaHeight + mLaunchPadHeight / 2.0f);
-
 		mGenericPaint.setAntiAlias(true);
 
 		mLaunchPadRect.set(0, getHeight() - mLaunchPadHeight, getWidth(),
 				getHeight());
 
-		float enemyLength = mLevelConfig.getEnemies().get(0).getWidth()
-				* mScale;
-		for (Pong enemy : mLevelConfig.getEnemies()) {
-			enemy.setWidth(enemyLength);
-			enemy.setHeight(enemyLength);
-			enemy.setRadius(enemyLength * 0.5f);
-		}
+		float enemyLength = mLevelConfig.getEnemies().get(0).getWidth();
 
 		mTopPaint.setTextSize(16 * mScale);
 		mTopPaint.setAntiAlias(true);
@@ -235,17 +234,27 @@ public class BowlScreen extends Screen {
 				R.drawable.launcher3);
 		
 		 
-		int enemyWidth = (int)enemyLength;
+		float enemyWidth = enemyLength;
 		
-		mYellow0 = getEnemyPongBitmap(R.drawable.sebe_normal,enemyWidth,enemyWidth,0);
+		mCow1 = getEnemyPongBitmap(R.drawable.sebe_normal,enemyWidth,enemyWidth,0);
 		enemyWidth *= 0.666666f;
-		mYellow1 = getEnemyPongBitmap(R.drawable.sebe_2,enemyWidth,enemyWidth,0);
+		mCow2 = getEnemyPongBitmap(R.drawable.sebe_2,enemyWidth,enemyWidth,1);
 		enemyWidth *= 0.666666f;
-		mYellow2 = getEnemyPongBitmap(R.drawable.sebe_3,enemyWidth,enemyWidth,0);
-		enemyWidth *= 0.666666f;
-		mYellow3 = getEnemyPongBitmap(R.drawable.sebe_4,enemyWidth,enemyWidth,0);
-		mRed = getPongBitmap(mLevelConfig.getPenguin());
+		mCow3 = getEnemyPongBitmap(R.drawable.sebe_3,enemyWidth,enemyWidth,2);
+		mPenguinBmpX005 = getPongBitmap(mLevelConfig.getPenguin(), 0.66666f*0.66666f, R.drawable.penguin_mini);
+		mPenguinBmpX05 = getPongBitmap(mLevelConfig.getPenguin(), 0.66666f, R.drawable.penguin_small);
+		mPenguinBmpX1 = getPongBitmap(mLevelConfig.getPenguin(), 1.0f, R.drawable.penguin_small);
+		mPenguinBmpX2 = getPongBitmap(mLevelConfig.getPenguin(), 1.5f, R.drawable.penguin_medium);
+		mPenguinBmpX3 = getPongBitmap(mLevelConfig.getPenguin(), 1.5f * 1.5f, R.drawable.penguin_large);
 
+		if (mLevelConfig.getBricks() != null && mLevelConfig.getBricks().size() > 0) {
+			float h = mLevelConfig.getBricks().get(0).getHeight();
+			float w = mLevelConfig.getBricks().get(0).getWidth();
+			mBrickSoft = getBrickBitmap(Brick.Type.SOFT, w, h, R.drawable.brick_soft);
+			mBrickMedium = getBrickBitmap(Brick.Type.MEDIUM, w, h, R.drawable.brick_soft);
+			mBrickHard = getBrickBitmap(Brick.Type.HARD, w, h, R.drawable.brick_soft);
+		}
+		
 		createBackground();
 
 		createLifeLeftImage();
@@ -265,19 +274,72 @@ public class BowlScreen extends Screen {
 				.getDefaultSharedPreferences(mContext.getApplicationContext());
 	}
 
-	private Bitmap getPongBitmap(Pong pong) {
-		int resource = pong.getImageResource();
+	private Bitmap getPongBitmap(Pong pong, float growFactor, int drawable) {
 		Bitmap bitmap = ImageLoader.loadFromResource(
-				mContext.getApplicationContext(), resource);
-		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) pong.getHeight(),
-				(int) pong.getWidth());
+				mContext.getApplicationContext(), drawable);
+		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) (pong.getHeight()* growFactor),
+				(int) (pong.getWidth() * growFactor));
 		return bitmap;
 	}
 	
-	private Bitmap getEnemyPongBitmap(int resource, int height, int width, int timesShrinken) {
-		Bitmap bitmap = ImageLoader.loadFromResource(
+	private Bitmap getBrickBitmap(Brick.Type type, float width, float height, int drawable) {
+		
+		Bitmap bitmap = null;
+		if (type == Brick.Type.SOFT) {
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_BRICK_SOFT);
+		} else if (type == Brick.Type.MEDIUM) {
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_BRICK_MEDIUM);
+		} else if (type == Brick.Type.HARD) {
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_BRICK_HARD);
+		}
+		
+		if (bitmap != null) {
+			return bitmap;
+		}
+		
+		bitmap = ImageLoader.loadFromResource(
+				mContext.getApplicationContext(), drawable);
+		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) (height),
+				(int) (width));
+		
+		if (type == Brick.Type.SOFT) {
+			BitmapManager.addBitmap(Constants.BITMAP_BRICK_SOFT, bitmap);
+		} else if (type == Brick.Type.MEDIUM) {
+			BitmapManager.addBitmap(Constants.BITMAP_BRICK_MEDIUM, bitmap);
+		} else if (type == Brick.Type.HARD) {
+			BitmapManager.addBitmap(Constants.BITMAP_BRICK_HARD, bitmap);
+		}
+		
+		
+		
+		return bitmap;
+	}
+	
+	private Bitmap getEnemyPongBitmap(int resource, float height, float width, int timesShrinken) {
+		
+		Bitmap bitmap = null;
+		switch (timesShrinken) {
+		case 0:
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_COW_0);
+			break;
+		case 1:
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_COW_1);
+			break;
+		case 2:
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_COW_2);
+			break;
+		case 3:
+			bitmap = BitmapManager.getBitmap(Constants.BITMAP_COW_3);
+			break;
+		}
+		
+		if (bitmap != null) {
+			return bitmap;
+		}
+		
+		bitmap = ImageLoader.loadFromResource(
 				mContext.getApplicationContext(), resource);
-		bitmap = GraphicsUtil.resizeBitmap(bitmap, height,
+		bitmap = GraphicsUtil.resizeBitmap(bitmap, (int) height,
 				(int) width);
 		
 		switch (timesShrinken) {
@@ -323,8 +385,10 @@ public class BowlScreen extends Screen {
 	}
 
 	private void reset() {
-		mLives = mConfig.getLives();
+		mLives = mLevelConfig.getLives();
 		mGameOver = false;
+		
+		mLaunchPong = new Pong(mLevelConfig.getPenguin());
 
 		mTotalScore = 0;
 		mScoreBar.reset();
@@ -335,12 +399,13 @@ public class BowlScreen extends Screen {
 		mPoints.clear();
 		mPongs.clear();
 		mBonusItems.clear();
+		mBricks.clear();
 
 		for (Pong enemy : mLevelConfig.getEnemies()) {
-			addInitialPong(new Vector2f(enemy.getPosition()),
-					(int) enemy.getWidth(), (int) enemy.getHeight(),
-					enemy.getImageResource());
+			addInitialPong(enemy);
 		}
+		
+		addBricks(mLevelConfig.getBricks());
 
 		mGameEndedTime = 0;
 		mLivesLeftAnimationStart = 0;
@@ -368,7 +433,7 @@ public class BowlScreen extends Screen {
 
 					mLastMotion.set(x, y);
 					mLastMotionTime = motionEvent.getEventTime();
-					mLaunchPong.position.set(x, y);
+					mLaunchPong.getPosition().set(x, y);
 				}
 			} else if (mHasPong
 					&& motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
@@ -377,7 +442,7 @@ public class BowlScreen extends Screen {
 
 					mLastMotion.set(x, y);
 					mLastMotionTime = motionEvent.getEventTime();
-					mLaunchPong.position.set(x, y);
+					mLaunchPong.getPosition().set(x, y);
 				} else {
 					mHasPong = false;
 
@@ -395,8 +460,8 @@ public class BowlScreen extends Screen {
 					if (velocity.getLength() > 100.0f * mScale) {
 						mMotionEnabled = false;
 
-						Pong redPong = new Penguin();
-						redPong.position = new Vector2f(mLaunchPong.position);
+						Pong redPong = new Pong(mLevelConfig.getPenguin());
+						redPong.setPosition(new Vector2f(mLaunchPong.getPosition()));
 						redPong.velocity = velocity;
 						redPong.setHeight(mLevelConfig.getPenguin().getHeight());
 						redPong.setWidth(mLevelConfig.getPenguin().getWidth());
@@ -428,10 +493,18 @@ public class BowlScreen extends Screen {
 	public void update(float timeStep) {
 
 		int moving = 0;
+		
+		if (mMotionEnabled) {
+			mLaunchPong.update(timeStep);
+		}
 
 		// UPDATE POSITIONS AND VELOCITY FOR ALL PONGS.
 		for (Pong pong : mPongs) {
 
+			if (!pong.isAnimatingDone()) {
+				pong.update(timeStep);
+			}
+			
 			// First check if this pong has stopped.
 			if (pong.velocity.getLength() == 0.0f) {
 				continue;
@@ -441,8 +514,8 @@ public class BowlScreen extends Screen {
 			moving++;
 
 			//calculate new velocity. avoids creating new Vector2f:
-			pong.position.setX(pong.position.getX() + pong.velocity.getX() * timeStep);
-			pong.position.setY(pong.position.getY() + pong.velocity.getY() * timeStep);
+			pong.getPosition().setX(pong.getPosition().getX() + pong.velocity.getX() * timeStep);
+			pong.getPosition().setY(pong.getPosition().getY() + pong.velocity.getY() * timeStep);
 
 			// Calculate velocity retardation
 			Vector2f friction = pong.velocity.inv();
@@ -459,7 +532,6 @@ public class BowlScreen extends Screen {
 
 		// UPDATE POSITIONS AND VELOCITY FOR ALL BONUSITEMS.
 
-		
 		for (int i = 0; i < mBonusItems.size(); i++) {
 
 			BonusItem bonusItem = mBonusItems.get(i);
@@ -502,40 +574,45 @@ public class BowlScreen extends Screen {
 				for (int k = 0; k < mBonusItems.size(); k++) {
 					BonusItem bonusItem = mBonusItems.get(k);
 					
-					Vector2f collision = pong.position.sub(bonusItem.getPosition());
+					Vector2f collision = pong.getPosition().sub(bonusItem.getPosition());
 					float length = collision.getLength();
 					if (length < pong.getRadius() + bonusItem.getRadius()) {
 						// PICK UP ITEM!
-						if (bonusItem.getItemType() == BonusItemType.GROWER
-								&& pong.getCurrentGroth() < pong.getMaxGroth()) {
-							pong.setWidth(pong.getWidth() * 1.5f);
-							pong.setRadius(pong.getRadius() * 1.5f);
-							pong.setCurrentGroth(pong.getCurrentGroth() + 1);
+						if (bonusItem.getItemType() == BonusItemType.GROWER) {
+							
+							if (pong.getCurrentGroth() < pong.getMaxGroth()) {
+								pong.setWidth(pong.getWidth() * 1.5f);
+								pong.setHeight(pong.getHeight() * 1.5f);
+								pong.setRadius(pong.getRadius() * 1.5f);
+								pong.setCurrentGroth(pong.getCurrentGroth() + 1);
+							}
 							
 							setTotalScore(mTotalScore + bonusItem.getScore());
 							
-							Vector2f position = bonusItem.getPosition().sub(pong.position);
+							Vector2f position = bonusItem.getPosition().sub(pong.getPosition());
 							position.mulT(0.5f);
-							position.addT(pong.position);
+							position.addT(pong.getPosition());
 
-							mPoints.add(new Points(bonusItem.getScore(), position, Color.GREEN, mScale));
+							mPoints.add(new Score(bonusItem.getScore(), position, Color.GREEN, mScale));
 							
 							mBonusItems.remove(bonusItem);
 							
 							break;
-						} else if (bonusItem.getItemType() == BonusItemType.SHRINKER
-								& pong.getCurrentGroth() > -pong.getMaxShrink()) {
-							pong.setWidth(pong.getWidth() * 0.666666f);
-							pong.setRadius(pong.getRadius() * 0.666666f);
-							pong.setCurrentGroth(pong.getCurrentGroth() - 1);
+						} else if (bonusItem.getItemType() == BonusItemType.SHRINKER) {
+							if (pong.getCurrentGroth() > -pong.getMaxShrink()) {
+								pong.setWidth(pong.getWidth() * 0.666666f);
+								pong.setHeight(pong.getHeight() * 0.666666f);
+								pong.setRadius(pong.getRadius() * 0.666666f);
+								pong.setCurrentGroth(pong.getCurrentGroth() - 1);
+							}
 							
 							setTotalScore(mTotalScore + bonusItem.getScore());
 							
-							Vector2f position = bonusItem.getPosition().sub(pong.position);
+							Vector2f position = bonusItem.getPosition().sub(pong.getPosition());
 							position.mulT(0.5f);
-							position.addT(pong.position);
+							position.addT(pong.getPosition());
 
-							mPoints.add(new Points(bonusItem.getScore(), position, Color.DKGRAY, mScale));
+							mPoints.add(new Score(bonusItem.getScore(), position, Color.DKGRAY, mScale));
 							
 							mBonusItems.remove(bonusItem);
 							
@@ -546,29 +623,29 @@ public class BowlScreen extends Screen {
 			}
 			
 			// Check if pong is too far to the left
-			if (pong.position.getX() < pong.getRadius()) {
-				pong.position.setX(2.0f * pong.getRadius()
-						- pong.position.getX());
+			if (pong.getPosition().getX() < pong.getRadius()) {
+				pong.getPosition().setX(2.0f * pong.getRadius()
+						- pong.getPosition().getX());
 				pong.velocity.setX(-pong.velocity.getX());
 				// Check if pong is too far to the right
-			} else if (pong.position.getX() > getWidth() - pong.getRadius()) {
-				pong.position.setX(2.0f * (getWidth() - pong.getRadius())
-						- pong.position.getX());
+			} else if (pong.getPosition().getX() > getWidth() - pong.getRadius()) {
+				pong.getPosition().setX(2.0f * (getWidth() - pong.getRadius())
+						- pong.getPosition().getX());
 				pong.velocity.setX(-pong.velocity.getX());
 			}
 
 			// Check if pong is too far to the top
-			if (pong.position.getY() < pong.getRadius()) {
-				pong.position.setY(2.0f * pong.getRadius()
-						- pong.position.getY());
+			if (pong.getPosition().getY() < pong.getRadius()) {
+				pong.getPosition().setY(2.0f * pong.getRadius()
+						- pong.getPosition().getY());
 				pong.velocity.setY(-pong.velocity.getY());
 				// Check if pong is too far to the bottom
 			} else if (pong.velocity.getY() > 0 /* if direction is down */
-					&& pong.position.getY() > getHeight() - pong.getRadius()
+					&& pong.getPosition().getY() > getHeight() - pong.getRadius()
 							- mLaunchPadHeight) {
-				pong.position.setY(2.0f
+				pong.getPosition().setY(2.0f
 						* (getHeight() - pong.getRadius() - mLaunchPadHeight)
-						- pong.position.getY());
+						- pong.getPosition().getY());
 				pong.velocity.setY(-pong.velocity.getY());
 			}
 
@@ -577,7 +654,7 @@ public class BowlScreen extends Screen {
 				Pong first = mPongs.get(i);
 				Pong second = mPongs.get(j);
 
-				Vector2f collision = first.position.sub(second.position);
+				Vector2f collision = first.getPosition().sub(second.getPosition());
 				float length = collision.getLength();
 
 				if (length >= first.getRadius() + second.getRadius()) {
@@ -591,8 +668,8 @@ public class BowlScreen extends Screen {
 							+ second.getRadius() - length)
 							/ length);
 	
-					first.position.addT(mtd.mul(0.505f));
-					second.position.subT(mtd.mul(0.505f));
+					first.getPosition().addT(mtd.mul(0.505f));
+					second.getPosition().subT(mtd.mul(0.505f));
 	
 					collision.normalizeT();
 	
@@ -606,17 +683,25 @@ public class BowlScreen extends Screen {
 					second.velocity.addT(collision.mul((bcf - bci) * 0.90f));
 				}
 			}
+			
+			//Check for collision with bricks
+			if (mBricks.size() > 0) {
+				Brick brickCollidedWith = null;
+				for (Brick brick : mBricks) {
+					if (CollisionCalculator.circleOrtogonalSquareCollision(pong, brick)) {
+						brickCollidedWith = brick;
+						break;
+					}
+				}
+				mBricks.remove(brickCollidedWith);
+			}
 		}
-		
-//		if (mTotalScore > mTopScore) {
-//			mTopScore = mTotalScore;
-//		}
 
 		// UPDATE FADING SCORES
-		List<Points> pointsCopy = new Vector<Points>(mPoints); // TODO: kan man
+		List<Score> pointsCopy = new Vector<Score>(mPoints); // TODO: kan man
 																// undvika new
 																// här?
-		for (Points points : pointsCopy) {
+		for (Score points : pointsCopy) {
 			points.update(timeStep);
 			if (points.isDone())
 				mPoints.remove(points);
@@ -624,6 +709,12 @@ public class BowlScreen extends Screen {
 
 		if (mHasLaunched && !mGameOver) {
 			randomizeBonusItem();
+		}
+		
+		if (mBricks.size() > 0 && !mBricks.get(0).isAnimatingDone()) {
+			for (Brick brick : mBricks) {
+				brick.update(timeStep);
+			}
 		}
 
 	}
@@ -687,36 +778,44 @@ public class BowlScreen extends Screen {
 
 		canvas.drawBitmap(mLaunchPad, null, mLaunchPadRect, mGenericPaint);
 
-		for (Pong pong : mPongs) {
-
-			float x = pong.position.getX() - pong.getRadius();
-			float y = pong.position.getY() - pong.getRadius();
-
-			mDrawRect.set(x, y, x + pong.getWidth(), y + pong.getWidth());
-
-			if (pong.getType() == Type.PENGUIN) {
-				canvas.drawBitmap(mRed, null, mDrawRect, mGenericPaint);
-			} else if (pong.getType() == Type.COW) {
-				if (pong.getTimesShrinken() == 0) {
-					canvas.drawBitmap(mYellow0, null, mDrawRect, mGenericPaint);
-				} else if (pong.getTimesShrinken() == 1) {
-					canvas.drawBitmap(mYellow1, null, mDrawRect, mGenericPaint);
-				} else if (pong.getTimesShrinken() == 2) {
-					canvas.drawBitmap(mYellow2, null, mDrawRect, mGenericPaint);
-				} else if (pong.getTimesShrinken() == 3) {
-					canvas.drawBitmap(mYellow3, null, mDrawRect, mGenericPaint);
-				}
+		if (mBricks.size() > 0) {
+			for (Brick brick : mBricks) {
+				brick.draw(canvas);
 			}
 		}
+		
+		for (Pong pong : mPongs) {
 
+			if (pong.getType() == Type.PENGUIN) {
+				if (pong.getCurrentGroth() < -1) {
+					pong.setSpriteBitmap(mPenguinBmpX005);
+				} else if (pong.getCurrentGroth() == -1) {
+					pong.setSpriteBitmap(mPenguinBmpX05);
+				} else if (pong.getCurrentGroth() == 0) {
+					pong.setSpriteBitmap(mPenguinBmpX1);
+				} else if (pong.getCurrentGroth() == 1) {
+					pong.setSpriteBitmap(mPenguinBmpX2);
+				} else if (pong.getCurrentGroth() == 2) {
+					pong.setSpriteBitmap(mPenguinBmpX3);
+				}
+			} else if (pong.getType() == Type.COW) {
+				if (pong.getTimesShrinken() == 0) {
+					pong.setSpriteBitmap(mCow1);
+				} else if (pong.getTimesShrinken() == 1) {
+					pong.setSpriteBitmap(mCow2);
+				} else if (pong.getTimesShrinken() == 2) {
+					pong.setSpriteBitmap(mCow3);
+				}
+			}
+			
+			pong.draw(canvas);
+		}
+		
 		if (mMotionEnabled) {
-			float x = mLaunchPong.position.getX() - mLaunchPong.getRadius();
-			float y = mLaunchPong.position.getY() - mLaunchPong.getRadius();
+			
+			mLaunchPong.setSpriteBitmap(mPenguinBmpX1);
+			mLaunchPong.draw(canvas);
 
-			mDrawRect.set(x, y, x + mLevelConfig.getPenguin().getWidth(), y
-					+ mLevelConfig.getPenguin().getWidth());
-
-			canvas.drawBitmap(mRed, null, mDrawRect, mGenericPaint);
 		}
 
 		
@@ -726,7 +825,7 @@ public class BowlScreen extends Screen {
 			addGameOverDialog(canvas);
 		}
 
-		for (Points points : mPoints) {
+		for (Score points : mPoints) {
 			points.draw(canvas);
 		}
 	}
@@ -778,10 +877,7 @@ public class BowlScreen extends Screen {
 	}
 	
 	private void loadNextLevel() {
-		float scale = getWidth() / 480.0f;
-		int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
-		LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
-		Level level = levelManager.getLevel(mLevelConfig.getWorldNumber(), mLevelConfig.getLevelNumber()+1);
+		Level level = LevelManager.getLevel(mLevelConfig.getWorldNumber()+1, mLevelConfig.getLevelNumber()+2, mScale, mActivity.getAssets());
 		mLevelConfig = level;
 		mConfig = mLevelConfig.getBowlConfiguration();
 		initialize();
@@ -810,9 +906,9 @@ public class BowlScreen extends Screen {
 					float rightMargin = bitmapWidth * 0.3f;
 	
 					Vector2f position = new Vector2f(getWidth() - bitmapWidth * (mLives + 1) - rightMargin*2.0f, 
-							getHeight() - bitmapWidth * 4.0f);
+							bitmapWidth * 4.0f);
 	
-					mPoints.add(new Points(SCORE_FOR_LIFE_LEFT, position, Color.GREEN, mScale));
+					mPoints.add(new Score(SCORE_FOR_LIFE_LEFT, position, Color.GREEN, mScale));
 					setTotalScore(mTotalScore + SCORE_FOR_LIFE_LEFT);
 					mLives--;
 				}
@@ -843,8 +939,7 @@ public class BowlScreen extends Screen {
 			EventListener menuListener = new EventListener() {
 				@Override
 				public boolean handleButtonClicked() {
-					mScreenManager.removeTopScreen();
-					mScreenManager.removeTopScreen();
+					mScreenManager.removeTopScreens(2); // remove top 2 screens
 					return true;
 				}
 			};
@@ -919,7 +1014,6 @@ public class BowlScreen extends Screen {
 	}
 
 	private boolean pongCollision(Pong first, Pong second) {
-//		mRoundHits++;
 		boolean wasKill = false;
 
 		if (mVibrationEnabled) {
@@ -928,14 +1022,14 @@ public class BowlScreen extends Screen {
 		}
 
 		if (first.getType() == Type.COW && second.getType() == Type.COW) {
-			int value = mRoundHits * mConfig.getYellowYellowValue();
+			int value = mRoundHits * mConfig.getEnemyEnemyValue();
 			setTotalScore(mTotalScore + value);
 
-			Vector2f position = second.position.sub(first.position);
+			Vector2f position = second.getPosition().sub(first.getPosition());
 			position.mulT(0.5f);
-			position.addT(first.position);
+			position.addT(first.getPosition());
 
-			mPoints.add(new Points(value, position, Color.YELLOW, mScale));
+			mPoints.add(new Score(value, position, Color.YELLOW, mScale));
 		} else if ((first.getType() == Type.COW && second.getType() == Type.PENGUIN)
 				|| (first.getType() == Type.PENGUIN && second.getType() == Type.COW)) {
 			
@@ -945,6 +1039,7 @@ public class BowlScreen extends Screen {
 					wasKill = true;
 				}
 				first.setWidth(first.getWidth() * 0.666666f);
+				first.setHeight(first.getHeight() * 0.666666f);
 				first.setRadius(first.getRadius() * 0.666666f);
 				first.setTimesShrinken(first.getTimesShrinken()+1);
 			} else {
@@ -953,32 +1048,33 @@ public class BowlScreen extends Screen {
 					wasKill = true;
 				}
 				second.setWidth(second.getWidth() * 0.666666f);
+				second.setHeight(second.getHeight() * 0.666666f);
 				second.setRadius(second.getRadius() * 0.666666f);
 				second.setTimesShrinken(second.getTimesShrinken()+1);
 			}
 			
-			int value = mRoundHits * mConfig.getRedYellowValue();
+			int value = mRoundHits * mConfig.getPenguinEnemyValue();
 			if (wasKill) {
 				value = 500;
 			}
 			setTotalScore(mTotalScore + value);
 
-			Vector2f position = second.position.sub(first.position);
+			Vector2f position = second.getPosition().sub(first.getPosition());
 			position.mulT(0.5f);
-			position.addT(first.position);
+			position.addT(first.getPosition());
 
-			mPoints.add(new Points(value, position, Color.YELLOW,
+			mPoints.add(new Score(value, position, Color.YELLOW,
 					mScale));
 
 		} else {
-			int value = mRoundHits * mConfig.getRedRedValue();
+			int value = mRoundHits * mConfig.getPenguinPenguinValue();
 			setTotalScore(mTotalScore + value);
 
-			Vector2f position = second.position.sub(first.position);
+			Vector2f position = second.getPosition().sub(first.getPosition());
 			position.mulT(0.5f);
-			position.addT(first.position);
+			position.addT(first.getPosition());
 
-			mPoints.add(new Points(value, position, Color.YELLOW, mScale));
+			mPoints.add(new Score(value, position, Color.YELLOW, mScale));
 		}
 		
 		return wasKill;
@@ -993,17 +1089,18 @@ public class BowlScreen extends Screen {
 			return;
 		}
 
-		mLaunchPong.position = new Vector2f(mLevelConfig.getPenguin()
-				.getPosition());
+		mLaunchPong.setPosition(new Vector2f(mLevelConfig.getPenguin()
+				.getPosition()));
 		mLaunchPong.velocity = new Vector2f();
 		mLaunchPong.setHeight(mLevelConfig.getPenguin().getHeight());
 		mLaunchPong.setWidth(mLevelConfig.getPenguin().getWidth());
 		mLaunchPong.setRadius(mLevelConfig.getPenguin().getRadius());
+		mLaunchPong.setAnimateFromSmall(true);
+		mLaunchPong.setAnimationMillis(120);
+		mLaunchPong.resetAnimation();
 
 		mMotionEnabled = true;
 		mHasLaunched = false;
-
-//		mRoundHits = 0;
 
 	}
 
@@ -1012,16 +1109,27 @@ public class BowlScreen extends Screen {
 	 * 
 	 * @param i
 	 */
-	private void addInitialPong(Vector2f position, int width, int height,
-			int imageResource) {
-		Pong pong = new Cow();
-		pong.position = position;
+	private void addInitialPong(Pong enemy) {
+		Pong pong = new Pong(enemy);
 		pong.velocity = new Vector2f();
-		pong.setHeight(height);
-		pong.setWidth(width);
-		pong.setRadius(width * 0.5f);
-		pong.setImageResource(imageResource);
 		mPongs.add(pong);
+	}
+	
+	private void addBricks(List<Brick> bricks) {
+		
+		if (bricks != null && bricks.size() > 0) {
+			for (Brick brick : bricks) {
+				Brick brickCopy = new Brick(brick);
+				if (brickCopy.getType() == Brick.Type.SOFT) {
+					brickCopy.setBitmap(mBrickSoft);
+				} else if (brickCopy.getType() == Brick.Type.MEDIUM) {
+					brickCopy.setBitmap(mBrickMedium);
+				} else if (brickCopy.getType() == Brick.Type.HARD) {
+					brickCopy.setBitmap(mBrickHard);
+				}
+				mBricks.add(brickCopy);
+			}
+		}
 	}
 
 	private void saveTopScore() {
@@ -1056,5 +1164,4 @@ public class BowlScreen extends Screen {
 			}
 		}
 	}
-	
 }

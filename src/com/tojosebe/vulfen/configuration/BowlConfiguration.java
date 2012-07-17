@@ -2,42 +2,27 @@ package com.tojosebe.vulfen.configuration;
 
 public class BowlConfiguration {
 
-	private int lives = 5;
-	
 	private float minSpeed = 500.0f;
 	private float maxSpeed = 1700.0f;
 	
 	private float friction = 150.0f;
 	
-	private int yellowYellowValue = 50;
-	private int redYellowValue = 100;
-	private int redRedValue = 50;
+	private int enemyEnemyValue = 50;
+	private int penguinEnemyValue = 100;
+	private int penguinPenguinValue = 50;
 	
 	public BowlConfiguration(BowlConfiguration bowlConfiguration) {
-		lives = bowlConfiguration.lives;
 		minSpeed = bowlConfiguration.minSpeed;
 		maxSpeed = bowlConfiguration.maxSpeed;
 		friction = bowlConfiguration.friction;
-		yellowYellowValue = bowlConfiguration.yellowYellowValue;
-		redYellowValue = bowlConfiguration.redYellowValue;
-		redRedValue = bowlConfiguration.redRedValue;
+		enemyEnemyValue = bowlConfiguration.enemyEnemyValue;
+		penguinEnemyValue = bowlConfiguration.penguinEnemyValue;
+		penguinPenguinValue = bowlConfiguration.penguinPenguinValue;
 	}
 	
 	public BowlConfiguration() {
 	}
 	
-	/**
-	 * @return the lives
-	 */
-	public int getLives() {
-		return lives;
-	}
-	/**
-	 * @param lives the lives to set
-	 */
-	public void setLives(int lives) {
-		this.lives = lives;
-	}
 	/**
 	 * @return the minSpeed
 	 */
@@ -77,38 +62,38 @@ public class BowlConfiguration {
 	/**
 	 * @return the yellowYellowValue
 	 */
-	public int getYellowYellowValue() {
-		return yellowYellowValue;
+	public int getEnemyEnemyValue() {
+		return enemyEnemyValue;
 	}
 	/**
 	 * @param yellowYellowValue the yellowYellowValue to set
 	 */
-	public void setYellowYellowValue(int yellowYellowValue) {
-		this.yellowYellowValue = yellowYellowValue;
+	public void setEnemyEnemyValue(int yellowYellowValue) {
+		this.enemyEnemyValue = yellowYellowValue;
 	}
 	/**
 	 * @return the redYellowValue
 	 */
-	public int getRedYellowValue() {
-		return redYellowValue;
+	public int getPenguinEnemyValue() {
+		return penguinEnemyValue;
 	}
 	/**
 	 * @param redYellowValue the redYellowValue to set
 	 */
-	public void setRedYellowValue(int redYellowValue) {
-		this.redYellowValue = redYellowValue;
+	public void setPenguinEnemyValue(int redYellowValue) {
+		this.penguinEnemyValue = redYellowValue;
 	}
 	/**
 	 * @return the redRedValue
 	 */
-	public int getRedRedValue() {
-		return redRedValue;
+	public int getPenguinPenguinValue() {
+		return penguinPenguinValue;
 	}
 	/**
 	 * @param redRedValue the redRedValue to set
 	 */
-	public void setRedRedValue(int redRedValue) {
-		this.redRedValue = redRedValue;
+	public void setPenguinPenguinValue(int redRedValue) {
+		this.penguinPenguinValue = redRedValue;
 	}
 	
 }

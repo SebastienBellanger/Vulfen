@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.animation.AnimateableImageComponent;
+import com.tojosebe.vulfen.configuration.LevelManager;
 import com.tojosebe.vulfen.levelscreen.LevelScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
@@ -89,12 +90,13 @@ public class WorldScreen extends Screen {
 		createStar(); //load star into memory for later use when adding worlds.
 		addScreenComponent(mPenguinImageRight);
 
-		WorldButton worldButton = addWorld("First Battle", 25, 10, null, 1);
-		addWorld("World 2", 25, 0, worldButton, 2);
-		addWorld("Extras", 25, 0, worldButton, 3);
-		addWorld("Custom Levels", 25, 0, worldButton, 4);
-		addWorld("Pinball world", 25, 0, worldButton, 5);
-		addWorld("Hello there :-)", 25, 0, worldButton, 6);
+		LevelManager.init(mActivity.getAssets(), getWidth(), getHeight());
+		int numberOfWOrlds = LevelManager.getNumberOfWorlds();
+		
+		WorldButton worldButton = addWorld("World " + 1, LevelManager.getNumberOfLevels(0),  LevelManager.getNumberOfLevels(0), null, 1);
+		for (int i = 1; i < numberOfWOrlds; i++) {
+			addWorld("World " + i, LevelManager.getNumberOfLevels(i),  LevelManager.getNumberOfLevels(i), worldButton, 1);
+		}
 		
 		addScreenComponent(createBottomBackground());
 
@@ -344,8 +346,8 @@ public class WorldScreen extends Screen {
 		}
 	}
 
-	private WorldButton addWorld(String worldName, int totalStages,
-			int clearedStages, WorldButton worldButtonTemplate, final int worldNumber) {
+	private WorldButton addWorld(String worldName, final int totalStages,
+			final int lockedStages, WorldButton worldButtonTemplate, final int worldNumber) {
 
 		
 		WorldButton worldButton = null;
@@ -353,7 +355,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, 24, 18, 4, worldNumber, mActivity));
+					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, totalStages, 0, 4, worldNumber, mActivity));
 					
 					return true;
 				}
@@ -363,11 +365,11 @@ public class WorldScreen extends Screen {
 
 		if (worldButtonTemplate != null) {
 			worldButton = new WorldButton(worldName, totalStages,
-					clearedStages, mContext, mDpi, worldButtonTemplate);
+					lockedStages, mContext, mDpi, worldButtonTemplate);
 			worldButton.setEventListener(listener);
 		} else {
 			worldButton = new WorldButton(worldName, totalStages,
-					clearedStages, mContext, mDpi);
+					lockedStages, mContext, mDpi);
 			worldButton.setEventListener(listener);
 		}
 		worldButton.setPositionX((getWidth() - worldButton.getWidth()) / 2);

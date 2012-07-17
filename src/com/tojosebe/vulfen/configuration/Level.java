@@ -3,8 +3,9 @@ package com.tojosebe.vulfen.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tojosebe.vulfen.game.Pong;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
+import com.tojosebe.vulfen.game.Brick;
+import com.tojosebe.vulfen.game.Pong;
 
 /**
  * This class represents a level. It holds all properties that is needed for
@@ -14,20 +15,21 @@ import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 public class Level {
 
 	private int mLevelNumber;
+	private int mWorldNumber;
 	
 	private int mThreeStarsScore;
 	private int mTwoStarsScore;
 	private int mOneStarScore;
 	
+	private int mLives;
+	
 	private BowlConfiguration mBowlConfiguration;
 
 	private List<Pong> mEnemies;
 	
+	private List<Brick> mBricks;
+	
 	private Pong mPenguin;
-	
-	private float mScale;
-	
-	private int mWorldNumber;
 	
 	private BonusItemType[] mBonusItemSequence = null;
 	
@@ -35,27 +37,15 @@ public class Level {
 	
 	private int mBonusItemPropability = 5; //1 in 5 i.e 20% chance each second.
 	
-	public Level(int levelNumber, int threeStarsScore, int twoStarsScore, int oneStarScore, float scale, int worldNumber) {
-		mLevelNumber = levelNumber;
-		mThreeStarsScore = threeStarsScore;
-		mTwoStarsScore = twoStarsScore;
-		mOneStarScore = oneStarScore;
-		mScale = scale;
-		mWorldNumber = worldNumber;
+	public Level() {
+		mBowlConfiguration = new BowlConfiguration();
 	}
-	
+
 	/**
 	 * @return the bowlConfiguration
 	 */
 	public BowlConfiguration getBowlConfiguration() {
 		return mBowlConfiguration;
-	}
-
-	/**
-	 * @param bowlConfiguration the bowlConfiguration to set
-	 */
-	public void setBowlConfiguration(BowlConfiguration bowlConfiguration) {
-		this.mBowlConfiguration = bowlConfiguration;
 	}
 
 	/**
@@ -68,10 +58,30 @@ public class Level {
 	/**
 	 * @param enemies the enemies to set
 	 */
-	public void setEnemies(List<Pong> enemies) {
-		this.mEnemies = enemies;
+	public void addEnemy(Pong enemy) {
+		if (mEnemies == null) {
+			mEnemies = new ArrayList<Pong>();
+		}
+		mEnemies.add(enemy);
+	}
+	
+	/**
+	 * @return the bricks
+	 */
+	public List<Brick> getBricks() {
+		return mBricks;
 	}
 
+	/**
+	 * @param brick the brick to set
+	 */
+	public void addBrick(Brick brick) {
+		if (mBricks == null) {
+			mBricks = new ArrayList<Brick>();
+		}
+		mBricks.add(brick);
+	}
+	
 	/**
 	 * @return the penguin
 	 */
@@ -93,30 +103,6 @@ public class Level {
 		return mLevelNumber;
 	}
 
-	public Level getCopy() {
-		Level levelCopy = new Level(mLevelNumber, mThreeStarsScore, mTwoStarsScore, mOneStarScore, mScale, mWorldNumber);
-		levelCopy.mBowlConfiguration = new BowlConfiguration(mBowlConfiguration);
-		levelCopy.mEnemies = new ArrayList<Pong>();
-		for (Pong pong : mEnemies) {
-			Pong pongCopy = new Pong(pong);
-			levelCopy.mEnemies.add(pongCopy);
-		}
-		levelCopy.mPenguin = new Pong(mPenguin);
-		
-		BonusItemType[] bonusSequense = null;
-		if (mBonusItemSequence != null) {
-			bonusSequense = new BonusItemType[mBonusItemSequence.length];
-			for (int i = 0; i < mBonusItemSequence.length; i++) {
-				bonusSequense[i] = mBonusItemSequence[i];
-			}
-		}
-		levelCopy.mBonusItemSequence = bonusSequense;
-		levelCopy.mBonusItemsPerRound = mBonusItemsPerRound;
-		levelCopy.mBonusItemPropability = mBonusItemPropability;
-		return levelCopy;
-	
-	}
-
 	public int getThreeStarsScore() {
 		return mThreeStarsScore;
 	}
@@ -127,6 +113,18 @@ public class Level {
 
 	public int getOneStarScore() {
 		return mOneStarScore;
+	}
+	
+	public int setThreeStarsScore(int score) {
+		return mThreeStarsScore = score;
+	}
+
+	public int setTwoStarsScore(int score) {
+		return mTwoStarsScore = score;
+	}
+
+	public int setOneStarScore(int score) {
+		return mOneStarScore = score;
 	}
 
 	/**
@@ -141,20 +139,6 @@ public class Level {
 	 */
 	public void setBonusItemSequence(BonusItemType[] bonusItemSequence) {
 		this.mBonusItemSequence = bonusItemSequence;
-	}
-
-	/**
-	 * @return the scale
-	 */
-	public float getScale() {
-		return mScale;
-	}
-
-	/**
-	 * @param scale the scale to set
-	 */
-	public void setScale(float scale) {
-		this.mScale = scale;
 	}
 
 	/**
@@ -197,6 +181,58 @@ public class Level {
 	 */
 	public void setBonusItemPropability(int bonusItemPropability) {
 		this.mBonusItemPropability = bonusItemPropability;
+	}
+
+	public void setBonusItemSequence(String sequence) {
+		
+		if (sequence == null || sequence.length() == 0) {
+			return;
+		}
+		
+		BonusItemType[] bonusItemSequence = new BonusItemType[sequence.length()];
+		
+		for (int i = 0; i < sequence.length(); i++) {
+			String current = "" + sequence.charAt(i);
+			if (current.equals("G")) {
+				bonusItemSequence[i] = BonusItemType.GROWER;
+			} else if (current.equals("S")) {
+				bonusItemSequence[i] = BonusItemType.SHRINKER;
+			} else if (current.equals("R")) {
+				bonusItemSequence[i] = BonusItemType.BRICK_SMASHER;
+			} else if (current.equals("L")) {
+				bonusItemSequence[i] = BonusItemType.LIGHTNING;
+			} else if (current.equals("D")) {
+				bonusItemSequence[i] = BonusItemType.SPLITTER;
+			} else if (current.equals("E")) {
+				bonusItemSequence[i] = BonusItemType.EXPLODER;
+			} else if (current.equals("U")) {
+				bonusItemSequence[i] = BonusItemType.EXTRA_PONG;
+			} 
+		}
+		
+		setBonusItemSequence(bonusItemSequence);
+		
+	}
+
+	/**
+	 * @return the Lives
+	 */
+	public int getLives() {
+		return mLives;
+	}
+
+	/**
+	 * @param mLives the mLives to set
+	 */
+	public void setLives(int lives) {
+		this.mLives = lives;
+	}
+
+	/**
+	 * @param mLevelNumber the mLevelNumber to set
+	 */
+	public void setLevelNumber(int levelNumber) {
+		this.mLevelNumber = levelNumber;
 	}
 
 }

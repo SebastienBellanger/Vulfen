@@ -104,7 +104,7 @@ public class LevelScreen extends Screen {
 		// Add level images.
 		Bitmap levelbitmap = createLevelBitmap();
 		Bitmap lockedLevelbitmap = createLockedLevelBitmap();
-
+		
 		addLevel(1, levelbitmap, false);
 
 		for (int i = 1; i < mNbrOfLevels; ++i) {
@@ -284,9 +284,7 @@ public class LevelScreen extends Screen {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10,
 						mDpi)) {
 					float scale = getWidth() / 480.0f;
-					int gameAreaHeight = (int) (getWidth() * BowlScreen.GAME_AREA_ASPECT_RATIO);
-					LevelManager levelManager = LevelManager.getInstance(getWidth(), gameAreaHeight, scale);
-					Level level = levelManager.getLevel(mWorldNumber, levelIndex);
+					Level level = LevelManager.getLevel(mWorldNumber, levelIndex, scale, mActivity.getAssets());
 					mScreenManager.addScreenUI(new BowlScreen(level, mDpi, mActivity));
 					return true;
 				}

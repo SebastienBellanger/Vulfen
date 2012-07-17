@@ -7,7 +7,7 @@ import android.graphics.Typeface;
 
 import com.vulfox.math.Vector2f;
 
-public class Points {
+public class Score {
 
 	private final float FADE = 0.6f;
 
@@ -23,7 +23,7 @@ public class Points {
 
 	private boolean mIsDone = false;
 
-	public Points(int points, Vector2f position, int color, float mScale) {
+	public Score(int points, Vector2f position, int color, float mScale) {
 		mPoints = points;
 		mPosition = position;
 		mRise.mulT(mScale);

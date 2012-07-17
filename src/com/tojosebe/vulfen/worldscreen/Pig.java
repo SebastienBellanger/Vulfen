@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 
 import com.vulfox.ImageLoader;
 import com.vulfox.component.ImageComponent;
+import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.Vector2fPool;
 
@@ -41,6 +42,23 @@ public class Pig {
 		Bitmap pig = ImageLoader.loadFromResource(context, resourceId);
 
 		mImageComponent = new ImageComponent(pig, false);
+		
+		mImageComponent.setEventListener(new EventListener() {
+
+			@Override
+			public boolean handleButtonClicked() {
+				
+				if (!mMoving) {
+					int scale = mScreenHeight / 2;
+					mVelocity.setY(-scale);
+					mMoving = true;
+					return true;
+				}
+				return false;
+			}
+			
+		});
+		
 		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
 
 		mImageComponent.setPositionX((int) (xOffsetDp * fraction));

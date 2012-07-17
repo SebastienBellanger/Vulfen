@@ -3,7 +3,6 @@ package com.tojosebe.vulfen.startscreen;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.util.Log;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.animation.AnimateableImageComponent;
@@ -31,6 +30,8 @@ public class StartScreen extends Screen {
 	private Cloud mCloud2;
 	private Cow[] mCows;
 	
+	private float mScale;
+	
 	private TextComponent textComponent;
 
 	private boolean showExitDialog = false;
@@ -57,6 +58,8 @@ public class StartScreen extends Screen {
 	@Override
 	protected void initialize() {
 
+		mScale = getWidth() / 480.0f;
+		
 		mCloud1 = new Cloud(R.drawable.cloud1, mDpi,
 				mContext.getApplicationContext(), 200, 70, getWidth(),
 				Constants.BITMAP_CLOUD_1);
@@ -274,7 +277,7 @@ public class StartScreen extends Screen {
 		DialogString[] dialogRows = new DialogString[1];
 
 		dialogRows[0] = new DialogRegularString("EXIT GAME?",
-				TextSize.MEDIUM, 0xFFffffff, new int[]{20,0,20,0});
+				TextSize.MEDIUM, 0xFFffffff, new int[]{(int)(20*mScale),0,(int)(20*mScale),0});
 
 		ImageComponent[] buttons = new ImageComponent[numButtons];
 
@@ -282,8 +285,6 @@ public class StartScreen extends Screen {
 				R.drawable.button_yes);
 		Bitmap bitmapNo = ImageLoader.loadFromResource(mContext,
 				R.drawable.button_no);
-
-		float mScale = 1.0f;
 
 		ImageComponent okButton = new ImageComponent(bitmapYes, true);
 		okButton.setWidth((int) (70 * mScale));

@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 
 import com.vulfox.ImageLoader;
 import com.vulfox.component.ImageComponent;
+import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.Vector2fPool;
 
@@ -41,6 +42,23 @@ public class Cow {
 		Bitmap cow = ImageLoader.loadFromResource(context, resourceId);
 
 		mImageComponent = new ImageComponent(cow, false);
+		
+		mImageComponent.setEventListener(new EventListener() {
+
+			@Override
+			public boolean handleButtonClicked() {
+				
+				if (!mMoving) {
+					int scale = mScreenHeight / 2;
+					mVelocity.setY(-scale);
+					mMoving = true;
+					return true;
+				}
+				return false;
+			}
+			
+		});
+		
 		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
 
 		mImageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
@@ -85,10 +103,9 @@ public class Cow {
 		} else {
 			int random = getRandom(0,1000);
 			
-			int scale = mScreenHeight / 2;
-			
 			if (random == 42) {
 				//Jump!
+				int scale = mScreenHeight / 2;
 				mVelocity.setY(-scale);
 				mMoving = true;
 			}

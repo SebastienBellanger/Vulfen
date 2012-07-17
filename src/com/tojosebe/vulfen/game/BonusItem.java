@@ -7,7 +7,7 @@ import com.vulfox.math.Vector2f;
 public class BonusItem {
 
 	public enum BonusItemType {
-		EXTRA_PONG, SHRINKER, GROWER, SPLITTER, EXPLODER, TIMES2, TIMES3
+		EXTRA_PONG, SHRINKER, GROWER, SPLITTER, EXPLODER, TIMES2, TIMES3, BRICK_SMASHER, LIGHTNING 
 	};
 
 	private BonusItemType mItemType;
