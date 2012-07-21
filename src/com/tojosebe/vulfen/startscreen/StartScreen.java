@@ -17,7 +17,6 @@ import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
 import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
-import com.vulfox.component.TextComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
 
@@ -32,16 +31,11 @@ public class StartScreen extends Screen {
 	
 	private float mScale;
 	
-	private TextComponent textComponent;
 
 	private boolean showExitDialog = false;
 	private long mDialogShowStart = 0;
 
 	private Activity mActivity;
-	
-	private long fps = 0;
-	private long startTime = System.currentTimeMillis();
-	private long frames = 0;
 
 	public StartScreen(int dpi, Activity activity) {
 		this.mDpi = dpi;
@@ -76,8 +70,6 @@ public class StartScreen extends Screen {
 		addScreenComponent(createTitle());
 		addScreenComponent(createPlayButton());
 
-		textComponent = new TextComponent("FPS", 0xFF000000, 10, 50, 50);
-		addScreenComponent(textComponent);
 	}
 
 	private void addCows() {
@@ -185,22 +177,7 @@ public class StartScreen extends Screen {
 			mDialogShowStart = System.currentTimeMillis();
 			addExitDialog(canvas);
 		}
-		
-		frames++;
-		
-		long currentTime = System.currentTimeMillis();
-		
-		long totalTime = currentTime - startTime;
-		
-		totalTime = totalTime / 1000;
-		
-		if (totalTime == 0) {
-			totalTime = 1;
-		}
-				
-		fps = frames / totalTime;
-		
-		textComponent.setText("FPS: " + fps);
+
 	}
 
 	private ScreenComponent createPlayButton() {

@@ -54,6 +54,12 @@ public class BowlScreen extends Screen {
 	private Vibrator vibrator;
 	
 	private Activity mActivity;
+	
+	/** Help vector. Saves memory by not allocating new every time. */
+	private Vector2f collisionCheckVector = new Vector2f();
+	
+	/** Help array for scores that has faded away. */
+	Score[] scoresToDelete = new Score[100];
 
 	private Bitmap mPenguinBmpX005;
 	private Bitmap mPenguinBmpX05;
@@ -492,6 +498,8 @@ public class BowlScreen extends Screen {
 	@Override
 	public void update(float timeStep) {
 
+//		System.out.println(Runtime.getRuntime().freeMemory());
+		
 		int moving = 0;
 		
 		if (mMotionEnabled) {
@@ -518,7 +526,7 @@ public class BowlScreen extends Screen {
 			pong.getPosition().setY(pong.getPosition().getY() + pong.velocity.getY() * timeStep);
 
 			// Calculate velocity retardation
-			Vector2f friction = pong.velocity.inv();
+			Vector2f friction = pong.velocity.inv(); //TODO: new används här. Undvika?
 			friction.normalizeT(); //TODO: sqrt() kan undvikas.
 			friction.mulT(timeStep * mConfig.getFriction() * mScale);
 
@@ -574,9 +582,10 @@ public class BowlScreen extends Screen {
 				for (int k = 0; k < mBonusItems.size(); k++) {
 					BonusItem bonusItem = mBonusItems.get(k);
 					
-					Vector2f collision = pong.getPosition().sub(bonusItem.getPosition());
-					float length = collision.getLength();
-					if (length < pong.getRadius() + bonusItem.getRadius()) {
+					if (CollisionCalculator.circleCircleCollision(pong.getPosition(), bonusItem.getPosition(), pong.getRadius(), bonusItem.getRadius())) {
+						
+						int color = 0;
+						
 						// PICK UP ITEM!
 						if (bonusItem.getItemType() == BonusItemType.GROWER) {
 							
@@ -586,66 +595,54 @@ public class BowlScreen extends Screen {
 								pong.setRadius(pong.getRadius() * 1.5f);
 								pong.setCurrentGroth(pong.getCurrentGroth() + 1);
 							}
-							
-							setTotalScore(mTotalScore + bonusItem.getScore());
-							
-							Vector2f position = bonusItem.getPosition().sub(pong.getPosition());
-							position.mulT(0.5f);
-							position.addT(pong.getPosition());
+							color = Color.GREEN;
 
-							mPoints.add(new Score(bonusItem.getScore(), position, Color.GREEN, mScale));
-							
-							mBonusItems.remove(bonusItem);
-							
-							break;
 						} else if (bonusItem.getItemType() == BonusItemType.SHRINKER) {
+							
 							if (pong.getCurrentGroth() > -pong.getMaxShrink()) {
 								pong.setWidth(pong.getWidth() * 0.666666f);
 								pong.setHeight(pong.getHeight() * 0.666666f);
 								pong.setRadius(pong.getRadius() * 0.666666f);
 								pong.setCurrentGroth(pong.getCurrentGroth() - 1);
 							}
-							
-							setTotalScore(mTotalScore + bonusItem.getScore());
-							
-							Vector2f position = bonusItem.getPosition().sub(pong.getPosition());
-							position.mulT(0.5f);
-							position.addT(pong.getPosition());
-
-							mPoints.add(new Score(bonusItem.getScore(), position, Color.DKGRAY, mScale));
-							
-							mBonusItems.remove(bonusItem);
-							
-							break;
+							color = Color.DKGRAY;
 						}
+						
+						setTotalScore(mTotalScore + bonusItem.getScore());
+						
+						Vector2f position = bonusItem.getPosition().sub(pong.getPosition()); //TODO: new. Inte så farligt dock.
+						position.mulT(0.5f);
+						position.addT(pong.getPosition());
+
+						mPoints.add(new Score(bonusItem.getScore(), position, color, mScale));//TODO: new. Inte så farligt dock.
+						
+						mBonusItems.remove(bonusItem);
+						
+						break;
 					}
 				}
 			}
 			
+			//TODO: denna kod kan få en stilla stående pong som tar en bonusitem att hamna i en annan pong.
 			// Check if pong is too far to the left
 			if (pong.getPosition().getX() < pong.getRadius()) {
-				pong.getPosition().setX(2.0f * pong.getRadius()
-						- pong.getPosition().getX());
+				pong.getPosition().setX(pong.getRadius());
 				pong.velocity.setX(-pong.velocity.getX());
 				// Check if pong is too far to the right
 			} else if (pong.getPosition().getX() > getWidth() - pong.getRadius()) {
-				pong.getPosition().setX(2.0f * (getWidth() - pong.getRadius())
-						- pong.getPosition().getX());
+				pong.getPosition().setX(getWidth() - pong.getRadius());
 				pong.velocity.setX(-pong.velocity.getX());
 			}
 
 			// Check if pong is too far to the top
 			if (pong.getPosition().getY() < pong.getRadius()) {
-				pong.getPosition().setY(2.0f * pong.getRadius()
-						- pong.getPosition().getY());
+				pong.getPosition().setY(pong.getRadius());
 				pong.velocity.setY(-pong.velocity.getY());
 				// Check if pong is too far to the bottom
-			} else if (pong.velocity.getY() > 0 /* if direction is down */
+			} else if (pong.velocity.getY() > -0.000001 /* if direction is down or no velocity at all. */
 					&& pong.getPosition().getY() > getHeight() - pong.getRadius()
 							- mLaunchPadHeight) {
-				pong.getPosition().setY(2.0f
-						* (getHeight() - pong.getRadius() - mLaunchPadHeight)
-						- pong.getPosition().getY());
+				pong.getPosition().setY(getHeight() - pong.getRadius() - mLaunchPadHeight);
 				pong.velocity.setY(-pong.velocity.getY());
 			}
 
@@ -654,33 +651,35 @@ public class BowlScreen extends Screen {
 				Pong first = mPongs.get(i);
 				Pong second = mPongs.get(j);
 
-				Vector2f collision = first.getPosition().sub(second.getPosition());
-				float length = collision.getLength();
+				first.getPosition().sub(second.getPosition(), collisionCheckVector);
 
-				if (length >= first.getRadius() + second.getRadius()) {
+				if (!CollisionCalculator.circleCircleCollision(first.getPosition(), second.getPosition(), first.getRadius(), second.getRadius())) {
 					continue;
 				}
-
+				
 				boolean wasKill = pongCollision(first, second);
 
 				if (!wasKill) {
-					Vector2f mtd = collision.mul((first.getRadius()
+					
+					//Calculate new velocity vectors.
+					
+					float length = collisionCheckVector.getLength(); //TODO: sqrt
+
+					Vector2f mtd = collisionCheckVector.mul((first.getRadius()
 							+ second.getRadius() - length)
 							/ length);
 	
 					first.getPosition().addT(mtd.mul(0.505f));
 					second.getPosition().subT(mtd.mul(0.505f));
 	
-					collision.normalizeT();
+					//samma som normalizeT:
+					collisionCheckVector.divT(length);
 	
-					float aci = first.velocity.dot(collision);
-					float bci = second.velocity.dot(collision);
-	
-					float acf = bci;
-					float bcf = aci;
-	
-					first.velocity.addT(collision.mul((acf - aci) * 0.90f));
-					second.velocity.addT(collision.mul((bcf - bci) * 0.90f));
+					float aci = first.velocity.dot(collisionCheckVector);
+					float bci = second.velocity.dot(collisionCheckVector);
+
+					first.velocity.addT(collisionCheckVector.mul((bci - aci) * 0.90f));
+					second.velocity.addT(collisionCheckVector.mul((aci - bci) * 0.90f));
 				}
 			}
 			
@@ -693,19 +692,15 @@ public class BowlScreen extends Screen {
 						break;
 					}
 				}
-				mBricks.remove(brickCollidedWith);
+				if (brickCollidedWith != null) {
+					CollisionCalculator.calculateCollisionVectorCircleVsSolidSquare(pong, brickCollidedWith);
+					mBricks.remove(brickCollidedWith);
+				}
 			}
 		}
 
-		// UPDATE FADING SCORES
-		List<Score> pointsCopy = new Vector<Score>(mPoints); // TODO: kan man
-																// undvika new
-																// här?
-		for (Score points : pointsCopy) {
-			points.update(timeStep);
-			if (points.isDone())
-				mPoints.remove(points);
-		}
+		// UPDATE FADING SCORES							
+		updateScores(timeStep);
 
 		if (mHasLaunched && !mGameOver) {
 			randomizeBonusItem();
@@ -717,6 +712,22 @@ public class BowlScreen extends Screen {
 			}
 		}
 
+	}
+
+	private void updateScores(float timeStep) {
+		int i = 0;
+		for (Score score : mPoints) {
+			score.update(timeStep);
+			if (score.isDone()) {
+				scoresToDelete[i] = score;
+				i++;
+			}
+		}
+		if (i > 0) {
+			for (int k = 0; k < i; k++) {
+				mPoints.remove(scoresToDelete[k]);
+			}
+		}
 	}
 
 	private void setTotalScore(int score) {
@@ -820,7 +831,7 @@ public class BowlScreen extends Screen {
 
 		
 		if (!mGameOver) {
-			drawStatusBar(canvas);
+			drawStatusBar(canvas); //TODO new här i
 		} else {
 			addGameOverDialog(canvas);
 		}
