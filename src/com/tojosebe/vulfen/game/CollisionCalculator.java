@@ -46,7 +46,6 @@ public class CollisionCalculator {
 		}
 
 	    float cornerDistanceSquare = square(circleDistanceX - square.getWidth() * 0.5f) + square(circleDistanceY - square.getHeight() * 0.5f);
-	    
 	    return cornerDistanceSquare <= (square(circle.getRadius()));
 	}
 	
@@ -62,40 +61,104 @@ public class CollisionCalculator {
 	 */
 	public static void calculateCollisionVectorCircleVsSolidSquare(Pong circle,
 			Brick square) {
-
-		//TODO: collision against corners 
-		/* First check for collision against the corners. */
-//		if (circlePointCollision(circle, square.getPositionCorner1())) {
-//			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner1());
-//			done = true;
-//		} else if (circlePointCollision(circle, square.getPositionCorner2())) {
-//			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner2());
-//			done = true;
-//		} else if (circlePointCollision(circle, square.getPositionCorner3())) {
-//			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner3());
-//			done = true;
-//		} else if (circlePointCollision(circle, square.getPositionCorner4())) {
-//			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner4());
-//			done = true;
-//		}
 		
-		//It is a collision against one of the sides. Find out which one!
-		if (circle.getPosition().getY() > square.getPosition().getY() - square.getHeight() * 0.5f && circle.getPosition().getY() < square.getPosition().getY() + square.getHeight() * 0.5f) {
-			//It is a collision against left or right side.
-			if (circle.getPosition().getX() < square.getPosition().getX()) {
-				//collision against left side!
-				circle.velocity.setX(-circle.velocity.getX());
+		boolean done = false;
+
+		/* First check for collision against the corners. */
+		
+		//top left corner
+		if (circle.getPosition().getX() < square.getPositionCorner1().getX() &&
+				circle.getPosition().getY() < square.getPositionCorner1().getY()) {
+			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner1());
+			done = true;
+//			System.out.println("COLLISION Corner1");
+//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+//			float diffX = Math.abs(square.getPositionCorner1().getX() - circle.getPosition().getX());
+//			float diffY = Math.abs(square.getPositionCorner1().getY() - circle.getPosition().getY());
+//			if (diffY < diffX) {
+//				circle.getPosition().setX(circle.getPosition().getX() - Math.abs(circle.getRadius() - diffX));
+//			} else {
+//				circle.getPosition().setY(circle.getPosition().getY() - Math.abs(circle.getRadius() - diffY));
+//			}
+		//top right corner
+		} else if (circle.getPosition().getX() > square.getPositionCorner2().getX() &&
+				circle.getPosition().getY() < square.getPositionCorner2().getY()) {
+			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner2());
+			done = true;
+//			System.out.println("COLLISION Corner2");
+//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+//			float diffX = Math.abs(square.getPositionCorner2().getX() - circle.getPosition().getX());
+//			float diffY = Math.abs(square.getPositionCorner2().getY() - circle.getPosition().getY());
+//			if (diffY < diffX) {
+//				circle.getPosition().setX(circle.getPosition().getX() + Math.abs(circle.getRadius() - diffX));
+//			} else {
+//				circle.getPosition().setY(circle.getPosition().getY() - Math.abs(circle.getRadius() - diffY));
+//			}
+		//bottom left corner	
+		} else if (circle.getPosition().getX() < square.getPositionCorner3().getX() &&
+			circle.getPosition().getY() > square.getPositionCorner3().getY()) {
+			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner3());
+			done = true;
+//			System.out.println("COLLISION Corner3");
+//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+//			float diffX = Math.abs(square.getPositionCorner3().getX() - circle.getPosition().getX());
+//			float diffY = Math.abs(square.getPositionCorner3().getY() - circle.getPosition().getY());
+//			if (diffY < diffX) {
+//				circle.getPosition().setX(circle.getPosition().getX() - Math.abs(circle.getRadius() - diffX));
+//			} else {
+//				circle.getPosition().setY(circle.getPosition().getY() + Math.abs(circle.getRadius() - diffY));
+//			}
+		//bottom right corner	
+		} else if (circle.getPosition().getX() > square.getPositionCorner4().getX() &&
+				circle.getPosition().getY() > square.getPositionCorner4().getY()) {
+				calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner4());
+				done = true;
+//				System.out.println("COLLISION Corner4");
+//				//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+//				float diffX = Math.abs(square.getPositionCorner4().getX() - circle.getPosition().getX());
+//				float diffY = Math.abs(square.getPositionCorner4().getY() - circle.getPosition().getY());
+//				if (diffY < diffX) {
+//					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(circle.getRadius() - diffX));
+//				} else {
+//					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(circle.getRadius() - diffY));
+//				}
+		}
+		
+		if (!done) {
+			//It is a collision against one of the sides. Find out which one!
+			if (circle.getPosition().getY() > square.getPosition().getY() - square.getHeight() * 0.5f && circle.getPosition().getY() < square.getPosition().getY() + square.getHeight() * 0.5f) {
+				//It is a collision against left or right side.
+				if (circle.getPosition().getX() < square.getPosition().getX()) {
+					//collision against left side!
+					System.out.println("COLLISION left side");
+					circle.velocity.setX(-circle.velocity.getX());
+					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+					float move = circle.getRadius() - (square.getPositionCorner1().getX() - circle.getPosition().getX());
+					circle.getPosition().setX(circle.getPosition().getX() - Math.abs(move));
+				} else {
+					//collision against right side!
+					System.out.println("COLLISION right side");
+					circle.velocity.setX(-circle.velocity.getX());
+					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+					float move = circle.getRadius() - (circle.getPosition().getX() - square.getPositionCorner2().getX());
+					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(move));
+				}
 			} else {
-				//collision against right side!
-				circle.velocity.setX(-circle.velocity.getX());
-			}
-		} else {
-			if (circle.getPosition().getY() < square.getPosition().getY()) {
-				//collision against top side!
-				circle.velocity.setY(-circle.velocity.getY());
-			} else {
-				//collision against bottom side!
-				circle.velocity.setY(-circle.velocity.getY());
+				if (circle.getPosition().getY() < square.getPosition().getY()) {
+					//collision against top side!
+					System.out.println("COLLISION top side");
+					circle.velocity.setY(-circle.velocity.getY());
+					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+					float move = circle.getRadius() - (square.getPositionCorner1().getY() - circle.getPosition().getY());
+					circle.getPosition().setY(circle.getPosition().getY() - Math.abs(move));
+				} else {
+					//collision against bottom side!
+					System.out.println("COLLISION bottom side");
+					circle.velocity.setY(-circle.velocity.getY());
+					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
+					float move = circle.getRadius() - (circle.getPosition().getY() - square.getPositionCorner3().getY());
+					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(move));
+				}
 			}
 		}
 	}

@@ -34,6 +34,14 @@ public class ScoreBarComponent extends ScreenComponent {
 	private boolean star2showing = false;
 	private boolean star3showing = false;
 	
+	private long starAnimationTime = 200;
+	private long star1animationStartTime = 0;
+	private long star2animationStartTime = 0;
+	private long star3animationStartTime = 0;
+	private float currentAnimationSizeStar1 = 1.0f; //100 percent i.e. full size
+	private float currentAnimationSizeStar2 = 1.0f; //100 percent i.e. full size
+	private float currentAnimationSizeStar3 = 1.0f; //100 percent i.e. full size
+	
 	private float mPaddingRight;
 	private float mTotalBarWidth;
 	
@@ -43,6 +51,10 @@ public class ScoreBarComponent extends ScreenComponent {
 	private float fractionStar1;
 	private float fractionStar2;
 	
+	private int starTop;
+	private int starBottom;
+	
+			
 	
 
 	public ScoreBarComponent(Context context, float scale, int scoreStar1, int scoreStar2, int scoreStar3) {
@@ -96,6 +108,9 @@ public class ScoreBarComponent extends ScreenComponent {
 		mStarDrawRect.set((int) (10 * mScale), (int) (5 * mScale),
 				(int) (10 * mScale + mBitmapStarDark.getWidth()),
 				(int) (5 * mScale + mBitmapStarDark.getHeight()));
+		
+		starTop = mDrawRect.top;
+		starBottom = mDrawRect.bottom;
 	}
 	
 	public void reset() {
@@ -176,9 +191,23 @@ public class ScoreBarComponent extends ScreenComponent {
 					mBitmapStarsOverlay,
 					null, mDrawRect, paint);
 		
+			int diffX = 0;
+			int diffY = 0;
+			if (currentAnimationSizeStar1 != 1.0f) {
+				int left = (int) (10 * mScale) + (int)positionStar1;
+				int right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar1);
+				int widthStar1 = (right - left);
+				int adjustedWidthStar1 = (int)(currentAnimationSizeStar1 * widthStar1);
+				diffX = (int) ((adjustedWidthStar1 - widthStar1) / 2.0f);
+				int heightStar1 = (starBottom - starTop);
+				int adjustedHeightStar1 = (int)(currentAnimationSizeStar1 * heightStar1);
+				diffY = (int) ((adjustedHeightStar1 - heightStar1) / 2.0f);
+			}
 			
-			mStarDrawRect.left = (int) (10 * mScale) + (int)positionStar1;
-			mStarDrawRect.right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar1);
+			mStarDrawRect.left = (int) (10 * mScale) + (int)positionStar1 - diffX;
+			mStarDrawRect.right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar1 + diffX);
+			mStarDrawRect.top = starTop - diffY;
+			mStarDrawRect.bottom = starBottom + diffY;
 			
 			if (star1showing) {
 				canvas.drawBitmap(
@@ -190,8 +219,24 @@ public class ScoreBarComponent extends ScreenComponent {
 						null, mStarDrawRect, paint);
 			}
 			
-			mStarDrawRect.left = (int) (10 * mScale) + (int)positionStar2;
-			mStarDrawRect.right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar2);
+			
+			diffX = 0;
+			diffY = 0;
+			if (currentAnimationSizeStar2 != 1.0f) {
+				int left = (int) (10 * mScale) + (int)positionStar2;
+				int right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar2);
+				int widthStar2 = (right - left);
+				int adjustedWidthStar2 = (int)(currentAnimationSizeStar2 * widthStar2);
+				diffX = (int) ((adjustedWidthStar2 - widthStar2) / 2.0f);
+				int heightStar2 = (starBottom - starTop);
+				int adjustedHeightStar2 = (int)(currentAnimationSizeStar2 * heightStar2);
+				diffY = (int) ((adjustedHeightStar2 - heightStar2) / 2.0f);
+			}
+			
+			mStarDrawRect.left = (int) (10 * mScale) + (int)positionStar2 - diffX;
+			mStarDrawRect.right = (int)(10 * mScale + mBitmapStarDark.getWidth() + (int)positionStar2 + diffX);
+			mStarDrawRect.top = starTop - diffY;
+			mStarDrawRect.bottom = starBottom + diffY;
 			
 			if (star2showing) {
 				canvas.drawBitmap(
@@ -203,8 +248,23 @@ public class ScoreBarComponent extends ScreenComponent {
 						null, mStarDrawRect, paint);
 			}
 			
-			mStarDrawRect.left = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth() - mBitmapStar.getWidth();
-			mStarDrawRect.right = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth();
+			diffX = 0;
+			diffY = 0;
+			if (currentAnimationSizeStar3 != 1.0f) {
+				int left = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth() - mBitmapStar.getWidth();
+				int right = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth();
+				int widthStar3 = (right - left);
+				int adjustedWidthStar3 = (int)(currentAnimationSizeStar3 * widthStar3);
+				diffX = (int) ((adjustedWidthStar3 - widthStar3) / 2.0f);
+				int heightStar3 = (starBottom - starTop);
+				int adjustedHeightStar3 = (int)(currentAnimationSizeStar3 * heightStar3);
+				diffY = (int) ((adjustedHeightStar3 - heightStar3) / 2.0f);
+			}
+			
+			mStarDrawRect.left = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth() - mBitmapStar.getWidth() - diffX;
+			mStarDrawRect.right = (int) (10 * mScale) + (int)mBitmapProgressBackground.getWidth() + diffX;
+			mStarDrawRect.top = starTop - diffY;
+			mStarDrawRect.bottom = starBottom + diffY;
 			
 			if (star3showing) {
 				canvas.drawBitmap(
@@ -243,19 +303,28 @@ public class ScoreBarComponent extends ScreenComponent {
 			star2showing = false;
 			star3showing = false;
 		} else if (star2Progress < 1.0) {
-			star1showing = true;
+			if (!star1showing) {
+				star1showing = true;
+				star1animationStartTime = System.currentTimeMillis();
+			}
 			star2showing = false;
 			star3showing = false;
 			currentBarWidth = mTotalBarWidth * fractionStar1 + star2Progress * (mTotalBarWidth * fractionStar2 - mTotalBarWidth * fractionStar1);
 		} else if (star3Progress < 1.0) {
 			star1showing = true;
-			star2showing = true;
+			if (!star2showing) {
+				star2showing = true;
+				star2animationStartTime = System.currentTimeMillis();
+			}
 			star3showing = false;
 			currentBarWidth = mTotalBarWidth * fractionStar2 + star3Progress * (mTotalBarWidth * (1 - fractionStar2));
 		} else {
 			star1showing = true;
 			star2showing = true;
-			star3showing = true;
+			if (!star3showing) {
+				star3showing = true;
+				star3animationStartTime = System.currentTimeMillis();
+			}
 			currentBarWidth = mTotalBarWidth;
 		}
 		
@@ -281,6 +350,50 @@ public class ScoreBarComponent extends ScreenComponent {
 
 	@Override
 	public void update(float timeStep) {
+		
+		if (star1animationStartTime > 0) {
+			long timeSinceStart = System.currentTimeMillis() - star1animationStartTime;
+			if (timeSinceStart < starAnimationTime) {
+				float fraction = timeSinceStart / (float)starAnimationTime;
+				if (fraction > 1.0f) {
+					fraction = 1.0f;
+				}
+				currentAnimationSizeStar1 = 1.0f + (1.0f - fraction);
+			} else {
+				star1animationStartTime = 0;
+				currentAnimationSizeStar1 = 1.0f;
+			}
+		}
+		
+		if (star2animationStartTime > 0) {
+			long timeSinceStart = System.currentTimeMillis() - star2animationStartTime;
+			if (timeSinceStart < starAnimationTime) {
+				float fraction = timeSinceStart / (float)starAnimationTime;
+				if (fraction > 1.0f) {
+					fraction = 1.0f;
+				}
+				currentAnimationSizeStar2 = 1.0f + (1.0f - fraction);
+			} else {
+				star2animationStartTime = 0;
+				currentAnimationSizeStar2 = 1.0f;
+			}
+		}
+		
+		if (star3animationStartTime > 0) {
+			long timeSinceStart = System.currentTimeMillis() - star3animationStartTime;
+			if (timeSinceStart < starAnimationTime) {
+				float fraction = timeSinceStart / (float)starAnimationTime;
+				if (fraction > 1.0f) {
+					fraction = 1.0f;
+				}
+				currentAnimationSizeStar3 = 1.0f + (1.0f - fraction);
+			} else {
+				star3animationStartTime = 0;
+				currentAnimationSizeStar3 = 1.0f;
+			}
+		}
+		
+		
 	}
 
 }

@@ -1,31 +1,23 @@
 
-vid krock med brick ska animation göras om de försvinner.
+fixa menu med restart om man trycker på menyknappen i spelet.
 
 fler banor!
 
-vid krock med fiende ska animering till mindre storlek göras.
-
 placeringen av penguin på launcehrn är inte samma på olika skärmar.
 
+GRAFIKGREJS (rita)
 lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
-
 Lägg till back knapp överallt.
+bakgrundsbild(er).
 
-bakgrundsbild.
 
 fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
-
-fixa menu med restart om man trycker på menyknappen i spelet.
-
-man kan inte krocka med brick hörn på ett realistiskt sätt.
 
 BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart. 
       Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa?
       
 BUGG: en pingvin var nära kanten. stog still. tog en fisk och växte så långt att den touchade en annnan
 pingvin. Hängde sig och bara stod och vibrera in poäng!
-
-animera stjärnorna när de kommer M.H.A. SpriteComponent!!
 
 refaktorisera bowlScreen med fler components.
 ta bort alla new i bowlScreen som går.

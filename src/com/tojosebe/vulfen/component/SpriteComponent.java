@@ -1,11 +1,11 @@
 package com.tojosebe.vulfen.component;
 
-import com.vulfox.math.Vector2f;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+
+import com.vulfox.math.Vector2f;
 
 public class SpriteComponent {
 
@@ -29,6 +29,11 @@ public class SpriteComponent {
 	private float mHeight;
 	
 	private boolean animatingDone = false;
+	
+	private boolean fadeOut;
+	private int fadeOutTime;
+	private long fadeOutStartTime;
+	private float currentFadeOutAnimationSize = 1.0f; //100 percent i.e. full size
 	
 	public SpriteComponent(Bitmap bitmap, boolean antialias, boolean animateFromLarge, boolean animateFromSmall, int animationTimeMillis, float x, float y, float width, float height) {
 
@@ -56,23 +61,36 @@ public class SpriteComponent {
 			currentAnimationSize = 2.0f;
 		} 
 		
+		currentFadeOutAnimationSize = 1.0f;
+		
 		mStart = System.currentTimeMillis();
 	}
 	
 	
 	public void update(float timeStep) {
-		long timeSinceStart = System.currentTimeMillis() - mStart;
-		if (timeSinceStart > animationMillis) {
-			currentAnimationSize = 1.0f;
-			animatingDone = true;
-			return;
+		
+		
+		long fadeTimeSinceStart = System.currentTimeMillis() - fadeOutStartTime;
+		
+		if (fadeOut && fadeTimeSinceStart < fadeOutTime) {
+			//WE ARE DOING FADE OUT
+			currentFadeOutAnimationSize = 1.0f - 1.0f * ((float)fadeTimeSinceStart / (float)fadeOutTime);
 		} else {
-			animatingDone = false;
-			if (mAnimateFromSmall) {
-				currentAnimationSize = (float)timeSinceStart / (float)animationMillis;
-			} else if (mAnimateFromLarge) {
-				currentAnimationSize = 2.0f - 1.0f * ((float)timeSinceStart / (float)animationMillis);
-			} 
+			currentFadeOutAnimationSize = 0.0f;
+			
+			//WE ARE DOING FADE IN
+			long timeSinceStart = System.currentTimeMillis() - mStart;
+			if (timeSinceStart > animationMillis) {
+				currentAnimationSize = 1.0f;
+				animatingDone = true;
+			} else {
+				animatingDone = false;
+				if (mAnimateFromSmall) {
+					currentAnimationSize = (float)timeSinceStart / (float)animationMillis;
+				} else if (mAnimateFromLarge) {
+					currentAnimationSize = 2.0f - 1.0f * ((float)timeSinceStart / (float)animationMillis);
+				} 
+			}
 		}
 	}
 
@@ -84,18 +102,35 @@ public class SpriteComponent {
 
 		mDrawRect.set((int)x, (int)y, (int)(x + getWidth()), (int)(y + getHeight()));
 
-		if ((mAnimateFromSmall || mAnimateFromLarge) && !animatingDone) {		
-			
-			float currentWidth = (float)(mWidth * currentAnimationSize);
+		if (fadeOut) {
+			float currentWidth = (float)(mWidth * currentFadeOutAnimationSize);
 			mDrawRect.left = left + (int)((mWidth - currentWidth) * 0.5f);
 			mDrawRect.right = mDrawRect.left + (int)currentWidth;
 			
-			float currentHeight = (float)(mHeight * currentAnimationSize);
+			float currentHeight = (float)(mHeight * currentFadeOutAnimationSize);
 			mDrawRect.top = top + (int)((mHeight - currentHeight) * 0.5f);
 			mDrawRect.bottom = mDrawRect.top + (int)currentHeight;
+		} else {
+			if ((mAnimateFromSmall || mAnimateFromLarge) && !animatingDone) {		
+				
+				float currentWidth = (float)(mWidth * currentAnimationSize);
+				mDrawRect.left = left + (int)((mWidth - currentWidth) * 0.5f);
+				mDrawRect.right = mDrawRect.left + (int)currentWidth;
+				
+				float currentHeight = (float)(mHeight * currentAnimationSize);
+				mDrawRect.top = top + (int)((mHeight - currentHeight) * 0.5f);
+				mDrawRect.bottom = mDrawRect.top + (int)currentHeight;
+			}
 		}
 		
 		canvas.drawBitmap(mBitmap, null, mDrawRect, mPaint);
+	}
+	
+	public void fadeOut(int millis) {
+		fadeOut = true;
+		fadeOutTime = millis;
+		fadeOutStartTime = System.currentTimeMillis();
+		currentFadeOutAnimationSize = 1.0f;
 	}
 
 	/**
@@ -218,6 +253,14 @@ public class SpriteComponent {
 		} else if (mAnimateFromLarge) {
 			currentAnimationSize = 2.0f;
 		} 
+		fadeOut = false;
+	}
+
+	/**
+	 * @return the fadeOut
+	 */
+	public boolean isFadingOut() {
+		return fadeOut;
 	}
 
 }

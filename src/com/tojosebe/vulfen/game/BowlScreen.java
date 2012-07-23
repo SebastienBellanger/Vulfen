@@ -44,6 +44,11 @@ import com.vulfox.util.GraphicsUtil;
 public class BowlScreen extends Screen {
 
 	private static final int SCORE_FOR_LIFE_LEFT = 1000;
+	private static final int SCORE_FOR_BRICK = 50;
+	private static final int SCORE_FOR_GROWER = 500;
+	private static final int SCORE_FOR_SHRINKER = -500;
+	private static final int SCORE_FOR_ENEMY_KILL = 500;
+
 	
 	private static final String SAVED_TOP_SCORE = "TopScore";
 
@@ -142,6 +147,9 @@ public class BowlScreen extends Screen {
 	
 	private boolean mHightScore = false;
 	
+	Rect mScoreRect = new Rect();
+	Rect mTopRect = new Rect();
+	
 	private ScoreBarComponent mScoreBar;
 
 	public BowlScreen(Level levelConfiguration, int dpi, Activity activity) {
@@ -167,12 +175,12 @@ public class BowlScreen extends Screen {
 		if (type == BonusItemType.GROWER) {
 			bitmap = ImageLoader.loadFromResource(mContext, R.drawable.fish);
 			item.setItemType(BonusItemType.GROWER);
-			item.setScore(500);
+			item.setScore(SCORE_FOR_GROWER);
 		} else if (type == BonusItemType.SHRINKER) {
 			bitmap = ImageLoader.loadFromResource(mContext,
 					R.drawable.fish_dead);
 			item.setItemType(BonusItemType.SHRINKER);
-			item.setScore(-500);
+			item.setScore(SCORE_FOR_SHRINKER);
 		}
 
 		float itemWidth = GraphicsUtil.dpToPixels(mBonusItemDpWidth, mDpi);
@@ -509,9 +517,7 @@ public class BowlScreen extends Screen {
 		// UPDATE POSITIONS AND VELOCITY FOR ALL PONGS.
 		for (Pong pong : mPongs) {
 
-			if (!pong.isAnimatingDone()) {
-				pong.update(timeStep);
-			}
+			pong.update(timeStep);
 			
 			// First check if this pong has stopped.
 			if (pong.velocity.getLength() == 0.0f) {
@@ -556,9 +562,10 @@ public class BowlScreen extends Screen {
 		}
 
 		// CHECK IF GAME JUST ENDED
+		boolean levelCompleted = false;
 		if (!mGameOver && mHasLaunched && moving == 0) {
-			
-			if (checkGameFinished()) {
+			levelCompleted = checkGameFinished();
+			if (levelCompleted) {
 				mGameOver = true;
 				mBonusItems.clear();
 			} else {
@@ -567,7 +574,7 @@ public class BowlScreen extends Screen {
 
 		}
 		
-		if (mGameOver) {
+		if (mGameOver && levelCompleted) {
 			if (mTotalScore > mSavedTopScore) {
 				saveTopScore();
 			}
@@ -687,14 +694,17 @@ public class BowlScreen extends Screen {
 			if (mBricks.size() > 0) {
 				Brick brickCollidedWith = null;
 				for (Brick brick : mBricks) {
-					if (CollisionCalculator.circleOrtogonalSquareCollision(pong, brick)) {
+					if (!brick.isFadingOut() && CollisionCalculator.circleOrtogonalSquareCollision(pong, brick)) {
 						brickCollidedWith = brick;
+						brick.fadeOut(250);
+						mPoints.add(new Score(SCORE_FOR_BRICK, brick.getPosition(), Color.YELLOW, mScale));
+						setTotalScore(mTotalScore + SCORE_FOR_BRICK);
 						break;
 					}
+					
 				}
 				if (brickCollidedWith != null) {
 					CollisionCalculator.calculateCollisionVectorCircleVsSolidSquare(pong, brickCollidedWith);
-					mBricks.remove(brickCollidedWith);
 				}
 			}
 		}
@@ -706,7 +716,7 @@ public class BowlScreen extends Screen {
 			randomizeBonusItem();
 		}
 		
-		if (mBricks.size() > 0 && !mBricks.get(0).isAnimatingDone()) {
+		if (mBricks.size() > 0) {
 			for (Brick brick : mBricks) {
 				brick.update(timeStep);
 			}
@@ -831,7 +841,7 @@ public class BowlScreen extends Screen {
 
 		
 		if (!mGameOver) {
-			drawStatusBar(canvas); //TODO new här i
+			drawStatusBar(canvas);
 		} else {
 			addGameOverDialog(canvas);
 		}
@@ -850,21 +860,18 @@ public class BowlScreen extends Screen {
 		String score = "" + mTotalScore;
 		String top = TOP_SCORE + mTopScore;
 
-		Rect scoreRect = new Rect();
-		Rect topRect = new Rect();
+		mTextPaint.getTextBounds(score, 0, score.length(), mScoreRect);
+		mTextPaint.getTextBounds(top, 0, top.length(), mTopRect);
 
-		mTextPaint.getTextBounds(score, 0, score.length(), scoreRect);
-		mTextPaint.getTextBounds(top, 0, top.length(), topRect);
-
-		canvas.drawText(score, mScoreBar.getDrawRect().right + 10 * mScale, 10 * mScale + scoreRect.height(),
+		canvas.drawText(score, mScoreBar.getDrawRect().right + 10 * mScale, 10 * mScale + mScoreRect.height(),
 				mStrokePaint);
-		canvas.drawText(score, mScoreBar.getDrawRect().right + 10 * mScale, 10 * mScale + scoreRect.height(),
+		canvas.drawText(score, mScoreBar.getDrawRect().right + 10 * mScale, 10 * mScale + mScoreRect.height(),
 				mTextPaint);
 
-		canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
-				+ topRect.height() * 1.3f, mStrokePaint);
-		canvas.drawText(top, 10 * mScale, 10 * mScale + scoreRect.height()
-				+ topRect.height() * 1.3f, mTextPaint);
+		canvas.drawText(top, 10 * mScale, 10 * mScale + mScoreRect.height()
+				+ mTopRect.height() * 1.3f, mStrokePaint);
+		canvas.drawText(top, 10 * mScale, 10 * mScale + mScoreRect.height()
+				+ mTopRect.height() * 1.3f, mTextPaint);
 
 		drawLifesLeft(canvas);
 	}
@@ -1029,7 +1036,7 @@ public class BowlScreen extends Screen {
 
 		if (mVibrationEnabled) {
 			// Vibrate for 30 milliseconds
-			vibrator.vibrate(30);
+			vibrator.vibrate(20);
 		}
 
 		if (first.getType() == Type.COW && second.getType() == Type.COW) {
@@ -1066,7 +1073,7 @@ public class BowlScreen extends Screen {
 			
 			int value = mRoundHits * mConfig.getPenguinEnemyValue();
 			if (wasKill) {
-				value = 500;
+				value = SCORE_FOR_ENEMY_KILL;
 			}
 			setTotalScore(mTotalScore + value);
 

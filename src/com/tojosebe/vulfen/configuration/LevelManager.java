@@ -161,7 +161,7 @@ public class LevelManager {
 			width = Integer.parseInt(numbers[2]);
 			height = Integer.parseInt(numbers[3]);
 			
-			Pong pong = new Pong(null, true, false, false, 0, x * scale, y * scale, width * scale, height * scale);
+			Pong pong = new Pong(null, true, false, true, 250, x * scale, y * scale, width * scale, height * scale);
 			pong.setType(Pong.Type.COW);
 			level.addEnemy(pong);
 			
