@@ -1,7 +1,13 @@
 
-fixa menu med restart om man trycker på menyknappen i spelet.
+fixa till kollisionsdetekteringen. Googla
+
+Fixa alien ship från bana 10 och framåt
+
+fixa menu med restart om man trycker på menyknappen i spelet. då ska det pausas och man ska kunna avsluta eller reseta.
 
 fler banor!
+
+Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
 
 placeringen av penguin på launcehrn är inte samma på olika skärmar.
 
@@ -9,7 +15,6 @@ GRAFIKGREJS (rita)
 lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
 Lägg till back knapp överallt.
 bakgrundsbild(er).
-
 
 fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
 
@@ -19,58 +24,31 @@ BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart.
 BUGG: en pingvin var nära kanten. stog still. tog en fisk och växte så långt att den touchade en annnan
 pingvin. Hängde sig och bara stod och vibrera in poäng!
 
-refaktorisera bowlScreen med fler components.
+svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!?
+
 ta bort alla new i bowlScreen som går.
 bowlScreen ska INTE vara > 1000 rader.
 
 koppla in storage.
 
-stars ska sparas per bana
 hur långt man kommit i levlar ska sparas. (senare)
 
-Sprites med animering etc.
-
-spara vilka banor som är avklarade.
-
-när man växer studsar man inte automatiskt mot väggen om man står still. Samma om man växer längst ned. 
-
-Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
-
 * GAMESCREEN:
-	- någon form av redo/exit knappar.
 	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
 	- Bakgrundsbild snyggare
 	
-	- fixa så att bilderna är snyggare (ko och pingvin) vid shrink och grow är de pixliga!
-	
-	- Fasta object. Och fasta object som snurrar runt en punkt?
-	
 	- Power ups (gör större, gör mindre. Gör så delar sig, spräng, extra liv)
 	
-	- Skapa klass CollidableObject eller nåt. som har boundingbox som används vid kollisionsberäkningar.
-	
 	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
-	
-	- när någon tar en bonusitem ska (allt stanna upp och) det ska animeras.
-	
-	- fixa så man inte kan dra pingvinen så långt utanför skärmen.
-	
-	- pausknapp eller menyknapp i spelet. Man vill kunna starta om på enkelt sätt.
-	
-* LEVELDESIGN:
-	- ...
-
-* lägg till backknappar i alla sidor. Det kommer behövas förr eller senare (Blackberry, TVs etc.)
 
 LJUD
-	- precis innan det kommer en bonusitem
-	- varje gång det krockas.
+	- precis innan det kommer en bonusitem?
+	- varje gång det krockas?
 	- som feedback när man klickar på saker?
 	- applåder när man klarar.
+	- när man får en stjärna
 
 
 LOW PRIO:
 * WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
-* STARTSCREEN: ser ful ut på galaxy nexus. KOLLA PÅ SEBBES MOBIL.
-* Gör det 100% rättvist genom att ha exakt samma aspect ratio på alla skärmstorlekar och samma storlek på objecten.
 

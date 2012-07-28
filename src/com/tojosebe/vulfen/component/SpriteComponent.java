@@ -37,6 +37,8 @@ public class SpriteComponent {
 	
 	public SpriteComponent(Bitmap bitmap, boolean antialias, boolean animateFromLarge, boolean animateFromSmall, int animationTimeMillis, float x, float y, float width, float height) {
 
+		position = new Vector2f(x, y);
+		
 		mDrawRect.left = (int)(x - width * 0.5f);
 		mDrawRect.right = mDrawRect.right + (int)width;
 		mDrawRect.top = (int)(y - height * 0.5f); 

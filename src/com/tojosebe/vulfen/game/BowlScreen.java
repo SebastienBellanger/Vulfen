@@ -48,7 +48,6 @@ public class BowlScreen extends Screen {
 	private static final int SCORE_FOR_GROWER = 500;
 	private static final int SCORE_FOR_SHRINKER = -500;
 	private static final int SCORE_FOR_ENEMY_KILL = 500;
-
 	
 	private static final String SAVED_TOP_SCORE = "TopScore";
 
@@ -65,6 +64,8 @@ public class BowlScreen extends Screen {
 	
 	/** Help array for scores that has faded away. */
 	Score[] scoresToDelete = new Score[100];
+	
+	private AlienShip alien;
 
 	private Bitmap mPenguinBmpX005;
 	private Bitmap mPenguinBmpX05;
@@ -247,7 +248,13 @@ public class BowlScreen extends Screen {
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
 				R.drawable.launcher3);
 		
-		 
+		Bitmap alienBitmap = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.alienship);
+		float ratio = alienBitmap.getHeight() / (float)alienBitmap.getWidth();
+		alienBitmap = GraphicsUtil.resizeBitmap(alienBitmap, (int) (enemyLength * 1.5f * ratio),
+				(int) (enemyLength * 1.5f)); 
+		alien = new AlienShip(alienBitmap, true,
+				false, false, 0, 400, 100, alienBitmap.getWidth(), alienBitmap.getHeight());
+		
 		float enemyWidth = enemyLength;
 		
 		mCow1 = getEnemyPongBitmap(R.drawable.sebe_normal,enemyWidth,enemyWidth,0);
@@ -265,8 +272,8 @@ public class BowlScreen extends Screen {
 			float h = mLevelConfig.getBricks().get(0).getHeight();
 			float w = mLevelConfig.getBricks().get(0).getWidth();
 			mBrickSoft = getBrickBitmap(Brick.Type.SOFT, w, h, R.drawable.brick_soft);
-			mBrickMedium = getBrickBitmap(Brick.Type.MEDIUM, w, h, R.drawable.brick_soft);
-			mBrickHard = getBrickBitmap(Brick.Type.HARD, w, h, R.drawable.brick_soft);
+			mBrickMedium = getBrickBitmap(Brick.Type.MEDIUM, w, h, R.drawable.brick_medium);
+			mBrickHard = getBrickBitmap(Brick.Type.HARD, w, h, R.drawable.brick_hard);
 		}
 		
 		createBackground();
@@ -574,7 +581,7 @@ public class BowlScreen extends Screen {
 
 		}
 		
-		if (mGameOver && levelCompleted) {
+		if (mGameOver && checkGameFinished()) {
 			if (mTotalScore > mSavedTopScore) {
 				saveTopScore();
 			}
@@ -696,9 +703,11 @@ public class BowlScreen extends Screen {
 				for (Brick brick : mBricks) {
 					if (!brick.isFadingOut() && CollisionCalculator.circleOrtogonalSquareCollision(pong, brick)) {
 						brickCollidedWith = brick;
-						brick.fadeOut(250);
-						mPoints.add(new Score(SCORE_FOR_BRICK, brick.getPosition(), Color.YELLOW, mScale));
-						setTotalScore(mTotalScore + SCORE_FOR_BRICK);
+						if (brick.getType() != Brick.Type.HARD) {
+							brick.fadeOut(250);
+							mPoints.add(new Score(SCORE_FOR_BRICK, brick.getPosition(), Color.YELLOW, mScale));
+							setTotalScore(mTotalScore + SCORE_FOR_BRICK);
+						}
 						break;
 					}
 					
@@ -831,6 +840,8 @@ public class BowlScreen extends Screen {
 			
 			pong.draw(canvas);
 		}
+		
+		alien.draw(canvas);
 		
 		if (mMotionEnabled) {
 			
@@ -975,12 +986,18 @@ public class BowlScreen extends Screen {
 			GameEndedDialogDrawArea drawArea = null;
 			
 			if (success) {
-				dialogRows[0] = new DialogRegularString("LEVEL COMPLETED!", TextSize.SMALL, 0xFFffffff, null);
-				mCounterStringGameOver = new DialogCounterString(mTotalScore, TextSize.LARGE, 0xFFffffff, new int[]{20,0,0,0});
+				dialogRows[0] = new DialogRegularString("LEVEL "
+						+ (mLevelConfig.getLevelNumber() + 1) + " COMPLETED!",
+						TextSize.SMALL, 0xFFffffff, null);
+				mCounterStringGameOver = new DialogCounterString(mTotalScore,
+						TextSize.LARGE, 0xFFffffff, new int[] { 20, 0, 0, 0 });
 				dialogRows[1] = mCounterStringGameOver;
-				drawArea = new GameEndedDialogDrawArea(100, mLevelConfig, mContext, mCounterStringGameOver, mScale);
+				drawArea = new GameEndedDialogDrawArea(100, mLevelConfig,
+						mContext, mCounterStringGameOver, mScale);
 				if (mHightScore) {
-					dialogRows[2] = new DialogPulsingString("NEW HIGHSCORE!", TextSize.SMALL, 0xFFff0000, new int[]{0,0,10,0});
+					dialogRows[2] = new DialogPulsingString("NEW HIGHSCORE!",
+							TextSize.SMALL, 0xFFff0000,
+							new int[] { 0, 0, 10, 0 });
 				}
 			} else {
 				numButtons = 2;

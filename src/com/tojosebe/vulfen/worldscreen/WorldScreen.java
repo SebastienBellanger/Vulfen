@@ -93,6 +93,8 @@ public class WorldScreen extends Screen {
 		LevelManager.init(mActivity.getAssets(), getWidth(), getHeight());
 		int numberOfWOrlds = LevelManager.getNumberOfWorlds();
 		
+		int numberOfLevels = LevelManager.getNumberOfLevels(0);
+		
 		WorldButton worldButton = addWorld("World " + 1, LevelManager.getNumberOfLevels(0),  LevelManager.getNumberOfLevels(0), null, 1);
 		for (int i = 1; i < numberOfWOrlds; i++) {
 			addWorld("World " + i, LevelManager.getNumberOfLevels(i),  LevelManager.getNumberOfLevels(i), worldButton, 1);
@@ -346,7 +348,7 @@ public class WorldScreen extends Screen {
 		}
 	}
 
-	private WorldButton addWorld(String worldName, final int totalStages,
+	private WorldButton addWorld(String worldName, final int totalStars,
 			final int lockedStages, WorldButton worldButtonTemplate, final int worldNumber) {
 
 		
@@ -355,7 +357,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, totalStages, 0, 4, worldNumber, mActivity));
+					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, totalStars, 0, 4, worldNumber, mActivity));
 					
 					return true;
 				}
@@ -364,11 +366,11 @@ public class WorldScreen extends Screen {
 		};
 
 		if (worldButtonTemplate != null) {
-			worldButton = new WorldButton(worldName, totalStages,
+			worldButton = new WorldButton(worldName, totalStars,
 					lockedStages, mContext, mDpi, worldButtonTemplate);
 			worldButton.setEventListener(listener);
 		} else {
-			worldButton = new WorldButton(worldName, totalStages,
+			worldButton = new WorldButton(worldName, totalStars,
 					lockedStages, mContext, mDpi);
 			worldButton.setEventListener(listener);
 		}
