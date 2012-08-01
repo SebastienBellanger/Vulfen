@@ -1,4 +1,9 @@
 
+alien:
+	* fade out funkar inte.
+	* skjuta inte implementerat.
+	* kommer bara en gång.
+
 fixa till kollisionsdetekteringen. Googla
 
 Fixa alien ship från bana 10 och framåt
@@ -18,8 +23,9 @@ bakgrundsbild(er).
 
 fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
 
+
 BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart. 
-      Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa?
+      Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa? japp!
       
 BUGG: en pingvin var nära kanten. stog still. tog en fisk och växte så långt att den touchade en annnan
 pingvin. Hängde sig och bara stod och vibrera in poäng!

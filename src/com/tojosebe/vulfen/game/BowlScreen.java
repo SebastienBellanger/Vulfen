@@ -48,6 +48,7 @@ public class BowlScreen extends Screen {
 	private static final int SCORE_FOR_GROWER = 500;
 	private static final int SCORE_FOR_SHRINKER = -500;
 	private static final int SCORE_FOR_ENEMY_KILL = 500;
+	private static final int SCORE_FOR_ALIEN_KILL = 100;
 	
 	private static final String SAVED_TOP_SCORE = "TopScore";
 
@@ -66,6 +67,8 @@ public class BowlScreen extends Screen {
 	Score[] scoresToDelete = new Score[100];
 	
 	private AlienShip alien;
+	private long mAlienStartTime;
+	private long mAlienInterval; //millis between alien appearances.
 
 	private Bitmap mPenguinBmpX005;
 	private Bitmap mPenguinBmpX05;
@@ -248,13 +251,6 @@ public class BowlScreen extends Screen {
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
 				R.drawable.launcher3);
 		
-		Bitmap alienBitmap = ImageLoader.loadFromResource(mContext.getApplicationContext(), R.drawable.alienship);
-		float ratio = alienBitmap.getHeight() / (float)alienBitmap.getWidth();
-		alienBitmap = GraphicsUtil.resizeBitmap(alienBitmap, (int) (enemyLength * 1.5f * ratio),
-				(int) (enemyLength * 1.5f)); 
-		alien = new AlienShip(alienBitmap, true,
-				false, false, 0, 400, 100, alienBitmap.getWidth(), alienBitmap.getHeight());
-		
 		float enemyWidth = enemyLength;
 		
 		mCow1 = getEnemyPongBitmap(R.drawable.sebe_normal,enemyWidth,enemyWidth,0);
@@ -276,6 +272,15 @@ public class BowlScreen extends Screen {
 			mBrickHard = getBrickBitmap(Brick.Type.HARD, w, h, R.drawable.brick_hard);
 		}
 		
+		mAlienInterval = 0;
+		mAlienStartTime = 0;
+		
+		mAlienInterval = mLevelConfig.getAlienInterval();
+		if (mAlienInterval != 0) {
+			mAlienStartTime = System.currentTimeMillis();
+			loadAlien();
+		}
+		
 		createBackground();
 
 		createLifeLeftImage();
@@ -284,6 +289,21 @@ public class BowlScreen extends Screen {
 		addScreenComponent(mScoreBar);
 		
 		reset();
+	}
+	
+	private void loadAlien() {
+		if (alien == null) {
+			Bitmap alienBitmap = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.alienship);
+			float ratio = alienBitmap.getHeight()
+					/ (float) alienBitmap.getWidth();
+			alienBitmap = GraphicsUtil.resizeBitmap(alienBitmap,
+					(int) (mCow1.getWidth() * 1.5f * ratio),
+					(int) (mCow1.getWidth() * 1.5f));
+			alien = new AlienShip(alienBitmap, true, false, false, 0, -alienBitmap.getWidth(), (int)(mCow1.getHeight() * 1.5f),
+					alienBitmap.getWidth(), alienBitmap.getHeight(), mScale, getWidth());
+			mAlienStartTime = System.currentTimeMillis();
+		}
 	}
 
 	private String getTopScorePrefsKey() {
@@ -586,13 +606,41 @@ public class BowlScreen extends Screen {
 				saveTopScore();
 			}
 		}
+		
+		if (alien != null && !alien.isMoving() && !mGameOver) {
+			long timeSinceCheckPoint = System.currentTimeMillis() - mAlienStartTime;
+			if (timeSinceCheckPoint > mAlienInterval) {
+				alien.reset();
+				alien.start();
+				mAlienStartTime = System.currentTimeMillis(); //TODO: sätt inte den hr
+			}
+		}
+		
+		if (alien != null) {
+			alien.update(timeStep);
+		}
 
 		// CHECK FOR COLLISIONS
 		for (int i = 0; i < mPongs.size(); i++) {
 
-			// for each pong. Check for collision with the bonusitems.
+			// for each pong. Check for collision with the bonusitems and alien.
 			Pong pong = mPongs.get(i);
 			if(pong.getType() == Type.PENGUIN) {
+				
+				if (alien != null && alien.isMoving()) {
+					if (CollisionCalculator.circleCircleCollision(pong.getPosition(), alien.getPosition(), pong.getRadius(), alien.getRadius())) {
+						setTotalScore(mTotalScore + SCORE_FOR_ALIEN_KILL);
+						
+						Vector2f position = alien.getPosition().sub(pong.getPosition());
+						position.mulT(0.5f);
+						position.addT(pong.getPosition());
+
+						mPoints.add(new Score(SCORE_FOR_ALIEN_KILL, position, Color.YELLOW, mScale));
+						
+						alien.fadeOut();
+					}
+				}
+				
 				for (int k = 0; k < mBonusItems.size(); k++) {
 					BonusItem bonusItem = mBonusItems.get(k);
 					
@@ -841,7 +889,9 @@ public class BowlScreen extends Screen {
 			pong.draw(canvas);
 		}
 		
-		alien.draw(canvas);
+		if (alien != null) {
+			alien.draw(canvas);
+		}
 		
 		if (mMotionEnabled) {
 			
@@ -906,6 +956,13 @@ public class BowlScreen extends Screen {
 	}
 	
 	private void loadNextLevel() {
+		
+		if (mLevelConfig.getWorldNumber() == 0 && mLevelConfig.getLevelNumber() == 9) {
+			//After level 1.10 is completed:
+			mScreenManager.addScreenUI(new AlienTalkScreen(mDpi, new String[] { "Heey!",
+			"Stop messing with my cows! Don't be so rude!" }));
+		}
+		
 		Level level = LevelManager.getLevel(mLevelConfig.getWorldNumber()+1, mLevelConfig.getLevelNumber()+2, mScale, mActivity.getAssets());
 		mLevelConfig = level;
 		mConfig = mLevelConfig.getBowlConfiguration();

@@ -105,7 +105,6 @@ public class LevelManager {
 	
 	public static Level getLevel(int worldNum, int levelNum, float scale, AssetManager mgr) {
 		Level level = worlds.get(worldNum-1).getLevel(levelNum-1, scale, mgr);
-//		Level copy = level.getCopy();
 		return level;
 	}
 
@@ -216,7 +215,12 @@ public class LevelManager {
 			level.setThreeStarsScore(star3);
 			level.setTwoStarsScore(star2);
 			level.setOneStarScore(star1);
-		}
+		} else if (line.contains("ALIEN_INTERVAL:")) {
+			line = line.replace("ALIEN_INTERVAL:", "");
+			level.setAlienInterval(Integer.parseInt(line));
+		} 
+		
+		
 	}
 
 	public static int getNumberOfLevels(int worldIndex) {

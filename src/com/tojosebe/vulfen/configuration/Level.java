@@ -21,6 +21,8 @@ public class Level {
 	private int mTwoStarsScore;
 	private int mOneStarScore;
 	
+	private int mAlienInterval;
+	
 	private int mLives;
 	
 	private BowlConfiguration mBowlConfiguration;
@@ -233,6 +235,20 @@ public class Level {
 	 */
 	public void setLevelNumber(int levelNumber) {
 		this.mLevelNumber = levelNumber;
+	}
+
+	/**
+	 * @return the mAlienInterval
+	 */
+	public int getAlienInterval() {
+		return mAlienInterval;
+	}
+
+	/**
+	 * @param mAlienInterval the mAlienInterval to set
+	 */
+	public void setAlienInterval(int mAlienInterval) {
+		this.mAlienInterval = mAlienInterval;
 	}
 
 }
