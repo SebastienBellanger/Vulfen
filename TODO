@@ -1,12 +1,7 @@
 
-alien:
-	* fade out funkar inte.
-	* skjuta inte implementerat.
-	* kommer bara en gång.
+alien ska kunna komma från andra hållet.
 
 fixa till kollisionsdetekteringen. Googla
-
-Fixa alien ship från bana 10 och framåt
 
 fixa menu med restart om man trycker på menyknappen i spelet. då ska det pausas och man ska kunna avsluta eller reseta.
 

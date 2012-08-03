@@ -54,6 +54,8 @@ public class BowlScreen extends Screen {
 
 	private static final String TOP_SCORE = "Top Score: ";
 
+	private static final int ALIEN_DRIVE_BY_TIME_MILLIS = 5000; 
+	
 	private float mScale;
 
 	private Vibrator vibrator;
@@ -279,6 +281,8 @@ public class BowlScreen extends Screen {
 		if (mAlienInterval != 0) {
 			mAlienStartTime = System.currentTimeMillis();
 			loadAlien();
+		} else {
+			alien = null;
 		}
 		
 		createBackground();
@@ -300,7 +304,7 @@ public class BowlScreen extends Screen {
 			alienBitmap = GraphicsUtil.resizeBitmap(alienBitmap,
 					(int) (mCow1.getWidth() * 1.5f * ratio),
 					(int) (mCow1.getWidth() * 1.5f));
-			alien = new AlienShip(alienBitmap, true, false, false, 0, -alienBitmap.getWidth(), (int)(mCow1.getHeight() * 1.5f),
+			alien = new AlienShip(alienBitmap, true, false, false, 0, -alienBitmap.getWidth()*0.5f, (int)(mCow1.getHeight() * 1.5f),
 					alienBitmap.getWidth(), alienBitmap.getHeight(), mScale, getWidth());
 			mAlienStartTime = System.currentTimeMillis();
 		}
@@ -441,6 +445,10 @@ public class BowlScreen extends Screen {
 		mPongs.clear();
 		mBonusItems.clear();
 		mBricks.clear();
+		
+		if (alien != null) {
+			alien.reset();
+		}
 
 		for (Pong enemy : mLevelConfig.getEnemies()) {
 			addInitialPong(enemy);
@@ -595,6 +603,9 @@ public class BowlScreen extends Screen {
 			if (levelCompleted) {
 				mGameOver = true;
 				mBonusItems.clear();
+				if (alien != null) {
+					alien.reset();
+				}
 			} else {
 				resetLauncher();
 			}
@@ -607,17 +618,39 @@ public class BowlScreen extends Screen {
 			}
 		}
 		
-		if (alien != null && !alien.isMoving() && !mGameOver) {
+		if (alien != null && !alien.isMoving() && !mGameOver && mHasLaunched) {
 			long timeSinceCheckPoint = System.currentTimeMillis() - mAlienStartTime;
 			if (timeSinceCheckPoint > mAlienInterval) {
-				alien.reset();
+				System.out.println("RESTARTING ALIEN!!!!!!!!!!!!!!!!!!!!!!!");
+				if (!alien.isDead()) {
+					alien.reset();
+				}
 				alien.start();
-				mAlienStartTime = System.currentTimeMillis(); //TODO: sätt inte den hr
+				mAlienStartTime = System.currentTimeMillis() + ALIEN_DRIVE_BY_TIME_MILLIS;
 			}
 		}
 		
 		if (alien != null) {
 			alien.update(timeStep);
+			if (alien.canShoot()) {
+				for (Pong pong : mPongs) {
+					if (pong.getType() == Pong.Type.COW) {
+						if (pong.getTimesShrinken() > 0) {
+							if (alien.isShooting() == false) {
+								pong.setTimesShrinken(pong.getTimesShrinken()-1);
+								pong.setWidth(pong.getWidth() * 1.5f);
+								pong.setHeight(pong.getHeight() * 1.5f);
+								pong.setRadius(pong.getRadius() * 1.5f);
+								alien.shoot(pong);
+								if (mVibrationEnabled) {
+									vibrator.vibrate(20);
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		// CHECK FOR COLLISIONS
@@ -635,9 +668,9 @@ public class BowlScreen extends Screen {
 						position.mulT(0.5f);
 						position.addT(pong.getPosition());
 
-						mPoints.add(new Score(SCORE_FOR_ALIEN_KILL, position, Color.YELLOW, mScale));
+						mPoints.add(new Score(SCORE_FOR_ALIEN_KILL, position, Color.GREEN, mScale));
 						
-						alien.fadeOut();
+						alien.setDead(true);
 					}
 				}
 				
@@ -1109,7 +1142,6 @@ public class BowlScreen extends Screen {
 		boolean wasKill = false;
 
 		if (mVibrationEnabled) {
-			// Vibrate for 30 milliseconds
 			vibrator.vibrate(20);
 		}
 
@@ -1178,6 +1210,9 @@ public class BowlScreen extends Screen {
 		if (mLives < 0) {
 			mGameOver = true;
 			mBonusItems.clear();
+			if (alien != null) {
+				alien.reset();
+			}
 			return;
 		}
 

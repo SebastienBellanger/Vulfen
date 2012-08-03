@@ -28,7 +28,6 @@ import com.vulfox.util.GraphicsUtil;
 public class AlienTalkScreen extends Screen {
 
 	private long mStartTime;
-	private long mBackgroundAnimationTimeMillis = 200;
 	private long mAlienAnimationTimeMillis = 2000;
 	Paint mPaint = new Paint();
 	private int numberOfStars = 150;
@@ -202,7 +201,7 @@ public class AlienTalkScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
-		animateBackground(canvas);
+		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 
 		drawStars(canvas);
 
@@ -339,20 +338,6 @@ public class AlienTalkScreen extends Screen {
 
 		mPaint.setColor(oldColor);
 
-	}
-
-	private void animateBackground(Canvas canvas) {
-		int alphaStepsPerSecond = 400;
-
-		long timeSinceStart = System.currentTimeMillis() - mStartTime;
-
-		int steps = 255;
-		if (timeSinceStart < mBackgroundAnimationTimeMillis) {
-			steps = (int) ((timeSinceStart / 1000.0f) * alphaStepsPerSecond);
-		}
-
-		mPaint.setARGB(steps, 0, 0, 40);
-		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
 	}
 
 	private ScreenComponent createPlayButton() {
