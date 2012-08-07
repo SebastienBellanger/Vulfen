@@ -1,12 +1,15 @@
 package com.tojosebe.vulfen.game;
 
+import java.util.Random;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
+import com.vulfox.util.Logger;
 import com.vulfox.util.Vector2fPool;
 
 public class AlienShip extends SpriteComponent {
@@ -28,6 +31,8 @@ public class AlienShip extends SpriteComponent {
 	private int color1 = 0xFFFF0000;
 	private int color2 = 0xFF00FF00;
 	private Pong pongToShoot;
+	private boolean comeFromLeft = false;
+	private Random rand = new Random(System.currentTimeMillis());
 	
 	public AlienShip(Bitmap bitmap, boolean antialias,
 			boolean animateFromLarge, boolean animateFromSmall,
@@ -35,9 +40,15 @@ public class AlienShip extends SpriteComponent {
 		super(bitmap, antialias, animateFromLarge, animateFromSmall,
 				animationTimeMillis, x, y, width, height);
 		mScale = scale;
-		velocity = new Vector2f(100*scale, 0);
+		comeFromLeft = rand.nextBoolean();
+		if (comeFromLeft) {
+			velocity = new Vector2f(100 * scale, 0);
+			startPos = new Vector2f(getPosition());
+		} else {
+			velocity = new Vector2f(-100 * scale, 0);
+			startPos = new Vector2f(getPosition());
+		}
 		radius = 0.8f*width*0.5f;
-		startPos = new Vector2f(getPosition());
 		this.screenWidth = screenWidth;
 		shootPaint.setColor(color1);
 		shootPaint.setStrokeWidth(5*scale);
@@ -55,9 +66,21 @@ public class AlienShip extends SpriteComponent {
 	}	
 	
 	public void reset() {
-		//TODO: reset positions here.
 		moving = false;
-		setPosition(new Vector2f(startPos));
+		
+		comeFromLeft = rand.nextBoolean(); 
+		
+		Vector2f newStartPos = new Vector2f(startPos);
+		if (comeFromLeft) {
+			velocity = new Vector2f(100 * mScale, 0);
+		} else {
+			velocity = new Vector2f(-100 * mScale, 0);
+			newStartPos.setX(Math.abs(newStartPos.getX()) + screenWidth);
+		}
+		setPosition(newStartPos);
+		
+		Log.d("BAPELSIN", "newStartPos:" + newStartPos.toString() + comeFromLeft);
+		
 		canShoot = false;
 		shotsLeft = 1;
 		dead = false;
@@ -91,7 +114,7 @@ public class AlienShip extends SpriteComponent {
 					shootPaint.setColor(color1);
 				}
 				if (pongToShoot != null) {
-					canvas.drawLine(pongToShoot.getPosition().getX(), pongToShoot.getPosition().getY(), getPosition().getX(), getPosition().getY(), shootPaint);
+					canvas.drawLine(pongToShoot.getPosition().getX(), pongToShoot.getPosition().getY(), getPosition().getX(), getPosition().getY() + 20 * mScale, shootPaint);
 				}
 			}
 			
@@ -114,23 +137,20 @@ public class AlienShip extends SpriteComponent {
 				Vector2f positionDelta = Vector2fPool.getInstance().aquire();
 				positionDelta.set(velocity);
 				positionDelta.mulT(timeStep);
-		
 				getPosition().addT(positionDelta);
 		
-				Vector2fPool.getInstance().release(positionDelta);
-				
-				if (shotsLeft > 0 && getPosition().getX() > screenWidth * 0.5f) {
-					canShoot = true;
-//					if (mCanShootStartTime == 0) {
-//						
-//						velocity.setX(0.0f);
-//					} else {
-//						long timeSinceStart = System.currentTimeMillis() - mCanShootStartTime;
-//						if (timeSinceStart > mCanShootTime) {
-//							velocity.setX(100*mScale);
-//						}
-//					}
+				if (comeFromLeft) {
+					if (shotsLeft > 0 && getPosition().getX() > screenWidth * 0.5f) {
+						canShoot = true;
+					}
+				} else {
+					if (shotsLeft > 0 && getPosition().getX() < screenWidth * 0.5f) {
+						canShoot = true;
+					}
 				}
+		
+				Vector2fPool.getInstance().release(positionDelta);
+	
 			}
 			
 		}
@@ -138,8 +158,14 @@ public class AlienShip extends SpriteComponent {
 	
 	private boolean isOutSideScreen() {
 		boolean outside = false;
-		if (getPosition().getX() - getWidth() *0.5f >= screenWidth) {
-			outside = true;
+		if (comeFromLeft) {
+			if (getPosition().getX() - getWidth() *0.5f >= screenWidth) {
+				outside = true;
+			}
+		} else {
+			if (getPosition().getX() <= - getWidth() *0.5f) {
+				outside = true;
+			}
 		}
 		return outside;
 	}

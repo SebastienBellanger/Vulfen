@@ -123,6 +123,7 @@ public class CollisionCalculator {
 //					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(circle.getRadius() - diffY));
 //				}
 		}
+
 		
 		if (!done) {
 			//It is a collision against one of the sides. Find out which one!
@@ -133,15 +134,15 @@ public class CollisionCalculator {
 					System.out.println("COLLISION left side");
 					circle.velocity.setX(-circle.velocity.getX());
 					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-					float move = circle.getRadius() - (square.getPositionCorner1().getX() - circle.getPosition().getX());
-					circle.getPosition().setX(circle.getPosition().getX() - Math.abs(move));
+//					float move = circle.getRadius() - (square.getPositionCorner1().getX() - circle.getPosition().getX());
+//					circle.getPosition().setX(circle.getPosition().getX() - Math.abs(move));
 				} else {
 					//collision against right side!
 					System.out.println("COLLISION right side");
 					circle.velocity.setX(-circle.velocity.getX());
 					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-					float move = circle.getRadius() - (circle.getPosition().getX() - square.getPositionCorner2().getX());
-					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(move));
+//					float move = circle.getRadius() - (circle.getPosition().getX() - square.getPositionCorner2().getX());
+//					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(move));
 				}
 			} else {
 				if (circle.getPosition().getY() < square.getPosition().getY()) {
@@ -149,15 +150,15 @@ public class CollisionCalculator {
 					System.out.println("COLLISION top side");
 					circle.velocity.setY(-circle.velocity.getY());
 					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-					float move = circle.getRadius() - (square.getPositionCorner1().getY() - circle.getPosition().getY());
-					circle.getPosition().setY(circle.getPosition().getY() - Math.abs(move));
+//					float move = circle.getRadius() - (square.getPositionCorner1().getY() - circle.getPosition().getY());
+//					circle.getPosition().setY(circle.getPosition().getY() - Math.abs(move));
 				} else {
 					//collision against bottom side!
 					System.out.println("COLLISION bottom side");
 					circle.velocity.setY(-circle.velocity.getY());
 					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-					float move = circle.getRadius() - (circle.getPosition().getY() - square.getPositionCorner3().getY());
-					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(move));
+//					float move = circle.getRadius() - (circle.getPosition().getY() - square.getPositionCorner3().getY());
+//					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(move));
 				}
 			}
 		}

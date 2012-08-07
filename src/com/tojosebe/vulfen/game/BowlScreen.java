@@ -779,6 +779,11 @@ public class BowlScreen extends Screen {
 			}
 			
 			//Check for collision with bricks
+			
+			/**TODO: Testa detta:
+			*	...
+			*
+			*/
 			if (mBricks.size() > 0) {
 				Brick brickCollidedWith = null;
 				for (Brick brick : mBricks) {
