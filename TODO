@@ -1,12 +1,13 @@
 
-fixa till kollisionsdetekteringen. Googla
-	Problem:
-		inte samma algoritm för att detektera som at räkna ut nya vektorer.
-		träffar hörnen om tegelstenar ligger bredvid varandra.
-		träffas flera stenar väljs kollision på den som ligger först i listan
-		utflyttning?
-		vid permanenta stenar sugs de fast. (för att de inte flyttas ut!!)
+fixa till kollisionsdetekteringen. 
+	- det som är kvar är att flytta ut pong vid kollision med hörn. 
+	Man borde kunna:
+		1. ta reda på längden vi måste flytta genom att beräkna längden av vectorn från circelcentrum till hörn.
+		2. vi har ritningen vi ska flytta och punkten som ska flyttas. DEt borde räcka!
 
+alien skott måste fixas. Ser kass ut. Lägg in 10 ms en färg. 10 ms en annan.
+
+vid start av level ska level X visas och fadas ut.
 
 fixa menu med restart om man trycker på menyknappen i spelet. då ska det pausas och man ska kunna avsluta eller reseta.
 

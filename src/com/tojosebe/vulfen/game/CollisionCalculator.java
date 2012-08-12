@@ -1,164 +1,205 @@
 package com.tojosebe.vulfen.game;
 
 import com.vulfox.math.Vector2f;
+import com.vulfox.util.Logger;
 
 public class CollisionCalculator {
-	
+
 	/** Help vector. Saves memory by not allocating new every time. */
 	private static Vector2f collisionCheckVector = new Vector2f();
-	
-	public static boolean circleCircleCollision(Vector2f circle1Pos, Vector2f circle2Pos, float radiusCircle1, float radiusCircle2) {
-		
+
+	private static Vector2f edgeNormalUp = new Vector2f(0.0f, -1.0f);
+	private static Vector2f edgeNormalRight = new Vector2f(1.0f, 0.0f);
+	private static Vector2f edgeNormalDown = new Vector2f(0.0f, 1.0f);
+	private static Vector2f edgeNormalLeft = new Vector2f(-1.0f, 0.0f);
+
+	public static boolean circleCircleCollision(Vector2f circle1Pos,
+			Vector2f circle2Pos, float radiusCircle1, float radiusCircle2) {
+
 		circle1Pos.sub(circle2Pos, collisionCheckVector);
-		
+
 		float lengthSquared = collisionCheckVector.getLengthSquared();
 		float distance = radiusCircle1 + radiusCircle2;
-		
+
 		return lengthSquared < (distance * distance);
 	}
-	
+
 	/**
-	 * Calculates if a Circle collides with an orthogonal square. Returns the collision vector if
-	 * collision or null if no collision.
-	 * @param circle the circle.
-	 * @param square the square.
+	 * Calculates if a Circle collides with an orthogonal square. Returns the
+	 * collision vector if collision or null if no collision.
+	 * 
+	 * @param circle
+	 *            the circle.
+	 * @param square
+	 *            the square.
 	 * @return collision vector if collision or null if no collision.
 	 */
-	public static boolean circleOrtogonalSquareCollision(Pong circle, Brick square) {
-		
-	    float circleDistanceX = Math.abs(circle.getPosition().getX() - square.getPosition().getX());
-	    float circleDistanceY = Math.abs(circle.getPosition().getY() - square.getPosition().getY());
+	public static boolean circleOrtogonalSquareCollision(Pong circle,
+			Brick square) {
 
-	    //1. Eliminate the easy cases where the circle is far enough away from the rectangle (in either direction) that no intersection is possible.
-		if (circleDistanceX > (square.getWidth() * 0.5f + circle.getRadius())) {
-			return false;
-		}
-		if (circleDistanceY > (square.getHeight() * 0.5f + circle.getRadius())) {
-			return false;
-		}
+		// clamp(value, min, max) - limits value to the range min..max
 
-		//2. Handle the easy cases where the circle is close enough to the rectangle (in either direction) that an intersection is guaranteed.
-		if (circleDistanceX <= (square.getWidth() * 0.5f)) {
-			return true;
-		}
-		if (circleDistanceY <= (square.getHeight() * 0.5f)) {
-			return true;
-		}
+		// Find the closest point to the circle within the rectangle
+		float closestX = clamp(circle.getPosition().getX(), square.getEdgeLeft().getX(), square.getEdgeRight().getX());
+		float closestY = clamp(circle.getPosition().getY(), square.getEdgeUp().getY(), square.getEdgeDown().getY());
 
-	    float cornerDistanceSquare = square(circleDistanceX - square.getWidth() * 0.5f) + square(circleDistanceY - square.getHeight() * 0.5f);
-	    return cornerDistanceSquare <= (square(circle.getRadius()));
+		// Calculate the distance between the circle's center and this closest point
+		float distanceX = circle.getPosition().getX() - closestX;
+		float distanceY = circle.getPosition().getY() - closestY;
+
+		// If the distance is less than the circle's radius, an intersection occurs
+		float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+		return distanceSquared < (circle.getWidth()*0.5f * circle.getWidth()*0.5f);
 	}
 	
-	private static float square(float number) {
-		return number * number;
+	private static float clamp(float value, float min, float max) {
+		float result = value;
+
+		if (value > max) {
+			result = max;
+		}
+
+		if (value < min) {
+			result = min;
+		}
+
+		return result;
 	}
 
 	/**
-	 * If a collision has happened update the velocity vector for the Circle. The square is solid.
-	 * PRECONDITION: check if a collision has really happened. 
+	 * If a collision has happened update the velocity vector for the Circle.
+	 * The square is solid. PRECONDITION: check if a collision has really
+	 * happened.
+	 * 
 	 * @param circle
 	 * @param square
 	 */
-	public static void calculateCollisionVectorCircleVsSolidSquare(Pong circle,
-			Brick square) {
-		
-		boolean done = false;
+	public static void calculateCollisionVectorCircleVsSolidSquare(Pong pong,
+			Brick brick, boolean checkCorners, boolean checkSides) {
 
-		/* First check for collision against the corners. */
+		boolean done = false;
+		boolean hitUp = false;
+		boolean hitDown = false;
+		boolean hitLeft = false;
+		boolean hitRight = false;
+
+		Vector2f circleToSideVector = collisionCheckVector;
 		
-		//top left corner
-		if (circle.getPosition().getX() < square.getPositionCorner1().getX() &&
-				circle.getPosition().getY() < square.getPositionCorner1().getY()) {
-			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner1());
-			done = true;
-//			System.out.println("COLLISION Corner1");
-//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//			float diffX = Math.abs(square.getPositionCorner1().getX() - circle.getPosition().getX());
-//			float diffY = Math.abs(square.getPositionCorner1().getY() - circle.getPosition().getY());
-//			if (diffY < diffX) {
-//				circle.getPosition().setX(circle.getPosition().getX() - Math.abs(circle.getRadius() - diffX));
-//			} else {
-//				circle.getPosition().setY(circle.getPosition().getY() - Math.abs(circle.getRadius() - diffY));
-//			}
-		//top right corner
-		} else if (circle.getPosition().getX() > square.getPositionCorner2().getX() &&
-				circle.getPosition().getY() < square.getPositionCorner2().getY()) {
-			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner2());
-			done = true;
-//			System.out.println("COLLISION Corner2");
-//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//			float diffX = Math.abs(square.getPositionCorner2().getX() - circle.getPosition().getX());
-//			float diffY = Math.abs(square.getPositionCorner2().getY() - circle.getPosition().getY());
-//			if (diffY < diffX) {
-//				circle.getPosition().setX(circle.getPosition().getX() + Math.abs(circle.getRadius() - diffX));
-//			} else {
-//				circle.getPosition().setY(circle.getPosition().getY() - Math.abs(circle.getRadius() - diffY));
-//			}
-		//bottom left corner	
-		} else if (circle.getPosition().getX() < square.getPositionCorner3().getX() &&
-			circle.getPosition().getY() > square.getPositionCorner3().getY()) {
-			calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner3());
-			done = true;
-//			System.out.println("COLLISION Corner3");
-//			//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//			float diffX = Math.abs(square.getPositionCorner3().getX() - circle.getPosition().getX());
-//			float diffY = Math.abs(square.getPositionCorner3().getY() - circle.getPosition().getY());
-//			if (diffY < diffX) {
-//				circle.getPosition().setX(circle.getPosition().getX() - Math.abs(circle.getRadius() - diffX));
-//			} else {
-//				circle.getPosition().setY(circle.getPosition().getY() + Math.abs(circle.getRadius() - diffY));
-//			}
-		//bottom right corner	
-		} else if (circle.getPosition().getX() > square.getPositionCorner4().getX() &&
-				circle.getPosition().getY() > square.getPositionCorner4().getY()) {
-				calculateCollisionVectorCircleSolidPoint(circle, square.getPositionCorner4());
-				done = true;
-//				System.out.println("COLLISION Corner4");
-//				//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//				float diffX = Math.abs(square.getPositionCorner4().getX() - circle.getPosition().getX());
-//				float diffY = Math.abs(square.getPositionCorner4().getY() - circle.getPosition().getY());
-//				if (diffY < diffX) {
-//					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(circle.getRadius() - diffX));
-//				} else {
-//					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(circle.getRadius() - diffY));
-//				}
+		/** First check which sides are hit. */
+
+		// Down side
+		pong.getPosition().clone(circleToSideVector);
+		brick.getEdgeDown().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalDown) <= 0) {
+			hitDown = true;
 		}
 
-		
-		if (!done) {
-			//It is a collision against one of the sides. Find out which one!
-			if (circle.getPosition().getY() > square.getPosition().getY() - square.getHeight() * 0.5f && circle.getPosition().getY() < square.getPosition().getY() + square.getHeight() * 0.5f) {
-				//It is a collision against left or right side.
-				if (circle.getPosition().getX() < square.getPosition().getX()) {
-					//collision against left side!
-					System.out.println("COLLISION left side");
-					circle.velocity.setX(-circle.velocity.getX());
-					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//					float move = circle.getRadius() - (square.getPositionCorner1().getX() - circle.getPosition().getX());
-//					circle.getPosition().setX(circle.getPosition().getX() - Math.abs(move));
-				} else {
-					//collision against right side!
-					System.out.println("COLLISION right side");
-					circle.velocity.setX(-circle.velocity.getX());
-					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//					float move = circle.getRadius() - (circle.getPosition().getX() - square.getPositionCorner2().getX());
-//					circle.getPosition().setX(circle.getPosition().getX() + Math.abs(move));
+		// Up side
+		pong.getPosition().clone(circleToSideVector);
+		brick.getEdgeUp().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalUp) <= 0) {
+			hitUp = true;
+		}
+
+		// Left side
+		pong.getPosition().clone(circleToSideVector);
+		brick.getEdgeLeft().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalLeft) <= 0) {
+			hitLeft = true;
+		}
+
+		// Right side
+		pong.getPosition().clone(circleToSideVector);
+		brick.getEdgeRight().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalRight) <= 0) {
+			hitRight = true;
+		}
+
+		/* First check for collision against the corners. */
+
+		if (checkCorners) {
+			
+			// top left corner
+			if (hitUp && hitLeft) {
+				calculateCollisionVectorCircleSolidPoint(pong,
+						brick.getPositionCorner1());
+				done = true;
+				Logger.log("COLLISION Corner1");
+				// //move circle out of square TODO: egentligen ska vi flytta ut
+				// cirkeln längs riktningsvectorn.
+				// top right corner
+			} else if (hitUp && hitRight) {
+				calculateCollisionVectorCircleSolidPoint(pong,
+						brick.getPositionCorner2());
+				done = true;
+				Logger.log("COLLISION Corner2");
+				// //move circle out of square TODO: egentligen ska vi flytta ut
+				// cirkeln längs riktningsvectorn.
+				// bottom left corner
+			} else if (hitDown && hitLeft) {
+				calculateCollisionVectorCircleSolidPoint(pong,
+						brick.getPositionCorner3());
+				done = true;
+				Logger.log("COLLISION Corner3");
+				// //move circle out of square TODO: egentligen ska vi flytta ut
+				// cirkeln längs riktningsvectorn.
+				// bottom right corner
+			} else if (hitDown && hitRight) {
+				calculateCollisionVectorCircleSolidPoint(pong,
+						brick.getPositionCorner4());
+				done = true;
+				Logger.log("COLLISION Corner4");
+				// //move circle out of square TODO: egentligen ska vi flytta ut
+				// cirkeln längs riktningsvectorn.
+			}
+		}
+
+		if (!done && checkSides) {
+			
+			if (hitLeft) {
+				
+				float penetration = (brick.getWidth() * 0.5f + pong.getRadius()) - (brick.getPosition().getX() - pong.getPosition().getX());
+				
+				Logger.log("penetration " + penetration);
+				if (penetration >= -0.001f) { 
+					Logger.log("COLLISION left side. Penetration is " + penetration);
+					pong.getPosition().setX(pong.getPosition().getX() - penetration);
+					pong.velocity.setX(-pong.velocity.getX());
 				}
-			} else {
-				if (circle.getPosition().getY() < square.getPosition().getY()) {
-					//collision against top side!
-					System.out.println("COLLISION top side");
-					circle.velocity.setY(-circle.velocity.getY());
-					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//					float move = circle.getRadius() - (square.getPositionCorner1().getY() - circle.getPosition().getY());
-//					circle.getPosition().setY(circle.getPosition().getY() - Math.abs(move));
-				} else {
-					//collision against bottom side!
-					System.out.println("COLLISION bottom side");
-					circle.velocity.setY(-circle.velocity.getY());
-					//move circle out of square TODO: egentligen ska vi flytta ut cirkeln längs riktningsvectorn.
-//					float move = circle.getRadius() - (circle.getPosition().getY() - square.getPositionCorner3().getY());
-//					circle.getPosition().setY(circle.getPosition().getY() + Math.abs(move));
+				
+			} else if (hitRight) {
+				
+				float penetration = (brick.getWidth() * 0.5f + pong.getRadius()) - (pong.getPosition().getX() - brick.getPosition().getX());
+				
+				Logger.log("penetration " + penetration);
+
+				if (penetration >= -0.001f) {
+					Logger.log("COLLISION right side. Penetration is " + penetration);
+					pong.getPosition().setX(pong.getPosition().getX() + penetration);
+					pong.velocity.setX(-pong.velocity.getX());
+				}
+			} else if (hitUp) {
+				
+				float penetration = (brick.getHeight() * 0.5f + pong.getRadius()) - (brick.getPosition().getY() - pong.getPosition().getY());
+				
+				Logger.log("penetration " + penetration);
+				
+				if (penetration >= -0.001f) {
+					pong.velocity.setY(-pong.velocity.getY());
+					Logger.log("COLLISION top side. Penetration is " + penetration);
+					pong.getPosition().setY(pong.getPosition().getY() - penetration);
+				}
+			} else if (hitDown) {
+				
+				float penetration = (brick.getHeight() * 0.5f + pong.getRadius()) - (pong.getPosition().getY() - brick.getPosition().getY());
+				
+				Logger.log("penetration " + penetration);
+				
+				if (penetration >= -0.001f) {
+					pong.velocity.setY(-pong.velocity.getY());
+					Logger.log("COLLISION bottom side. Penetration is " + penetration);
+					pong.getPosition().setY(pong.getPosition().getY() + penetration);
 				}
 			}
 		}
@@ -166,20 +207,21 @@ public class CollisionCalculator {
 
 	private static void calculateCollisionVectorCircleSolidPoint(Pong circle,
 			Vector2f positionCorner) {
-		
-		circle.getPosition().sub(positionCorner, collisionCheckVector);
-		
-		float length = collisionCheckVector.getLength(); //TODO: sqrt
 
-		Vector2f mtd = collisionCheckVector.mul((circle.getRadius() - length) / length);
+		circle.getPosition().sub(positionCorner, collisionCheckVector);
+
+		float length = collisionCheckVector.getLength(); // TODO: sqrt
+
+		Vector2f mtd = collisionCheckVector.mul((circle.getRadius() - length)
+				/ length);
 
 		circle.getPosition().addT(mtd.mul(0.505f));
 		positionCorner.subT(mtd.mul(0.505f));
-		
+
 		Vector2f pointVelocity = new Vector2f(circle.velocity); // TODO: new
 		pointVelocity.invT();
 
-		//same as normalizeT:
+		// same as normalizeT:
 		collisionCheckVector.divT(length);
 
 		float aci = circle.velocity.dot(collisionCheckVector);
@@ -188,10 +230,120 @@ public class CollisionCalculator {
 		circle.velocity.addT(collisionCheckVector.mul((bci - aci) * 0.90f));
 	}
 
-	private static boolean circlePointCollision(Pong circle, Vector2f positionCorner1) {
-		return circleCircleCollision(circle.getPosition(), positionCorner1, circle.getRadius(), 2.0f);
+	// private static boolean circlePointCollision(Pong circle, Vector2f
+	// positionCorner1) {
+	// return circleCircleCollision(circle.getPosition(), positionCorner1,
+	// circle.getRadius(), 2.0f);
+	// }
+
+	public static boolean circleOrtogonalSquareSingleSideCollision(Pong pong,
+			Brick brick) {
+
+		int hits = 0;
+		Vector2f circleToSideVector = collisionCheckVector;
+
+		// Check which side we have a collision with.
+		// Calculate dot product of circle to side center vector and side
+		// normals.
+		// the side that is "hit" will be positive".
+		// if more than dot product is positive a corner is hit.
+
+		// Down side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeDown().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalDown) <= 0) {
+			Logger.log("WE HIT THE DOWN SIDE");
+			hits++;
+		}
+
+		// Up side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeUp().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalUp) <= 0) {
+			Logger.log("WE HIT THE UP SIDE");
+			hits++;
+		}
+
+		// Left side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeLeft().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalLeft) <= 0) {
+			Logger.log("WE HIT THE LEFT SIDE");
+			hits++;
+		}
+
+		// Right side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeRight().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalRight) <= 0) {
+			Logger.log("WE HIT THE RIGHT SIDE");
+			hits++;
+		}
+
+		return hits == 1;
 	}
 
+	public static boolean circleOrtogonalSquareCornerCollision(Pong pong,
+			Brick brick) {
+		int hits = 0;
+		Vector2f circleToSideVector = collisionCheckVector;
 
-	
+		// Check which side we have a collision with.
+		// Calculate dot product of circle to side center vector and side
+		// normals.
+		// the side that is "hit" will be positive".
+		// if more than dot product is positive a corner is hit.
+
+		// Down side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeDown().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalDown) <= 0) {
+			Logger.log("WE HIT THE DOWN SIDE (corner check)");
+			hits++;
+		}
+
+		// Up side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeUp().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalUp) <= 0) {
+			Logger.log("WE HIT THE UP SIDE (corner check)");
+			hits++;
+			if (hits == 2) {
+				return true;
+			}
+		}
+
+		// Left side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeLeft().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalLeft) <= 0) {
+			Logger.log("WE HIT THE LEFT SIDE (corner check)");
+			hits++;
+			if (hits == 2) {
+				return true;
+			}
+		}
+
+		// Right side
+		pong.getPosition().clone(circleToSideVector);
+		// subtract circleToSideVector and store in circleToSideVector.
+		brick.getEdgeRight().sub(circleToSideVector, circleToSideVector);
+		if (circleToSideVector.dot(edgeNormalRight) <= 0) {
+			Logger.log("WE HIT THE RIGHT SIDE (corner check)");
+			hits++;
+			if (hits == 2) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }

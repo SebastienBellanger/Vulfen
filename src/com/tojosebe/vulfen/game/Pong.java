@@ -1,6 +1,7 @@
 package com.tojosebe.vulfen.game;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 
 import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
@@ -47,6 +48,11 @@ public class Pong extends SpriteComponent {
 				animationTimeMillis, x, y, width, height);
 		setPosition(new Vector2f(x, y));
 		mRadius = width * 0.5f;
+	}
+	
+	@Override
+	public void draw(Canvas canvas) {
+		super.draw(canvas);
 	}
 
 	/**
@@ -197,6 +203,13 @@ public class Pong extends SpriteComponent {
 	 */
 	public void setTimesShrinken(int timesShrinken) {
 		this.mTimesShrinken = timesShrinken;
+	}
+
+	/**
+	 * @return the velocity
+	 */
+	public Vector2f getVelocity() {
+		return velocity;
 	}
 
 }

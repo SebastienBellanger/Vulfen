@@ -23,6 +23,11 @@ public class Brick extends SpriteComponent {
 	private Vector2f positionCorner3;
 	private Vector2f positionCorner4;
 	
+	private Vector2f edgeUp;
+	private Vector2f edgeRight;
+	private Vector2f edgeDown;
+	private Vector2f edgeLeft;
+	
 	private Type mType;
 
 	public Brick(Type type, float x, float y, float width, float height,
@@ -33,10 +38,15 @@ public class Brick extends SpriteComponent {
 		setWidth(width * scale);
 		setHeight(height * scale);
 		setPosition(new Vector2f(x * scale, y * scale));
-		positionCorner1 = new Vector2f(getPosition().getX() - width * 0.5f, getPosition().getY() - height * 0.5f);
-		positionCorner2 = new Vector2f(getPosition().getX() + width * 0.5f, getPosition().getY() - height * 0.5f);
-		positionCorner3 = new Vector2f(getPosition().getX() - width * 0.5f, getPosition().getY() + height * 0.5f);
-		positionCorner4 = new Vector2f(getPosition().getX() + width * 0.5f, getPosition().getY() + height * 0.5f);
+		positionCorner1 = new Vector2f(getPosition().getX() - getWidth() * 0.5f, getPosition().getY() - getHeight() * 0.5f);
+		positionCorner2 = new Vector2f(getPosition().getX() + getWidth() * 0.5f, getPosition().getY() - getHeight() * 0.5f);
+		positionCorner3 = new Vector2f(getPosition().getX() - getWidth() * 0.5f, getPosition().getY() + getHeight() * 0.5f);
+		positionCorner4 = new Vector2f(getPosition().getX() + getWidth() * 0.5f, getPosition().getY() + getHeight() * 0.5f);
+		
+		edgeUp = new Vector2f(getPosition().getX(), getPosition().getY() - getHeight() * 0.5f);
+		edgeRight = new Vector2f(getPosition().getX() + getWidth() * 0.5f, getPosition().getY());
+		edgeDown = new Vector2f(getPosition().getX(), getPosition().getY() + getHeight() * 0.5f);
+		edgeLeft = new Vector2f(getPosition().getX() - getWidth() * 0.5f, getPosition().getY());
 	}
 
 	public Brick(Brick brick) {
@@ -51,7 +61,16 @@ public class Brick extends SpriteComponent {
 		positionCorner2 = new Vector2f(brick.positionCorner2);
 		positionCorner3 = new Vector2f(brick.positionCorner3);
 		positionCorner4 = new Vector2f(brick.positionCorner4);
+		
+		edgeUp = new Vector2f(getPosition().getX(), getPosition().getY() - getHeight() * 0.5f);
+		edgeRight = new Vector2f(getPosition().getX() + getWidth() * 0.5f, getPosition().getY());
+		edgeDown = new Vector2f(getPosition().getX(), getPosition().getY() + getHeight() * 0.5f);
+		edgeLeft = new Vector2f(getPosition().getX() - getWidth() * 0.5f, getPosition().getY());
 	}
+	
+	public void draw(android.graphics.Canvas canvas) {
+		super.draw(canvas);
+	};
 
 	/**
 	 * @return the mType
@@ -133,6 +152,34 @@ public class Brick extends SpriteComponent {
 	 */
 	public void setPositionCorner4(Vector2f positionCorner4) {
 		this.positionCorner4 = positionCorner4;
+	}
+
+	/**
+	 * @return the edgeUp
+	 */
+	public Vector2f getEdgeUp() {
+		return edgeUp;
+	}
+
+	/**
+	 * @return the edgeRight
+	 */
+	public Vector2f getEdgeRight() {
+		return edgeRight;
+	}
+
+	/**
+	 * @return the edgeDown
+	 */
+	public Vector2f getEdgeDown() {
+		return edgeDown;
+	}
+
+	/**
+	 * @return the edgeLeft
+	 */
+	public Vector2f getEdgeLeft() {
+		return edgeLeft;
 	}
 
 }

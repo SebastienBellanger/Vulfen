@@ -93,8 +93,6 @@ public class WorldScreen extends Screen {
 		LevelManager.init(mActivity.getAssets(), getWidth(), getHeight());
 		int numberOfWOrlds = LevelManager.getNumberOfWorlds();
 		
-		int numberOfLevels = LevelManager.getNumberOfLevels(0);
-		
 		WorldButton worldButton = addWorld("World " + 1, LevelManager.getNumberOfLevels(0),  LevelManager.getNumberOfLevels(0), null, 1);
 		for (int i = 1; i < numberOfWOrlds; i++) {
 			addWorld("World " + i, LevelManager.getNumberOfLevels(i),  LevelManager.getNumberOfLevels(i), worldButton, 1);

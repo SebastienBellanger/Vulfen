@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
-import com.vulfox.util.Logger;
 import com.vulfox.util.Vector2fPool;
 
 public class AlienShip extends SpriteComponent {
@@ -27,7 +26,6 @@ public class AlienShip extends SpriteComponent {
 	private boolean dead = false;
 	private long mShootStartTime;
 	private int mTotalShootTime = 300;
-	private int mCanShootTime = 2000;
 	private int color1 = 0xFFFF0000;
 	private int color2 = 0xFF00FF00;
 	private Pong pongToShoot;
