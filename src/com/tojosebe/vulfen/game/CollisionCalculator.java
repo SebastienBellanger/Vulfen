@@ -71,12 +71,13 @@ public class CollisionCalculator {
 	 * If a collision has happened update the velocity vector for the Circle.
 	 * The square is solid. PRECONDITION: check if a collision has really
 	 * happened.
+	 * @param timeStep 
 	 * 
 	 * @param circle
 	 * @param square
 	 */
 	public static void calculateCollisionVectorCircleVsSolidSquare(Pong pong,
-			Brick brick, boolean checkCorners, boolean checkSides) {
+			Brick brick, boolean checkCorners, boolean checkSides, float timeStep) {
 
 		boolean done = false;
 		boolean hitUp = false;
@@ -122,36 +123,71 @@ public class CollisionCalculator {
 			
 			// top left corner
 			if (hitUp && hitLeft) {
+				
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner1());
 				done = true;
 				Logger.log("COLLISION Corner1");
-				// //move circle out of square TODO: egentligen ska vi flytta ut
-				// cirkeln längs riktningsvectorn.
-				// top right corner
+				
+				//move circle out of square
+				float xDiff = pong.getPosition().getX() + pong.getRadius() - brick.getPositionCorner1().getX();
+				float yDiff = pong.getPosition().getY() + pong.getRadius() - brick.getPositionCorner1().getY();
+				
+				if (xDiff > yDiff) {
+					pong.getPosition().setY(pong.getPosition().getY() - yDiff - 1.0f); 
+				} else {
+					pong.getPosition().setX(pong.getPosition().getX() - xDiff - 1.0f);
+				}
+
 			} else if (hitUp && hitRight) {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner2());
 				done = true;
 				Logger.log("COLLISION Corner2");
-				// //move circle out of square TODO: egentligen ska vi flytta ut
-				// cirkeln längs riktningsvectorn.
+				
+				//move circle out of square
+				float xDiff = brick.getPositionCorner2().getX() - (pong.getPosition().getX() - pong.getRadius());
+				float yDiff = pong.getPosition().getY() + pong.getRadius() - brick.getPositionCorner2().getY();
+				
+				if (xDiff > yDiff) {
+					pong.getPosition().setY(pong.getPosition().getY() - yDiff - 1.0f); 
+				} else {
+					pong.getPosition().setX(pong.getPosition().getX() + xDiff + 1.0f);
+				}
+
 				// bottom left corner
 			} else if (hitDown && hitLeft) {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner3());
 				done = true;
 				Logger.log("COLLISION Corner3");
-				// //move circle out of square TODO: egentligen ska vi flytta ut
-				// cirkeln längs riktningsvectorn.
+				
+				//move circle out of square
+				float xDiff = pong.getPosition().getX() + pong.getRadius() - brick.getPositionCorner3().getX();
+				float yDiff = brick.getPositionCorner3().getY() - (pong.getPosition().getY() - pong.getRadius());
+				
+				if (xDiff > yDiff) {
+					pong.getPosition().setY(pong.getPosition().getY() + yDiff + 1.0f); 
+				} else {
+					pong.getPosition().setX(pong.getPosition().getX() - xDiff - 1.0f);
+				}
+
 				// bottom right corner
 			} else if (hitDown && hitRight) {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner4());
 				done = true;
 				Logger.log("COLLISION Corner4");
-				// //move circle out of square TODO: egentligen ska vi flytta ut
-				// cirkeln längs riktningsvectorn.
+				
+				//move circle out of square
+				float xDiff = brick.getPositionCorner4().getX() - (pong.getPosition().getX() - pong.getRadius());
+				float yDiff = brick.getPositionCorner4().getY() - (pong.getPosition().getY() - pong.getRadius());
+				
+				if (xDiff > yDiff) {
+					pong.getPosition().setY(pong.getPosition().getY() + yDiff + 1.0f); 
+				} else {
+					pong.getPosition().setX(pong.getPosition().getX() + xDiff + 1.0f);
+				}
 			}
 		}
 
@@ -296,7 +332,7 @@ public class CollisionCalculator {
 		// Calculate dot product of circle to side center vector and side
 		// normals.
 		// the side that is "hit" will be positive".
-		// if more than dot product is positive a corner is hit.
+		// if more than 1 dot product is positive then one of the corners are hit.
 
 		// Down side
 		pong.getPosition().clone(circleToSideVector);

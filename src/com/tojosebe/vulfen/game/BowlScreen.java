@@ -40,7 +40,6 @@ import com.vulfox.listener.EventListener;
 import com.vulfox.math.Vector2f;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
-import com.vulfox.util.Logger;
 
 public class BowlScreen extends Screen {
 
@@ -544,7 +543,7 @@ public class BowlScreen extends Screen {
 
 	@Override
 	public void update(float timeStep) {
-
+		
 //		System.out.println(Runtime.getRuntime().freeMemory());
 		
 		int moving = 0;
@@ -783,7 +782,7 @@ public class BowlScreen extends Screen {
 			}
 			
 			//Check for collision with bricks
-			checkBrickCollision(pong);
+			checkBrickCollision(pong, timeStep);
 		}
 
 		// UPDATE FADING SCORES							
@@ -801,7 +800,7 @@ public class BowlScreen extends Screen {
 
 	}
 
-	private void checkBrickCollision(Pong pong) {
+	private void checkBrickCollision(Pong pong, float timeStep) {
 		if (mBricks.size() > 0) {
 			Brick brickCollidedWith = null;
 			boolean sideHit = false;
@@ -815,8 +814,6 @@ public class BowlScreen extends Screen {
 				for (int j = 0; j < mBricks.size(); j++) {
 					
 					Brick brick = mBricks.get(j);
-					
-	//					Logger.log("Checking " + pong.toString() + " and " + brick.toString());
 
 					boolean singleSideCollision = false;
 					
@@ -827,22 +824,32 @@ public class BowlScreen extends Screen {
 	
 					if (collision) {
 						
-	//						Logger.log("THERE WAS A COLLISION between " + pong.toString() + " and " + brick.toString());
-	
 						// Ok there was a collision. See if it was against side.
 						singleSideCollision = CollisionCalculator.circleOrtogonalSquareSingleSideCollision(pong, brick);
 						
 						if (singleSideCollision) {
 							sideHit = true;
-							brickCollidedWith = brick;
-	//							Logger.log("SIDE HIT against" + brick.toString());
+							if (brickCollidedWith == null) {
+								brickCollidedWith = brick;
+							} else {
+								//Pong is colliding with more than one brick. 
+								//Check which one is closest.
+								
+								pong.getPosition().sub(brickCollidedWith.getPosition(), collisionCheckVector);
+								float lengthBetweenPongAndPreviousBrickSquared = collisionCheckVector.getLengthSquared();
+								
+								pong.getPosition().sub(brick.getPosition(), collisionCheckVector);
+								float lengthBetweenPongAndCurrentBrickSquared = collisionCheckVector.getLengthSquared();
+								
+								if (lengthBetweenPongAndPreviousBrickSquared > lengthBetweenPongAndCurrentBrickSquared) {
+									brickCollidedWith = brick;
+								}
+							}
 							if (brick.getType() != Brick.Type.HARD) {
-	//								brick.fadeOut(250);
 								mPoints.add(new Score(SCORE_FOR_BRICK, new Vector2f(brick 
 										.getPosition()), Color.YELLOW, mScale));
 								setTotalScore(mTotalScore + SCORE_FOR_BRICK);
 							}
-							break;
 						}
 	
 					}
@@ -851,12 +858,14 @@ public class BowlScreen extends Screen {
 				
 				if (brickCollidedWith == null && collisionExist) {
 					
-					//There was no hit against any side. So check the corners.
+					
+					//There was no hit against any single side. So check the corners.
 					for (int j = 0; j < mBricks.size(); j++) {
 						Brick brick = mBricks.get(j);
 						if (CollisionCalculator.circleOrtogonalSquareCollision(pong, brick) && 
 							CollisionCalculator.circleOrtogonalSquareCornerCollision(pong, brick)) {
 							cornerHit = true;
+
 							brickCollidedWith = brick;
 	//							Logger.log("CORNER HIT against" + brick.toString());
 							if (brick.getType() != Brick.Type.HARD) {
@@ -901,7 +910,7 @@ public class BowlScreen extends Screen {
 				}
 				CollisionCalculator
 						.calculateCollisionVectorCircleVsSolidSquare(pong,
-								brickCollidedWith, cornerHit, sideHit);
+								brickCollidedWith, cornerHit, sideHit, timeStep);
 			}
 		}
 	}

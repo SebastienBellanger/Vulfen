@@ -1,9 +1,7 @@
 
-fixa till kollisionsdetekteringen. 
-	- det som är kvar är att flytta ut pong vid kollision med hörn. 
-	Man borde kunna:
-		1. ta reda på längden vi måste flytta genom att beräkna längden av vectorn från circelcentrum till hörn.
-		2. vi har ritningen vi ska flytta och punkten som ska flyttas. DEt borde räcka!
+
+VÄXANDE: 
+	det ska inte gå att växa om man växer så att man täcker en hard brick.
 
 alien skott måste fixas. Ser kass ut. Lägg in 10 ms en färg. 10 ms en annan.
 
