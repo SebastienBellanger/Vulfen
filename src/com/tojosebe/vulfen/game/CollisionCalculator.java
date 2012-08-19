@@ -23,6 +23,35 @@ public class CollisionCalculator {
 
 		return lengthSquared < (distance * distance);
 	}
+	
+	/**
+	 * Calculates if a Circle collides with an orthogonal square. Returns the
+	 * collision vector if collision or null if no collision.
+	 * 
+	 * @param circle
+	 *            the circle.
+	 * @param square
+	 *            the square.
+	 * @return collision vector if collision or null if no collision.
+	 */
+	public static boolean circleOrtogonalSquareCollisionWithNewRadius(Pong circle,
+			Brick square, float newRadius) {
+
+		// clamp(value, min, max) - limits value to the range min..max
+
+		// Find the closest point to the circle within the rectangle
+		float closestX = clamp(circle.getPosition().getX(), square.getEdgeLeft().getX(), square.getEdgeRight().getX());
+		float closestY = clamp(circle.getPosition().getY(), square.getEdgeUp().getY(), square.getEdgeDown().getY());
+
+		// Calculate the distance between the circle's center and this closest point
+		float distanceX = circle.getPosition().getX() - closestX;
+		float distanceY = circle.getPosition().getY() - closestY;
+
+		// If the distance is less than the circle's radius, an intersection occurs
+		float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+		return distanceSquared < (newRadius * newRadius);
+	}
 
 	/**
 	 * Calculates if a Circle collides with an orthogonal square. Returns the

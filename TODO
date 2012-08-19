@@ -1,15 +1,9 @@
 
-
-VÄXANDE: 
-	det ska inte gå att växa om man växer så att man täcker en hard brick.
-
-alien skott måste fixas. Ser kass ut. Lägg in 10 ms en färg. 10 ms en annan.
-
-vid start av level ska level X visas och fadas ut.
-
 fixa menu med restart om man trycker på menyknappen i spelet. då ska det pausas och man ska kunna avsluta eller reseta.
 
 fler banor!
+
+koppla in storage.
 
 Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
 
@@ -26,15 +20,11 @@ fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration
 BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart. 
       Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa? japp!
       
-BUGG: en pingvin var nära kanten. stog still. tog en fisk och växte så långt att den touchade en annnan
+BUGG: en pingvin var nära kanten. stod still. tog en fisk och växte så långt att den touchade en annnan
 pingvin. Hängde sig och bara stod och vibrera in poäng!
-
-svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!?
 
 ta bort alla new i bowlScreen som går.
 bowlScreen ska INTE vara > 1000 rader.
-
-koppla in storage.
 
 hur långt man kommit i levlar ska sparas. (senare)
 
@@ -52,8 +42,12 @@ LJUD
 	- som feedback när man klickar på saker?
 	- applåder när man klarar.
 	- när man får en stjärna
+	
+WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
+
+Idéer:
+* svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!?
+* hål där man ramlar ner och kommer upp i ett annat. 
 
 
-LOW PRIO:
-* WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
 

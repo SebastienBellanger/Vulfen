@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
+import com.vulfox.util.Logger;
 import com.vulfox.util.Vector2fPool;
 
 public class AlienShip extends SpriteComponent {
@@ -25,9 +26,10 @@ public class AlienShip extends SpriteComponent {
 	private Paint shootPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private boolean dead = false;
 	private long mShootStartTime;
-	private int mTotalShootTime = 300;
-	private int color1 = 0xFFFF0000;
-	private int color2 = 0xFF00FF00;
+	private long mShootColorSwitchTime;
+	private int mTotalShootTime = 500;
+	private int color1 = 0x00000000;
+	private int color2 = 0xcc00ff00;
 	private Pong pongToShoot;
 	private boolean comeFromLeft = false;
 	private Random rand = new Random(System.currentTimeMillis());
@@ -61,6 +63,7 @@ public class AlienShip extends SpriteComponent {
 			shooting = true;
 		}
 		mShootStartTime = System.currentTimeMillis();
+		mShootColorSwitchTime = mShootStartTime;
 	}	
 	
 	public void reset() {
@@ -98,26 +101,33 @@ public class AlienShip extends SpriteComponent {
 			super.draw(canvas);
 		}
 		
-		
-		
 		if (shooting) {
 			long timeSinceStart = System.currentTimeMillis() - mShootStartTime;
 			if (timeSinceStart > mTotalShootTime) {
 				canShoot = false;
 				shooting = false;
 			} else {
-				if (shootPaint.getColor() == color1) {
-					shootPaint.setColor(color2);
-				} else {
-					shootPaint.setColor(color1);
+				
+				boolean switchColor = false;
+				if (System.currentTimeMillis() - mShootColorSwitchTime > 40) {
+					switchColor = true;
+					mShootColorSwitchTime = System.currentTimeMillis();
+				}
+				
+				if (switchColor) {
+					if (shootPaint.getColor() == color1) {
+						Logger.log("Setting color " + color2);
+						shootPaint.setColor(color2);
+					} else {
+						Logger.log("Setting color " + color1);
+						shootPaint.setColor(color1);
+					}
 				}
 				if (pongToShoot != null) {
 					canvas.drawLine(pongToShoot.getPosition().getX(), pongToShoot.getPosition().getY(), getPosition().getX(), getPosition().getY() + 20 * mScale, shootPaint);
 				}
-			}
-			
+			}	
 		}
-		
 	}
 	
 	@Override
@@ -138,11 +148,11 @@ public class AlienShip extends SpriteComponent {
 				getPosition().addT(positionDelta);
 		
 				if (comeFromLeft) {
-					if (shotsLeft > 0 && getPosition().getX() > screenWidth * 0.5f) {
+					if (shotsLeft > 0 && getPosition().getX() > screenWidth * 0.5f && getPosition().getX() < screenWidth) {
 						canShoot = true;
 					}
 				} else {
-					if (shotsLeft > 0 && getPosition().getX() < screenWidth * 0.5f) {
+					if (shotsLeft > 0 && getPosition().getX() < screenWidth * 0.5f && getPosition().getX() > 0) {
 						canShoot = true;
 					}
 				}

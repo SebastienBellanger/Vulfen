@@ -24,6 +24,7 @@ import com.tojosebe.vulfen.component.ScoreBarComponent;
 import com.tojosebe.vulfen.configuration.BowlConfiguration;
 import com.tojosebe.vulfen.configuration.Level;
 import com.tojosebe.vulfen.configuration.LevelManager;
+import com.tojosebe.vulfen.contextmenu.ContextMenuScreen;
 import com.tojosebe.vulfen.dialog.DialogCounterString;
 import com.tojosebe.vulfen.dialog.DialogPulsingString;
 import com.tojosebe.vulfen.dialog.DialogRegularString;
@@ -62,6 +63,8 @@ public class BowlScreen extends Screen {
 	
 	private Activity mActivity;
 	
+	private boolean paused = false;
+	
 	//set to true means we will first check side collisions against all bricks.
 	private boolean sidesHasPrecedence = true;
 	
@@ -97,6 +100,9 @@ public class BowlScreen extends Screen {
 
 	private List<Pong> mPongs = new Vector<Pong>();
 	private List<Brick> mBricks = new Vector<Brick>();
+	
+	private LevelText mLevelText;
+	private TopScoreText mTopScoreText;
 	
 	private List<BonusItem> mBonusItems = new Vector<BonusItem>();
 	private Pong mLaunchPong;
@@ -443,6 +449,7 @@ public class BowlScreen extends Screen {
 		mBounusItemCounter = 0;
 		mBounusItemTotalCounter = 0;
 		mHightScore = false;
+		paused = false;
 
 		mPoints.clear();
 		mPongs.clear();
@@ -467,6 +474,8 @@ public class BowlScreen extends Screen {
 		
 		mTopScore = mSavedTopScore = getDefaultSharedPrefs().getInt(getTopScorePrefsKey(), 0);
 
+		mTopScoreText = new TopScoreText(TOP_SCORE + mTopScore , 0xFFFFFFFF, mScale);
+		mLevelText = new LevelText("Level " + (mLevelConfig.getWorldNumber()+1) + "." + (mLevelConfig.getLevelNumber() + 1) , new Vector2f(getWidth()*0.5f, getHeight()*0.5f), 0xFFFFFFFF, mScale);
 		resetLauncher();
 	}
 
@@ -538,13 +547,79 @@ public class BowlScreen extends Screen {
 
 	@Override
 	public boolean handleBackPressed() {
-		return mScreenManager.removeScreenUI(this);
+		
+		ImageComponent[] buttons = new ImageComponent[3];
+
+		Bitmap bitmapMenu = ImageLoader.loadFromResource(mContext, R.drawable.button_menu);
+		Bitmap bitmapReplay = ImageLoader.loadFromResource(mContext, R.drawable.button_replay);
+		Bitmap bitmapCancel = ImageLoader.loadFromResource(mContext, R.drawable.button_no);
+	
+		EventListener cancelListener = new EventListener() {
+			@Override
+			public boolean handleButtonClicked() {
+				mScreenManager.removeTopScreen();
+				paused = false;
+				return true;
+			}
+		};
+		EventListener replayListener = new EventListener() {
+			@Override
+			public boolean handleButtonClicked() {
+				mScreenManager.removeTopScreen();
+				reset();
+				paused = false;
+				return true;
+			}
+		};
+		EventListener menuListener = new EventListener() {
+			@Override
+			public boolean handleButtonClicked() {
+				mScreenManager.removeTopScreens(2); // remove top 2 screens
+				return true;
+			}
+		};
+		buttons[0] = new ImageComponent(bitmapMenu, true);
+		buttons[0].setWidth((int)(70*mScale));
+		buttons[0].setHeight((int)(70*mScale));
+		buttons[0].setEventListener(menuListener);
+		buttons[0].resizeBitmap();
+		
+		buttons[1] = new ImageComponent(bitmapReplay, true);
+		buttons[1].setWidth((int)(70*mScale));
+		buttons[1].setHeight((int)(70*mScale));
+		buttons[1].setEventListener(replayListener);
+		buttons[1].resizeBitmap();
+		
+		buttons[2] = new ImageComponent(bitmapCancel, true);
+		buttons[2].setWidth((int)(70*mScale));
+		buttons[2].setHeight((int)(70*mScale));
+		buttons[2].setEventListener(cancelListener);
+		buttons[2].resizeBitmap();		
+		
+		ContextMenuScreen contextMenuScreen = new ContextMenuScreen(getWidth(),
+				getHeight(),
+				mScale,
+				buttons,
+				true,
+				this);
+
+		mScreenManager.addScreenUI(contextMenuScreen);
+		
+		paused = true;
+		
+		return true;
+		
+//		return mScreenManager.removeScreenUI(this);
 	}
 
 	@Override
 	public void update(float timeStep) {
 		
 //		System.out.println(Runtime.getRuntime().freeMemory());
+		
+		if (paused) {
+			return;
+		}
 		
 		int moving = 0;
 		
@@ -624,7 +699,6 @@ public class BowlScreen extends Screen {
 		if (alien != null && !alien.isMoving() && !mGameOver && mHasLaunched) {
 			long timeSinceCheckPoint = System.currentTimeMillis() - mAlienStartTime;
 			if (timeSinceCheckPoint > mAlienInterval) {
-				System.out.println("RESTARTING ALIEN!!!!!!!!!!!!!!!!!!!!!!!");
 				if (!alien.isDead()) {
 					alien.reset();
 				}
@@ -687,7 +761,7 @@ public class BowlScreen extends Screen {
 						// PICK UP ITEM!
 						if (bonusItem.getItemType() == BonusItemType.GROWER) {
 							
-							if (pong.getCurrentGroth() < pong.getMaxGroth()) {
+							if (pong.getCurrentGroth() < pong.getMaxGroth() && canGrow(pong, pong.getRadius() * 1.5f)) {
 								pong.setWidth(pong.getWidth() * 1.5f);
 								pong.setHeight(pong.getHeight() * 1.5f);
 								pong.setRadius(pong.getRadius() * 1.5f);
@@ -787,6 +861,13 @@ public class BowlScreen extends Screen {
 
 		// UPDATE FADING SCORES							
 		updateScores(timeStep);
+		
+		if (!mLevelText.isDone()) {
+			mLevelText.update(timeStep);
+		}
+		if (!mTopScoreText.isDone()) {
+			mTopScoreText.update(timeStep);
+		}
 
 		if (mHasLaunched && !mGameOver) {
 			randomizeBonusItem();
@@ -798,6 +879,24 @@ public class BowlScreen extends Screen {
 			}
 		}
 
+	}
+
+	private boolean canGrow(Pong pong, float newRadius) {
+		boolean canGrow = true;
+		
+		if (mBricks != null && mBricks.size() > 0) {
+			for (Brick brick : mBricks) {
+				if (brick.getType() == Brick.Type.HARD) {
+					boolean collision = CollisionCalculator.circleOrtogonalSquareCollisionWithNewRadius(pong, brick, newRadius);
+					if (collision) {
+						canGrow = false;	
+						break;
+					}
+				}
+			}
+		}
+		
+		return canGrow;
 	}
 
 	private void checkBrickCollision(Pong pong, float timeStep) {
@@ -1044,6 +1143,13 @@ public class BowlScreen extends Screen {
 		for (Score points : mPoints) {
 			points.draw(canvas);
 		}
+		
+		if (!mLevelText.isDone()) {
+			mLevelText.draw(canvas);
+		}
+		if (!mTopScoreText.isDone()) {
+			mTopScoreText.draw(canvas);
+		}
 	}
 
 	private void drawStatusBar(Canvas canvas) {
@@ -1063,10 +1169,7 @@ public class BowlScreen extends Screen {
 		canvas.drawText(score, mScoreBar.getDrawRect().right + 10 * mScale, 10 * mScale + mScoreRect.height(),
 				mTextPaint);
 
-		canvas.drawText(top, 10 * mScale, 10 * mScale + mScoreRect.height()
-				+ mTopRect.height() * 1.3f, mStrokePaint);
-		canvas.drawText(top, 10 * mScale, 10 * mScale + mScoreRect.height()
-				+ mTopRect.height() * 1.3f, mTextPaint);
+		mTopScoreText.setPosition(getWidth()*0.5f, getHeight() *0.5f + mLevelText.getTextHeight() + 10 * mScale);
 
 		drawLifesLeft(canvas);
 	}
@@ -1177,8 +1280,7 @@ public class BowlScreen extends Screen {
 			GameEndedDialogDrawArea drawArea = null;
 			
 			if (success) {
-				dialogRows[0] = new DialogRegularString("LEVEL "
-						+ (mLevelConfig.getLevelNumber() + 1) + " COMPLETED!",
+				dialogRows[0] = new DialogRegularString("LEVEL COMPLETED!",
 						TextSize.SMALL, 0xFFffffff, null);
 				mCounterStringGameOver = new DialogCounterString(mTotalScore,
 						TextSize.LARGE, 0xFFffffff, new int[] { 20, 0, 0, 0 });
@@ -1391,5 +1493,9 @@ public class BowlScreen extends Screen {
 				mBonusItemSuccessInt++;
 			}
 		}
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
 	}
 }
