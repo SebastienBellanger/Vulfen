@@ -162,7 +162,6 @@ public class ContextMenuScreen extends Screen {
 				
 				button.setPositionX((int) (mPaddingLeft + x));
 				button.setPositionY((int) (dialogStartY + mDialogHeight*0.5f - button.getHeight()*0.5f));
-				addScreenComponent(button);
 			}
 		}
 	}
