@@ -30,4 +30,5 @@ public class Constants {
 	public static final int BITMAP_BRICK_MEDIUM = 25;
 	public static final int BITMAP_BRICK_HARD = 26;
 	
+	public static final int ALIEN_TELEPORT_COLOR = 0xcc00ff00;
 }

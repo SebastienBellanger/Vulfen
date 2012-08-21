@@ -3,6 +3,8 @@ package com.tojosebe.vulfen.startscreen;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.animation.AnimateableImageComponent;
@@ -10,6 +12,7 @@ import com.tojosebe.vulfen.dialog.DialogRegularString;
 import com.tojosebe.vulfen.dialog.DialogScreen;
 import com.tojosebe.vulfen.dialog.DialogString;
 import com.tojosebe.vulfen.dialog.DialogString.TextSize;
+import com.tojosebe.vulfen.game.StoryScreen;
 import com.tojosebe.vulfen.util.Constants;
 import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
@@ -19,6 +22,7 @@ import com.vulfox.component.ScreenComponent;
 import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
+import com.vulfox.util.GraphicsUtil;
 
 public class StartScreen extends Screen {
 
@@ -31,10 +35,12 @@ public class StartScreen extends Screen {
 	
 	private float mScale;
 	
+	Paint mPaint = new Paint();
+	private Rect mBackgroundRect;
 
 	private boolean showExitDialog = false;
 	private long mDialogShowStart = 0;
-
+	
 	private Activity mActivity;
 
 	public StartScreen(int dpi, Activity activity) {
@@ -61,8 +67,13 @@ public class StartScreen extends Screen {
 				mContext.getApplicationContext(), 60, 130, getWidth(),
 				Constants.BITMAP_CLOUD_2);
 		mCows = new Cow[5];
+		
+		mPaint.setAntiAlias(true);
 
-		addScreenComponent(createBackground());
+		createBackground();
+		mBackgroundRect = new Rect();
+		mBackgroundRect.set(0, 0, getWidth(), (int)(800*mScale));
+		
 		addScreenComponent(mCloud1.getImageComponent());
 		addScreenComponent(mCloud2.getImageComponent());
 		addCows();
@@ -74,28 +85,28 @@ public class StartScreen extends Screen {
 
 	private void addCows() {
 
-		mCows[0] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 23, 0, 0, getWidth(),
+		mCows[0] = new Cow(R.drawable.cow_small, mScale,
+				mContext.getApplicationContext(), 38, 145, 592, getWidth(),
 				getHeight());
 		addScreenComponent(mCows[0].getImageComponent());
 
-		mCows[1] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, -30, 14, getWidth(),
+		mCows[1] = new Cow(R.drawable.cow_small, mScale,
+				mContext.getApplicationContext(), 40, 100, 614, getWidth(),
 				getHeight());
 		addScreenComponent(mCows[1].getImageComponent());
 
-		mCows[2] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 25, 35, 10, getWidth(),
+		mCows[2] = new Cow(R.drawable.cow_small, mScale,
+				mContext.getApplicationContext(), 40, 200, 610, getWidth(),
 				getHeight());
 		addScreenComponent(mCows[2].getImageComponent());
 
-		mCows[3] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 20, -65, -10, getWidth(),
+		mCows[3] = new Cow(R.drawable.cow_small, mScale,
+				mContext.getApplicationContext(), 35, 35, 570, getWidth(),
 				getHeight());
 		addScreenComponent(mCows[3].getImageComponent());
 
-		mCows[4] = new Cow(R.drawable.cow_small, mDpi,
-				mContext.getApplicationContext(), 29, -60, 40, getWidth(),
+		mCows[4] = new Cow(R.drawable.cow_small, mScale,
+				mContext.getApplicationContext(), 44, 60, 660, getWidth(),
 				getHeight());
 		addScreenComponent(mCows[4].getImageComponent());
 
@@ -167,6 +178,13 @@ public class StartScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
+		
+		mPaint.setColor(0xFF0c4717);
+		canvas.drawRect(0, (int)(800*mScale), getWidth(), getHeight(), mPaint);
+		
+		canvas.drawBitmap(BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND),
+				null, mBackgroundRect, mPaint);
+
 		mCloud1.draw(canvas);
 		mCloud2.draw(canvas);
 		for (Cow cow : mCows) {
@@ -180,6 +198,8 @@ public class StartScreen extends Screen {
 
 	}
 
+	public static boolean a = false;
+	
 	private ScreenComponent createPlayButton() {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
@@ -189,8 +209,14 @@ public class StartScreen extends Screen {
 		button.setEventListener(new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
-				mScreenManager.addScreenUI(new WorldScreen(mDpi, mCloud1,
-						mCloud2, mActivity));
+				if (a) {
+					mScreenManager.addScreenUI(new WorldScreen(mDpi, mCloud1,
+							mCloud2, mActivity));
+					a = false;
+				} else {
+					mScreenManager.addScreenUI(new StoryScreen(mDpi, mCloud1, mCloud2));
+					a = true;
+				}
 				return true;
 			}
 		});
@@ -201,9 +227,14 @@ public class StartScreen extends Screen {
 		return button;
 	}
 
-	private ImageComponent createBackground() {
-		return getImageComponent(Constants.BITMAP_BACKGROUND,
-				R.drawable.background);
+	private void createBackground() {
+		if (BitmapManager.getBitmap(Constants.BITMAP_BACKGROUND) == null) {
+			Bitmap background = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.background);
+			background = GraphicsUtil.resizeBitmap(background, (int)(800*mScale), getWidth());
+			BitmapManager.addBitmap(Constants.BITMAP_BACKGROUND,
+					background);
+		}
 	}
 
 	private ImageComponent getImageComponent(int imageConstant, int resource) {

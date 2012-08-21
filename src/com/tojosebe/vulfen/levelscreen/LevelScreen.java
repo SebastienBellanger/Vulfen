@@ -6,6 +6,7 @@ import java.util.List;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -57,6 +58,9 @@ public class LevelScreen extends Screen {
 
 	private int mLevelMarginDp = 4;
 	private int mLevelWidthMargin;
+	
+	private float mScale;
+	Paint mPaint = new Paint();
 
 	private int mGridCols;
 	
@@ -87,6 +91,9 @@ public class LevelScreen extends Screen {
 
 		int minMargin = (int) GraphicsUtil.dpToPixels(mGridMinMarginDp, mDpi);
 		mGridMargin = 0;
+		
+		mPaint.setAntiAlias(true);
+		mScale = getWidth() / 480.0f;
 
 		int levelSpace = getWidth() - 2 * minMargin;
 
@@ -253,6 +260,10 @@ public class LevelScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
+		
+		mPaint.setColor(0xFF0c4717);
+		canvas.drawRect(0, (int)(800*mScale), getWidth(), getHeight(), mPaint);
+		
 		mCloud1.draw(canvas);
 		mCloud2.draw(canvas);
 		for (LevelButton button : mButtons) {

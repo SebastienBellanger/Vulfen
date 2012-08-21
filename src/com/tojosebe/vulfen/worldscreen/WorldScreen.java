@@ -35,6 +35,10 @@ public class WorldScreen extends Screen {
 	private float mScrollY = 0;
 	private float mLastScrollLength = 0;
 	private int mListHeight;
+	
+	private float mScale;
+	
+	Paint mPaint = new Paint();
 
 	private Pig mPig1;
 	private Pig mPig2;
@@ -72,6 +76,9 @@ public class WorldScreen extends Screen {
 	@Override
 	protected void initialize() {
 
+		mPaint.setAntiAlias(true);
+		mScale = getWidth() / 480.0f;
+		
 		addScreenComponent(createBackground());
 		addScreenComponent(mCloud1.getImageComponent());
 		addScreenComponent(mCloud2.getImageComponent());
@@ -327,6 +334,10 @@ public class WorldScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
+		
+		mPaint.setColor(0xFF0c4717);
+		canvas.drawRect(0, (int)(800*mScale), getWidth(), getHeight(), mPaint);
+		
 		mCloud1.draw(canvas);
 		mCloud2.draw(canvas);
 		mPig1.draw(canvas);

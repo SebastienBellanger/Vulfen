@@ -1,5 +1,6 @@
 package com.tojosebe.vulfen;
 
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Window;
@@ -27,6 +28,14 @@ public class VulfenActivity extends GameActivity {
         addScreen(startScreen);
         
     }
+    
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        Window window = getWindow();
+        window.setFormat(PixelFormat.RGBA_8888);
+    }
+
 
 	private int getDpi() {
 		DisplayMetrics dm = new DisplayMetrics();

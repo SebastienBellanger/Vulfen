@@ -1,13 +1,25 @@
 
-fixa menu med restart om man trycker på menyknappen i spelet. då ska det pausas och man ska kunna avsluta eller reseta.
+StoryScreen:
 
-fler banor!
+	Det laggar nåt enormt efter teleport. inga new görs. Vafan?
+	lägg till pingvinen.
+	pingvin ska bli arg (ögonbryn) eller skjutas upp (hoppa?)
+
+Tomma kor längst ner och när man tar en så åker de dit och fyller upp.
+
+start bild... story!
+
+boss
 
 koppla in storage.
 
 Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
 
 placeringen av penguin på launcehrn är inte samma på olika skärmar.
+
+- Power ups (BRICK_SMASHER, LIGHTNING)
+
+fler banor!
 
 GRAFIKGREJS (rita)
 lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
@@ -16,12 +28,14 @@ bakgrundsbild(er).
 
 fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
 
+alien growar cows utan att kolla om de får plats först.
 
 BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart. 
       Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa? japp!
       
 BUGG: en pingvin var nära kanten. stod still. tog en fisk och växte så långt att den touchade en annnan
 pingvin. Hängde sig och bara stod och vibrera in poäng!
+
 
 ta bort alla new i bowlScreen som går.
 bowlScreen ska INTE vara > 1000 rader.
@@ -31,8 +45,6 @@ hur långt man kommit i levlar ska sparas. (senare)
 * GAMESCREEN:
 	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
 	- Bakgrundsbild snyggare
-	
-	- Power ups (gör större, gör mindre. Gör så delar sig, spräng, extra liv)
 	
 	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
 

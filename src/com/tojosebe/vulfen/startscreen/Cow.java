@@ -19,25 +19,22 @@ public class Cow {
 	private Vector2f mVelocity;
 	private Vector2f mPosition;
 
-	private int mDpi;
-	
-	private boolean mMoving;
-
-	private int mScreenWidth;
+	private boolean mMoving;	
+	private boolean mCanJump = true;	
 	private int mScreenHeight;
-	private int mYOffsetDp;
-	private int mXOffsetDp;
+	private float mY;
+	private float mX;
 	private int mStartY;
+	
+	private float mScale;
 
-	public Cow(int resourceId, int dpi, Context context, int widthInDp,
-			int xOffsetDp, int yOffsetDp, int screenWidth, int screenHeight) {
-		this.mDpi = dpi;
-		this.mScreenWidth = screenWidth;
+	public Cow(int resourceId, float scale, Context context, int width,
+			int x, int y, int screenWidth, int screenHeight) {
+
+		this.mScale = scale;
 		this.mScreenHeight = screenHeight;
-		this.mXOffsetDp = xOffsetDp;
-		this.mYOffsetDp = yOffsetDp;
-
-		float fraction = dpi / 160.0f;
+		this.mX = x;
+		this.mY = y;
 
 		Bitmap cow = ImageLoader.loadFromResource(context, resourceId);
 
@@ -48,7 +45,7 @@ public class Cow {
 			@Override
 			public boolean handleButtonClicked() {
 				
-				if (!mMoving) {
+				if (!mMoving && mCanJump) {
 					int scale = mScreenHeight / 2;
 					mVelocity.setY(-scale);
 					mMoving = true;
@@ -59,12 +56,14 @@ public class Cow {
 			
 		});
 		
-		mImageComponent.setWidthInDpAutoSetHeight(widthInDp, dpi);
+		mImageComponent.setWidth((int)(width * mScale));
+		
+		float height = (cow.getHeight() / (float)cow.getWidth()) * width;
+		
+		mImageComponent.setHeight((int)(height * mScale));
 
-		mImageComponent.setPositionX(screenWidth / 2 - (screenWidth / 4)
-				+ (int) (xOffsetDp * fraction));
-		mImageComponent.setPositionY(screenHeight / 2 + (screenHeight / 4)
-				+ (int) (yOffsetDp * fraction));
+		mImageComponent.setPositionX((int)(mX * mScale));
+		mImageComponent.setPositionY((int)(mY * mScale));
 
 		mVelocity = new Vector2f(0, 0);
 		mPosition = new Vector2f(mImageComponent.getPositionX(),
@@ -82,6 +81,7 @@ public class Cow {
 
 	public void update(float timeStep) {
 		
+		if (mCanJump) {
 		if (mImageComponent.getPositionY() > mStartY) {
 			reinitCow();
 			mMoving = false;
@@ -110,16 +110,13 @@ public class Cow {
 				mMoving = true;
 			}
 		}
+		}
 	}
 
 	private void reinitCow() {
 		
-		float fraction = mDpi / 160.0f;
-		
-		mImageComponent.setPositionX(mScreenWidth / 2 - (mScreenWidth / 4)
-				+ (int) (mXOffsetDp * fraction));
-		mImageComponent.setPositionY(mScreenHeight / 2 + (mScreenHeight / 4)
-				+ (int) (mYOffsetDp * fraction));
+		mImageComponent.setPositionX((int)(mX * mScale));
+		mImageComponent.setPositionY((int)(mY * mScale));
 
 		mVelocity = new Vector2f(0, 0);
 		mPosition = new Vector2f(mImageComponent.getPositionX(),
@@ -136,6 +133,18 @@ public class Cow {
 	 */
 	public ImageComponent getImageComponent() {
 		return mImageComponent;
+	}
+	
+	public void freezeAndReset() {
+		reinitCow();
+		mCanJump = false;
+	}
+
+	/**
+	 * @param mPosition the mPosition to set
+	 */
+	public void setPosition(float x, float y) {
+		this.mPosition.set(x, y);
 	}
 
 }
