@@ -198,8 +198,6 @@ public class StartScreen extends Screen {
 
 	}
 
-	public static boolean a = false;
-	
 	private ScreenComponent createPlayButton() {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
@@ -209,14 +207,8 @@ public class StartScreen extends Screen {
 		button.setEventListener(new EventListener() {
 			@Override
 			public boolean handleButtonClicked() {
-				if (a) {
-					mScreenManager.addScreenUI(new WorldScreen(mDpi, mCloud1,
-							mCloud2, mActivity));
-					a = false;
-				} else {
-					mScreenManager.addScreenUI(new StoryScreen(mDpi, mCloud1, mCloud2));
-					a = true;
-				}
+				mScreenManager.addScreenUI(new WorldScreen(mDpi, mCloud1,
+						mCloud2, mActivity));
 				return true;
 			}
 		});

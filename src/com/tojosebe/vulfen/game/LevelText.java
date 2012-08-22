@@ -9,7 +9,9 @@ import com.vulfox.math.Vector2f;
 
 public class LevelText {
 
-	private final float FADE = 0.5f;
+	private final float FADE = 0.9f;
+	private final int TIME_BEFORE_FADE = 1000;
+	private long mStartTime;
 
 	private String mLevelText;
 	private Vector2f mPosition;
@@ -22,6 +24,7 @@ public class LevelText {
 	public LevelText(String levelText, Vector2f position, int color, float mScale) {
 		mLevelText = levelText;
 		mPosition = position;
+		mStartTime = System.currentTimeMillis();
 
 		mPaint.setColor(color);
 		mPaint.setTextSize(42 * mScale);
@@ -53,7 +56,6 @@ public class LevelText {
 			b = 0;
 		}
 		mStrokePaint.setARGB(0xFF, r, g, b);
-//		mStrokePaint.setColor(0xFF000000 | (r << 16) | (g << 8) | (b));
 
 		mStrokePaint.setTextSize(42 * mScale);
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -63,16 +65,20 @@ public class LevelText {
 	}
 
 	public void update(float timeStep) {
-		mAlpha -= FADE * timeStep;
+		
+		if (System.currentTimeMillis() > mStartTime + TIME_BEFORE_FADE) {
 
-		if (mAlpha < 0.0f) {
-			mAlpha = 0.0f;
-			mIsDone = true;
+			mAlpha -= FADE * timeStep;
+	
+			if (mAlpha < 0.0f) {
+				mAlpha = 0.0f;
+				mIsDone = true;
+			}
+	
+			int alpha = (int) (mAlpha * 255);
+			mPaint.setAlpha(alpha);
+			mStrokePaint.setAlpha(alpha);
 		}
-
-		int alpha = (int) (mAlpha * 255);
-		mPaint.setAlpha(alpha);
-		mStrokePaint.setAlpha(alpha);
 	}
 
 	public void draw(Canvas canvas) {

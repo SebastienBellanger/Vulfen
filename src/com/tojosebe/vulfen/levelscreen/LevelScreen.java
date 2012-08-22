@@ -14,6 +14,7 @@ import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.configuration.Level;
 import com.tojosebe.vulfen.configuration.LevelManager;
 import com.tojosebe.vulfen.game.BowlScreen;
+import com.tojosebe.vulfen.game.StoryScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
@@ -296,7 +297,11 @@ public class LevelScreen extends Screen {
 						mDpi)) {
 					float scale = getWidth() / 480.0f;
 					Level level = LevelManager.getLevel(mWorldNumber, levelIndex, scale, mActivity.getAssets());
-					mScreenManager.addScreenUI(new BowlScreen(level, mDpi, mActivity));
+					if (level.getLevelNumber() == 0 && level.getWorldNumber() == 0) {
+						mScreenManager.addScreenUI(new StoryScreen(mDpi, mCloud1, mCloud2, level, mActivity));
+					} else {
+						mScreenManager.addScreenUI(new BowlScreen(level, mDpi, mActivity));
+					}
 					return true;
 				}
 				return false;

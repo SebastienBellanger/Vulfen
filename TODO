@@ -1,17 +1,11 @@
 
-StoryScreen:
-
-	Det laggar nåt enormt efter teleport. inga new görs. Vafan?
-	lägg till pingvinen.
-	pingvin ska bli arg (ögonbryn) eller skjutas upp (hoppa?)
-
 Tomma kor längst ner och när man tar en så åker de dit och fyller upp.
-
-start bild... story!
 
 boss
 
 koppla in storage.
+
+fixa så man kan trycka på menyknappen för att få upp context menyn.
 
 Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
 

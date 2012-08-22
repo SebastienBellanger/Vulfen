@@ -230,6 +230,7 @@ public class AlienTalkScreen extends Screen {
 		canvas.drawRoundRect(mBoubleRect, mBoubleEdge, mBoubleEdge, mPaint);
 
 		mPaint.setStyle(Style.FILL);
+		wallpath.reset();
 		wallpath.moveTo(mBoubleLeft, mBoubleTop + mBoubleHeight - mBoubleEdge);
 		wallpath.lineTo(mAlienEndX + mAlienBitmap.getWidth() * 0.5f,
 				getHeight() * 0.5f);
@@ -292,6 +293,7 @@ public class AlienTalkScreen extends Screen {
 
 			float boubleCenter = mBoubleRect.left + mBoubleRect.width() * 0.5f;
 
+			morePath.reset();
 			morePath.moveTo(boubleCenter, mBoubleTop + mBoubleHeight
 					- mBoubleEdge);
 			morePath.lineTo(boubleCenter - mBoubleMoreArrowWidth * 0.5f,

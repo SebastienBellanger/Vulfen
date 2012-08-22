@@ -9,7 +9,9 @@ import com.vulfox.math.Vector2f;
 
 public class TopScoreText {
 
-	private final float FADE = 0.5f;
+	private final float FADE = 0.9f;
+	private final int TIME_BEFORE_FADE = 1000;
+	private long mStartTime;
 
 	private String mTopScoreText;
 	private Vector2f mPosition = new Vector2f(0,-300);
@@ -21,6 +23,7 @@ public class TopScoreText {
 
 	public TopScoreText(String topScoreText, int color, float mScale) {
 		mTopScoreText = topScoreText;
+		mStartTime = System.currentTimeMillis();
 		
 		mPaint.setColor(color);
 		mPaint.setAntiAlias(true);
@@ -54,17 +57,20 @@ public class TopScoreText {
 	}
 
 	public void update(float timeStep) {
-		if (mPosition != null) {
-			mAlpha -= FADE * timeStep;
-	
-			if (mAlpha < 0.0f) {
-				mAlpha = 0.0f;
-				mIsDone = true;
+		
+		if (System.currentTimeMillis() > mStartTime + TIME_BEFORE_FADE) {
+			if (mPosition != null) {
+				mAlpha -= FADE * timeStep;
+		
+				if (mAlpha < 0.0f) {
+					mAlpha = 0.0f;
+					mIsDone = true;
+				}
+		
+				int alpha = (int) (mAlpha * 255);
+				mPaint.setAlpha(alpha);
+				mStrokePaint.setAlpha(alpha);
 			}
-	
-			int alpha = (int) (mAlpha * 255);
-			mPaint.setAlpha(alpha);
-			mStrokePaint.setAlpha(alpha);
 		}
 	}
 
