@@ -22,15 +22,14 @@ public class LevelButton extends ImageComponent {
 
 	/** Paints. */
 	private Paint mTextPaint;
-	private Paint mTextPaintShadow;
-
-	private int mShadowOffsetDp = 3;
-	private int mShadowOffset;
+	private Paint mStrokePaint = new Paint(); // text border
 	
 	private int mStarMarginDp = 2;
 	private int mStarMargin;
 	
 	private boolean mLocked;
+	
+	private float mScale;
 
 	/** Text rect. */
 	private Rect mTextRect;
@@ -41,8 +40,9 @@ public class LevelButton extends ImageComponent {
 	}
 
 	public void initValues(String levelName, Context context, int dpi,
-			int width, int stars) {
+			int width, int stars, float scale) {
 
+		mScale = scale;
 		setWidth(width);
 		setHeight(width);
 
@@ -50,7 +50,6 @@ public class LevelButton extends ImageComponent {
 
 		mNbrOfStars = stars;
 
-		mShadowOffset = (int) GraphicsUtil.dpToPixels(mShadowOffsetDp, dpi);
 		mStarMargin = (int) GraphicsUtil.dpToPixels(mStarMarginDp, dpi);
 
 		mStarPaint = new Paint();
@@ -60,34 +59,40 @@ public class LevelButton extends ImageComponent {
 		this.mTextPaint.setColor(0xFFFFFFFF);
 		this.mTextPaint.setAntiAlias(true);
 		this.mTextPaint.setTextAlign(Paint.Align.CENTER);
-		this.mTextPaint.setTextSize((int) (30 * (dpi / 160.0f)));
+		this.mTextPaint.setTextSize((int) (40 * mScale));
 		this.mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-		this.mTextPaintShadow = new Paint(mTextPaint);
-		this.mTextPaintShadow.setColor(0x44000000);
 		this.mTextRect = new Rect();
 		this.mTextPaint.getTextBounds(mLevelName, 0, mLevelName.length(),
 				mTextRect);
+
+		mStrokePaint = new Paint(mTextPaint);
+		mStrokePaint.setColor(0x66000000);
+		mStrokePaint.setStyle(Paint.Style.STROKE);
+		mStrokePaint.setStrokeWidth(4 * mScale);
+		
 	}
 
 	public void draw(Canvas canvas) {
 		super.draw(canvas);
 
 		if (!mLocked) {
+			
+			float up = 5 * mScale;
 
 			// Draw shadow text
-			canvas.drawText(mLevelName, getPositionX() + getWidth() / 2 + mShadowOffset,
-					getPositionY() + getHeight() / 2 + mTextRect.height() / 2 + mShadowOffset - mStarMargin*2, mTextPaintShadow);
-		
+			canvas.drawText(mLevelName, getPositionX() + getWidth() / 2,
+					getPositionY() - up + getHeight() / 2 + mTextRect.height() / 2 - mStarMargin*2, mStrokePaint);
+
 			// Draw text
 			canvas.drawText(mLevelName, getPositionX() + getWidth() / 2,
-					getPositionY() + getHeight() / 2 + mTextRect.height() / 2 - mStarMargin*2, mTextPaint);
+					getPositionY() - up + getHeight() / 2 + mTextRect.height() / 2 - mStarMargin*2, mTextPaint);
 			
 			Bitmap darkStar = BitmapManager
 					.getBitmap(Constants.BITMAP_STAR_DARK);
 			Bitmap brightStar = BitmapManager
 					.getBitmap(Constants.BITMAP_STAR);
 			
-			int textEndY = getPositionY() + getHeight() / 2 + mTextRect.height() / 2;
+			int textEndY = getPositionY() - (int)up + getHeight() / 2 + mTextRect.height() / 2;
 			int starSize = darkStar.getWidth();
 			int left = getPositionX() + getWidth() / 2 - starSize - starSize/2 - mStarMargin; 
 			
@@ -109,5 +114,12 @@ public class LevelButton extends ImageComponent {
 				canvas.drawBitmap(darkStar, left+starSize+starSize+mStarMargin+mStarMargin, textEndY + mStarMargin, mStarPaint);
 			}
 		}
+	}
+
+	/**
+	 * @param mNbrOfStars the mNbrOfStars to set
+	 */
+	public void setNbrOfStars(int nbrOfStars) {
+		this.mNbrOfStars = nbrOfStars;
 	}
 }

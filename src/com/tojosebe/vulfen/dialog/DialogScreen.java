@@ -62,7 +62,7 @@ public class DialogScreen extends Screen {
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		mStrokePaint.setStyle(Paint.Style.STROKE);
 		mStrokePaint.setAntiAlias(true);
-		mStrokePaint.setStrokeWidth(4);
+		mStrokePaint.setStrokeWidth(3 * mScale);
 
 		setCoversWholeScreen(false);
 	}

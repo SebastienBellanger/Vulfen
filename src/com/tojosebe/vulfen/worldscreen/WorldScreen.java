@@ -376,11 +376,11 @@ public class WorldScreen extends Screen {
 
 		if (worldButtonTemplate != null) {
 			worldButton = new WorldButton(worldName, totalStars,
-					lockedStages, mContext, mDpi, worldButtonTemplate);
+					lockedStages, mContext, mDpi, worldButtonTemplate, mScale);
 			worldButton.setEventListener(listener);
 		} else {
 			worldButton = new WorldButton(worldName, totalStars,
-					lockedStages, mContext, mDpi);
+					lockedStages, mContext, mDpi, mScale);
 			worldButton.setEventListener(listener);
 		}
 		worldButton.setPositionX((getWidth() - worldButton.getWidth()) / 2);
@@ -405,7 +405,7 @@ public class WorldScreen extends Screen {
 
 		if (brightStar == null) {
 			brightStar = ImageLoader.loadFromResource(
-					mContext.getApplicationContext(), R.drawable.star);
+					mContext.getApplicationContext(), R.drawable.star_small);
 			brightStar = GraphicsUtil.resizeBitmap(brightStar, starSize,
 					starSize);
 			BitmapManager.addBitmap(Constants.BITMAP_STAR_BIG, brightStar);

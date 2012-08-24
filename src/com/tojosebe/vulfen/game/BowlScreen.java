@@ -1,5 +1,6 @@
 package com.tojosebe.vulfen.game;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
@@ -21,6 +22,7 @@ import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.component.ScoreBarComponent;
+import com.tojosebe.vulfen.component.SpriteComponent;
 import com.tojosebe.vulfen.configuration.BowlConfiguration;
 import com.tojosebe.vulfen.configuration.Level;
 import com.tojosebe.vulfen.configuration.LevelManager;
@@ -33,6 +35,7 @@ import com.tojosebe.vulfen.dialog.DialogString;
 import com.tojosebe.vulfen.dialog.DialogString.TextSize;
 import com.tojosebe.vulfen.game.BonusItem.BonusItemType;
 import com.tojosebe.vulfen.game.Pong.Type;
+import com.tojosebe.vulfen.levelscreen.LevelScreen;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
@@ -87,7 +90,7 @@ public class BowlScreen extends Screen {
 	private Bitmap mCow1;
 	private Bitmap mCow2;
 	private Bitmap mCow3;
-	
+		
 	private Bitmap mLaunchPad;
 	
 	private Bitmap mBrickSoft;
@@ -112,10 +115,14 @@ public class BowlScreen extends Screen {
 	private boolean mHasPong = false;
 	private Vector2f mLastMotion = new Vector2f();
 	private long mLastMotionTime = 0;
-
+	
+	private int mCowsKilled = 0;
+	
 	private int mBonusItemDpWidth = 32;
 
 	private int mLivesLeftDpWidth = 13;
+	private int mCowsTakenHolderWidth = 20;
+	private int mCowsTakenWidth = 22;
 
 	// Random bonus items variables.
 	private long mRoundStartedTime;
@@ -137,6 +144,10 @@ public class BowlScreen extends Screen {
 	private int mTimeStepsSinceGameEnded = 0;
 
 	private List<Score> mPoints = new Vector<Score>();
+	
+	private List<KillAnimation> mKillAnimations = new ArrayList<KillAnimation>();
+	private List<KillAnimation> mKillAnimationsToDelete = new ArrayList<KillAnimation>();
+	private List<SpriteComponent> mCollectedCows = new ArrayList<SpriteComponent>();
 	
 	private boolean mVibrationEnabled = true;
 
@@ -165,13 +176,16 @@ public class BowlScreen extends Screen {
 	Rect mScoreRect = new Rect();
 	Rect mTopRect = new Rect();
 	
+	private LevelScreen mLevelScreen;
+	
 	private ScoreBarComponent mScoreBar;
 
-	public BowlScreen(Level levelConfiguration, int dpi, Activity activity) {
+	public BowlScreen(Level levelConfiguration, int dpi, Activity activity, LevelScreen levelScreen) {
 		mConfig = levelConfiguration.getBowlConfiguration();
 		mLevelConfig = levelConfiguration;
 		mDpi = dpi;
 		mActivity = activity;
+		mLevelScreen = levelScreen;
 	}
 
 	@Override
@@ -217,13 +231,13 @@ public class BowlScreen extends Screen {
 	@Override
 	protected void initialize() {
 
+		mScale = getWidth() / 480.0f;
+		
 		vibrator = (Vibrator) mContext
 				.getSystemService(Context.VIBRATOR_SERVICE);
 
 		SharedPreferences settings = getDefaultSharedPrefs();
 		mTopScore = mSavedTopScore = settings.getInt(getTopScorePrefsKey(), 0);
-
-		mScale = getWidth() / 480.0f;
 
 		float penguinPongLength = mLevelConfig.getPenguin().getWidth();
 
@@ -257,7 +271,7 @@ public class BowlScreen extends Screen {
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		mStrokePaint.setStyle(Paint.Style.STROKE);
 		mStrokePaint.setAntiAlias(true);
-		mStrokePaint.setStrokeWidth(4);
+		mStrokePaint.setStrokeWidth(3 * mScale);
 
 		mLaunchPad = ImageLoader.loadFromResource(mContext,
 				R.drawable.launcher3);
@@ -297,6 +311,7 @@ public class BowlScreen extends Screen {
 		createBackground();
 
 		createLifeLeftImage();
+		createCowTakenImages();
 		
 		mScoreBar = new ScoreBarComponent(mContext, mScale, mLevelConfig.getOneStarScore(), mLevelConfig.getTwoStarsScore(), mLevelConfig.getThreeStarsScore());
 		addScreenComponent(mScoreBar);
@@ -435,7 +450,27 @@ public class BowlScreen extends Screen {
 			lifeBitmap = GraphicsUtil.resizeBitmap(lifeBitmap, (int)bitmapWidth, (int)bitmapWidth);
 			BitmapManager.addBitmap(Constants.BITMAP_PENGUIN_LIFE, lifeBitmap);
 		}
+	}
+	
+	private void createCowTakenImages() {
 
+		if (BitmapManager.getBitmap(Constants.BITMAP_COW_TAKEN_HOLDER) == null) {
+
+			Bitmap cowTakenHolderBitmap = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.cow_taken_holder);
+			int size = (int)((float)mCowsTakenHolderWidth * mScale);
+			cowTakenHolderBitmap = GraphicsUtil.resizeBitmap(cowTakenHolderBitmap, size, size);
+			BitmapManager.addBitmap(Constants.BITMAP_COW_TAKEN_HOLDER, cowTakenHolderBitmap);
+		}
+		
+		if (BitmapManager.getBitmap(Constants.BITMAP_COW_TAKEN) == null) {
+
+			Bitmap cowTakenBitmap = ImageLoader.loadFromResource(
+					mContext.getApplicationContext(), R.drawable.cow_taken);
+			int size = (int)((float)mCowsTakenWidth * mScale);
+			cowTakenBitmap = GraphicsUtil.resizeBitmap(cowTakenBitmap, size, size);
+			BitmapManager.addBitmap(Constants.BITMAP_COW_TAKEN, cowTakenBitmap);
+		}
 	}
 
 	private void reset() {
@@ -450,11 +485,15 @@ public class BowlScreen extends Screen {
 		mBounusItemTotalCounter = 0;
 		mHightScore = false;
 		paused = false;
+		mCowsKilled = 0;
 
 		mPoints.clear();
 		mPongs.clear();
 		mBonusItems.clear();
 		mBricks.clear();
+		mKillAnimations.clear();
+		mKillAnimationsToDelete.clear();
+		mCollectedCows.clear();
 		
 		if (alien != null) {
 			alien.reset();
@@ -548,6 +587,21 @@ public class BowlScreen extends Screen {
 	@Override
 	public boolean handleBackPressed() {
 		
+		showContextMenu();
+		
+		return true;
+
+	}
+	
+	@Override
+	public void handleShowOptionsMenu() {
+		
+		if (!paused) {
+			showContextMenu();
+		}
+	}
+
+	private void showContextMenu() {
 		ImageComponent[] buttons = new ImageComponent[3];
 
 		Bitmap bitmapMenu = ImageLoader.loadFromResource(mContext, R.drawable.button_menu);
@@ -606,10 +660,6 @@ public class BowlScreen extends Screen {
 		mScreenManager.addScreenUI(contextMenuScreen);
 		
 		paused = true;
-		
-		return true;
-		
-//		return mScreenManager.removeScreenUI(this);
 	}
 
 	@Override
@@ -691,9 +741,7 @@ public class BowlScreen extends Screen {
 		}
 		
 		if (mGameOver && checkGameFinished()) {
-			if (mTotalScore > mSavedTopScore) {
-				saveTopScore();
-			}
+			saveTopScore();
 		}
 		
 		if (alien != null && !alien.isMoving() && !mGameOver && mHasLaunched) {
@@ -852,6 +900,14 @@ public class BowlScreen extends Screen {
 
 					first.velocity.addT(collisionCheckVector.mul((bci - aci) * 0.90f));
 					second.velocity.addT(collisionCheckVector.mul((aci - bci) * 0.90f));
+				} else {
+					if (first.getType() == Type.COW) {
+						mKillAnimations.add(new KillAnimation(first.getPosition().getX(), first.getPosition().getY(), 7*mScale + (int)(5* mScale)*mCowsKilled + (int)(mCowsTakenHolderWidth * mScale)*mCowsKilled, getHeight() - 25*mScale));
+						mCowsKilled++;
+					} else {
+						mKillAnimations.add(new KillAnimation(first.getPosition().getX(), first.getPosition().getY(), 7*mScale + (int)(5* mScale)*mCowsKilled + (int)(mCowsTakenHolderWidth * mScale)*mCowsKilled, getHeight() - 25*mScale));
+						mCowsKilled++;
+					}
 				}
 			}
 			
@@ -861,6 +917,12 @@ public class BowlScreen extends Screen {
 
 		// UPDATE FADING SCORES							
 		updateScores(timeStep);
+		
+		// UPDATE POSITIONS FOR KILL ANIMATIONS
+		updateKillAnimations();
+		for (SpriteComponent cow : mCollectedCows) {
+			cow.update(timeStep);
+		}	
 		
 		if (!mLevelText.isDone()) {
 			mLevelText.update(timeStep);
@@ -879,6 +941,19 @@ public class BowlScreen extends Screen {
 			}
 		}
 
+	}
+
+	private void updateKillAnimations() {
+		for (KillAnimation killAnimation : mKillAnimations) {
+			killAnimation.update();
+			if (killAnimation.isDone()) {
+				mKillAnimationsToDelete.add(killAnimation);
+				float width = mCowsTakenWidth * mScale;
+				mCollectedCows.add(new SpriteComponent(BitmapManager.getBitmap(Constants.BITMAP_COW_TAKEN), true, true, false, 200, killAnimation.getCurrentX() + width*0.5f, killAnimation.getCurrentY() + width*0.5f, width, width));
+			}
+		}
+		mKillAnimations.removeAll(mKillAnimationsToDelete);
+		mKillAnimationsToDelete.clear();
 	}
 
 	private boolean canGrow(Pong pong, float newRadius) {
@@ -1088,6 +1163,13 @@ public class BowlScreen extends Screen {
 		}
 
 		canvas.drawBitmap(mLaunchPad, null, mLaunchPadRect, mGenericPaint);
+		
+		int numberOfCows = mLevelConfig.getEnemies().size();
+		for (int i = 0; i < numberOfCows; i++) {
+			int spaceBetweenCows = (int)(5* mScale);
+			canvas.drawBitmap(BitmapManager.getBitmap(Constants.BITMAP_COW_TAKEN_HOLDER), 7*mScale + spaceBetweenCows*i + (int)(mCowsTakenHolderWidth * mScale)*i,
+					getHeight() - 25*mScale, mGenericPaint);
+		}
 
 		if (mBricks.size() > 0) {
 			for (Brick brick : mBricks) {
@@ -1143,6 +1225,17 @@ public class BowlScreen extends Screen {
 		for (Score points : mPoints) {
 			points.draw(canvas);
 		}
+		
+		for (KillAnimation killAnimation : mKillAnimations) {
+			canvas.drawBitmap(BitmapManager.getBitmap(Constants.BITMAP_COW_TAKEN_HOLDER), 
+					killAnimation.getCurrentX(),
+					killAnimation.getCurrentY(),
+					mGenericPaint);
+		}
+		
+		for (SpriteComponent cow : mCollectedCows) {
+			cow.draw(canvas);
+		}	
 		
 		if (!mLevelText.isDone()) {
 			mLevelText.draw(canvas);
@@ -1465,11 +1558,22 @@ public class BowlScreen extends Screen {
 	private void saveTopScore() {
 		SharedPreferences settings = getDefaultSharedPrefs();
 		Editor editor = settings.edit();
-		editor.putInt(getTopScorePrefsKey(), mTotalScore);
-		editor.commit();
 		
-		mHightScore = true;
-		mSavedTopScore = mTotalScore;
+		String starsKey = LevelScreen.getStarsPrefsKey(mLevelConfig.getWorldNumber()+1, mLevelConfig.getLevelNumber()+1);
+		int stars = settings.getInt(starsKey, 0);
+		
+		if (mScoreBar.getNumberOfStarsShowing() > stars) {
+			editor.putInt(starsKey, mScoreBar.getNumberOfStarsShowing());
+			mLevelScreen.updateLevelWithStars(mLevelConfig.getLevelNumber(), mScoreBar.getNumberOfStarsShowing());
+		}
+		
+		if (mTotalScore > mSavedTopScore) {
+			editor.putInt(getTopScorePrefsKey(), mTotalScore);
+			mHightScore = true;
+			mSavedTopScore = mTotalScore;
+		}
+		
+		editor.commit();	
 	}
 
 	private void randomizeBonusItem() {

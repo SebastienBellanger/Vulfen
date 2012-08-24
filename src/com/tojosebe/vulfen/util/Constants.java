@@ -29,6 +29,10 @@ public class Constants {
 	public static final int BITMAP_BRICK_SOFT = 24;
 	public static final int BITMAP_BRICK_MEDIUM = 25;
 	public static final int BITMAP_BRICK_HARD = 26;
+	public static final int BITMAP_COW_TAKEN_HOLDER = 27;
+	public static final int BITMAP_COW_TAKEN = 28;
 	
 	public static final int ALIEN_TELEPORT_COLOR = 0xcc00ff00;
+	
+	
 }

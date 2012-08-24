@@ -13,7 +13,6 @@ import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.util.Constants;
 import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.util.BitmapManager;
-import com.vulfox.util.GraphicsUtil;
 
 public class WorldButton extends StretchableImageButtonComponent {
 
@@ -24,27 +23,28 @@ public class WorldButton extends StretchableImageButtonComponent {
 	private Rect mScoreTextRect;
 	
 	private Paint mTextPaint;
-	private Paint mTextPaintShadow;
+	private Paint mStrokePaint = new Paint(); // text border
 	
 	private Paint mScorePaint;
 	private Paint mScorePaintShadow;
 	
 	private Paint mStarPaint;
 	
-	private int mShadowOffsetDp = 2;
-	private int mShadowOffset;
+	private float mScale;
 
 	private int mScore = new Random(System.currentTimeMillis()).nextInt(1000000);
 	
 	
-	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi) {
+	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, float scale) {
 		super(context, R.drawable.world, "", 0xFFFF0000,
 				0xFF000000, 20, 175, 152, dpi);
+		mScale = scale;
 		init(worldName, dpi, clearedStars, totalStars);
 	}
 	
-	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, WorldButton buttonTemplate) {
+	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, WorldButton buttonTemplate, float scale) {
 		super((StretchableImageButtonComponent)buttonTemplate);
+		mScale = scale;
 		init(worldName, dpi, totalStars, clearedStars);
 	}
 	
@@ -58,13 +58,14 @@ public class WorldButton extends StretchableImageButtonComponent {
 		this.mTextPaint.setTextAlign(Paint.Align.CENTER);
 		this.mTextPaint.setTextSize((int) (20 * (dpi / 160.0f)));
 		this.mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
-		this.mTextPaintShadow = new Paint(mTextPaint);
-		this.mTextPaintShadow.setColor(0x44000000);
 		this.mTextRect = new Rect();
 		this.mTextPaint.getTextBounds(worldName, 0, worldName.length(),
 				mTextRect);
 		
-		this.mShadowOffset = (int) GraphicsUtil.dpToPixels(mShadowOffsetDp, dpi);
+		mStrokePaint = new Paint(mTextPaint);
+		mStrokePaint.setColor(0x66000000);
+		mStrokePaint.setStyle(Paint.Style.STROKE);
+		mStrokePaint.setStrokeWidth(4 * mScale);
 		
 		this.mStagesText = String.format("%d/%d", clearedStars, totalStars);
 		
@@ -73,9 +74,13 @@ public class WorldButton extends StretchableImageButtonComponent {
 		this.mScorePaint.setAntiAlias(true);
 		this.mScorePaint.setTextSize((int) (14 * (dpi / 160.0f)));
 		this.mScorePaint.setTypeface(Typeface.DEFAULT_BOLD);
-		this.mScorePaintShadow = new Paint(mScorePaint);
-		this.mScorePaintShadow.setColor(0x44000000);
 		this.mScoreTextRect = new Rect();
+		
+		
+		mScorePaintShadow = new Paint(mScorePaint);
+		mScorePaintShadow.setColor(0x66000000);
+		mScorePaintShadow.setStyle(Paint.Style.STROKE);
+		mScorePaintShadow.setStrokeWidth(4 * mScale);
 		
 		this.mScorePaint.getTextBounds(mStagesText, 0, mStagesText.length(),
 				mScoreTextRect);
@@ -91,8 +96,8 @@ public class WorldButton extends StretchableImageButtonComponent {
 		super.draw(canvas);
 
 		// Draw mWorldName shadow text
-		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2 + mShadowOffset,
-				getPositionY() + getHeight() / 4 + mTextRect.height() / 2 + mShadowOffset, mTextPaintShadow);
+		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2,
+				getPositionY() + getHeight() / 4 + mTextRect.height() / 2, mStrokePaint);
 		// Draw mWorldName text
 		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2,
 				getPositionY() + getHeight() / 4 + mTextRect.height() / 2, mTextPaint);
@@ -101,8 +106,8 @@ public class WorldButton extends StretchableImageButtonComponent {
 		int bottomEdge = getPositionY() + getHeight() - getHeight()/5;
 		
 		// Draw Score shadow text
-		canvas.drawText("Score: " + mScore, getPositionX() + mShadowOffset + leftMargin,
-				bottomEdge + mShadowOffset, mScorePaintShadow);
+		canvas.drawText("Score: " + mScore, getPositionX() + leftMargin,
+				bottomEdge, mScorePaintShadow);
 		// Draw Score text
 		canvas.drawText("Score: " + mScore, getPositionX() + leftMargin,
 				bottomEdge, mScorePaint);
@@ -116,8 +121,8 @@ public class WorldButton extends StretchableImageButtonComponent {
 		canvas.drawBitmap(brightStar, left, bottomEdge - getHeight()/4 - scoreTextHeight, mStarPaint);
 
 		// Draw mStagesText shadow text
-		canvas.drawText(mStagesText, left + starSize + mShadowOffset + starSize/2,
-				bottomEdge - getHeight()/4 + scoreTextHeight/2 + mShadowOffset, mScorePaintShadow);
+		canvas.drawText(mStagesText, left + starSize + starSize/2,
+				bottomEdge - getHeight()/4 + scoreTextHeight/2, mScorePaintShadow);
 		// Draw mStagesText text
 		canvas.drawText(mStagesText, left + starSize + starSize/2,
 				bottomEdge - getHeight()/4 + scoreTextHeight/2, mScorePaint);

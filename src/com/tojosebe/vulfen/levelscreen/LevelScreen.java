@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -30,13 +32,15 @@ public class LevelScreen extends Screen {
 
 	private final int mButtonUpperOffsetDp = 30;
 	private final int mButtonUpperOffset;
-	
+
+	private static final String SAVED_TOP_STARS = "topStars";
+
 	private int mListHeight;
 
 	private float mScrollY = 0;
 	private float mLastScrollLength = 0;
-	
-	private int mStarSizeDp = 10;
+
+	private int mStarSize = 23;
 
 	private List<LevelButton> mButtons = new ArrayList<LevelButton>();
 
@@ -59,18 +63,19 @@ public class LevelScreen extends Screen {
 
 	private int mLevelMarginDp = 4;
 	private int mLevelWidthMargin;
-	
+
 	private float mScale;
 	Paint mPaint = new Paint();
 
 	private int mGridCols;
-	
+
 	private int mWorldNumber;
-	
+
 	private Activity mActivity;
 
-	public LevelScreen(int dpi, Cloud cloud1, Cloud cloud2, int nbrOfLevels, int nbrOfLockedLevels,
-			int gridCols, int worldNumber, Activity activity) {
+	public LevelScreen(int dpi, Cloud cloud1, Cloud cloud2, int nbrOfLevels,
+			int nbrOfLockedLevels, int gridCols, int worldNumber,
+			Activity activity) {
 		this.mDpi = dpi;
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
@@ -92,7 +97,7 @@ public class LevelScreen extends Screen {
 
 		int minMargin = (int) GraphicsUtil.dpToPixels(mGridMinMarginDp, mDpi);
 		mGridMargin = 0;
-		
+
 		mPaint.setAntiAlias(true);
 		mScale = getWidth() / 480.0f;
 
@@ -112,7 +117,7 @@ public class LevelScreen extends Screen {
 		// Add level images.
 		Bitmap levelbitmap = createLevelBitmap();
 		Bitmap lockedLevelbitmap = createLockedLevelBitmap();
-		
+
 		addLevel(1, levelbitmap, false);
 
 		for (int i = 1; i < mNbrOfLevels; ++i) {
@@ -122,12 +127,13 @@ public class LevelScreen extends Screen {
 			} else {
 				addLevel((i + 1), levelbitmap, locked);
 			}
-			
+
 		}
-		
+
 		createStars();
 
 		addScreenComponent(createBottomBackground());
+
 	}
 
 	private Bitmap createLockedLevelBitmap() {
@@ -145,27 +151,36 @@ public class LevelScreen extends Screen {
 				mLevelWidth);
 		return levelbitmap;
 	}
-	
+
+	public static String getStarsPrefsKey(int world, int level) {
+		return SAVED_TOP_STARS + "_" + world + "_" + level;
+	}
+
+	private SharedPreferences getDefaultSharedPrefs() {
+		return PreferenceManager.getDefaultSharedPreferences(mContext
+				.getApplicationContext());
+	}
+
 	private void createStars() {
-		
-		Bitmap darkStar = BitmapManager
-				.getBitmap(Constants.BITMAP_STAR_DARK);
-		
-		int starSize = (int)GraphicsUtil.dpToPixels(mStarSizeDp, mDpi);
+
+		Bitmap darkStar = BitmapManager.getBitmap(Constants.BITMAP_STAR_DARK);
+
+		int starSize = (int) (mStarSize * mScale);
 
 		if (darkStar == null) {
 			darkStar = ImageLoader.loadFromResource(
-					mContext.getApplicationContext(), R.drawable.star_dark);
+					mContext.getApplicationContext(),
+					R.drawable.scorebar_star_dark2);
 			darkStar = GraphicsUtil.resizeBitmap(darkStar, starSize, starSize);
 			BitmapManager.addBitmap(Constants.BITMAP_STAR_DARK, darkStar);
 		}
-		
-		Bitmap brightStar = BitmapManager
-				.getBitmap(Constants.BITMAP_STAR);
+
+		Bitmap brightStar = BitmapManager.getBitmap(Constants.BITMAP_STAR);
 
 		if (brightStar == null) {
-			brightStar = ImageLoader.loadFromResource(
-					mContext.getApplicationContext(), R.drawable.star);
+			brightStar = ImageLoader
+					.loadFromResource(mContext.getApplicationContext(),
+							R.drawable.scorebar_star2);
 			brightStar = GraphicsUtil.resizeBitmap(brightStar, starSize,
 					starSize);
 			BitmapManager.addBitmap(Constants.BITMAP_STAR, brightStar);
@@ -177,16 +192,17 @@ public class LevelScreen extends Screen {
 	protected void onTop() {
 		// TODO: Reload scores and stuff.
 	}
-	
+
 	private ScreenComponent createBottomBackground() {
-		
-		StretchableImageButtonComponent bottom = new StretchableImageButtonComponent(mContext,
-				R.drawable.screen_footer, "", 0, 0, 0, 
-				(int)GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
-		
+
+		StretchableImageButtonComponent bottom = new StretchableImageButtonComponent(
+				mContext, R.drawable.screen_footer, "", 0, 0, 0,
+				(int) GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
+
 		bottom.setPositionX(0);
-		bottom.setPositionY(getHeight() - (int)GraphicsUtil.dpToPixels(70, mDpi));
-		
+		bottom.setPositionY(getHeight()
+				- (int) GraphicsUtil.dpToPixels(70, mDpi));
+
 		return bottom;
 	}
 
@@ -261,10 +277,11 @@ public class LevelScreen extends Screen {
 
 	@Override
 	public void draw(Canvas canvas) {
-		
+
 		mPaint.setColor(0xFF0c4717);
-		canvas.drawRect(0, (int)(800*mScale), getWidth(), getHeight(), mPaint);
-		
+		canvas.drawRect(0, (int) (800 * mScale), getWidth(), getHeight(),
+				mPaint);
+
 		mCloud1.draw(canvas);
 		mCloud2.draw(canvas);
 		for (LevelButton button : mButtons) {
@@ -287,7 +304,8 @@ public class LevelScreen extends Screen {
 		}
 	}
 
-	private void addLevel(final int levelIndex, Bitmap levelBitmap, boolean locked) {
+	private void addLevel(final int levelIndex, Bitmap levelBitmap,
+			boolean locked) {
 		LevelButton levelButton = null;
 
 		EventListener listener = new EventListener() {
@@ -296,21 +314,29 @@ public class LevelScreen extends Screen {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10,
 						mDpi)) {
 					float scale = getWidth() / 480.0f;
-					Level level = LevelManager.getLevel(mWorldNumber, levelIndex, scale, mActivity.getAssets());
-					if (level.getLevelNumber() == 0 && level.getWorldNumber() == 0) {
-						mScreenManager.addScreenUI(new StoryScreen(mDpi, mCloud1, mCloud2, level, mActivity));
+					Level level = LevelManager.getLevel(mWorldNumber,
+							levelIndex, scale, mActivity.getAssets());
+					if (level.getLevelNumber() == 0
+							&& level.getWorldNumber() == 0) {
+						startStoryScreen(level);
 					} else {
-						mScreenManager.addScreenUI(new BowlScreen(level, mDpi, mActivity));
+						startLevel(level);
 					}
 					return true;
 				}
 				return false;
 			}
+
 		};
 
 		levelButton = new LevelButton(levelBitmap, locked);
-		levelButton.initValues("" + levelIndex, mContext, mDpi, mLevelWidth, 2);
-		
+
+		int stars = getDefaultSharedPrefs().getInt(
+				getStarsPrefsKey(mWorldNumber, levelIndex), 0);
+
+		levelButton.initValues("" + levelIndex, mContext, mDpi, mLevelWidth,
+				stars, mScale);
+
 		if (!locked) {
 			levelButton.setEventListener(listener);
 		}
@@ -347,6 +373,20 @@ public class LevelScreen extends Screen {
 
 		addScreenComponent(levelButton);
 		mButtons.add(levelButton);
+	}
+
+	private void startStoryScreen(Level level) {
+		mScreenManager.addScreenUI(new StoryScreen(mDpi, mCloud1, mCloud2,
+				level, mActivity, this));
+	}
+
+	private void startLevel(Level level) {
+		mScreenManager
+				.addScreenUI(new BowlScreen(level, mDpi, mActivity, this));
+	}
+
+	public void updateLevelWithStars(int level, int stars) {
+		mButtons.get(level).setNbrOfStars(stars);
 	}
 
 }

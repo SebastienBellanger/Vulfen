@@ -65,7 +65,7 @@ public class Score {
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		mStrokePaint.setStyle(Paint.Style.STROKE);
 		mStrokePaint.setAntiAlias(true);
-		mStrokePaint.setStrokeWidth(3);
+		mStrokePaint.setStrokeWidth(2 * mScale);
 	}
 
 	public void update(float timeStep) {

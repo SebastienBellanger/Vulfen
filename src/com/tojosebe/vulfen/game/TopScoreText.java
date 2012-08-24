@@ -53,7 +53,7 @@ public class TopScoreText {
 		mStrokePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		mStrokePaint.setStyle(Paint.Style.STROKE);
 		mStrokePaint.setAntiAlias(true);
-		mStrokePaint.setStrokeWidth(4);
+		mStrokePaint.setStrokeWidth(3 * mScale);
 	}
 
 	public void update(float timeStep) {

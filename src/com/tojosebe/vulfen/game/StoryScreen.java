@@ -13,6 +13,7 @@ import android.graphics.Shader.TileMode;
 import com.tojosebe.vulfen.R;
 import com.tojosebe.vulfen.animation.AnimateableImageComponent;
 import com.tojosebe.vulfen.configuration.Level;
+import com.tojosebe.vulfen.levelscreen.LevelScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.startscreen.Cow;
 import com.tojosebe.vulfen.util.Constants;
@@ -67,9 +68,12 @@ public class StoryScreen extends Screen {
 	private int mAlienEndX = 30;
 	private boolean mAlienAnimationDone = false;
 	private boolean continueButtonAdded = false;
+	
+	private LevelScreen mLevelScreen;
 
-	public StoryScreen(int dpi, Cloud cloud1, Cloud cloud2, Level level, Activity activity) {
+	public StoryScreen(int dpi, Cloud cloud1, Cloud cloud2, Level level, Activity activity, LevelScreen levelScreen) {
 		mDpi = dpi;
+		mLevelScreen = levelScreen;
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
 		this.mActivity = activity;
@@ -397,7 +401,7 @@ public class StoryScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 
-				mScreenManager.addScreenUI(new BowlScreen(mLevel, mDpi, mActivity));
+				mScreenManager.addScreenUI(new BowlScreen(mLevel, mDpi, mActivity, mLevelScreen));
 				removeThisScreen();
 				return true;
 			}

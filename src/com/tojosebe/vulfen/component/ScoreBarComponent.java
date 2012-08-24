@@ -396,4 +396,21 @@ public class ScoreBarComponent extends ScreenComponent {
 		
 	}
 
+	public int getNumberOfStarsShowing() {
+		
+		int showing = 0;
+		
+		if (star1showing) {
+			showing++;
+		}
+		if (star2showing) {
+			showing++;
+		}
+		if (star3showing) {
+			showing++;
+		}
+
+		return showing;
+	}
+
 }

@@ -3,8 +3,11 @@ package com.tojosebe.vulfen;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.ContextMenu;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.ContextMenu.ContextMenuInfo;
 
 import com.tojosebe.vulfen.startscreen.StartScreen;
 import com.vulfox.GameActivity;
