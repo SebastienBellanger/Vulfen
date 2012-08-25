@@ -12,7 +12,6 @@ import com.tojosebe.vulfen.dialog.DialogRegularString;
 import com.tojosebe.vulfen.dialog.DialogScreen;
 import com.tojosebe.vulfen.dialog.DialogString;
 import com.tojosebe.vulfen.dialog.DialogString.TextSize;
-import com.tojosebe.vulfen.game.StoryScreen;
 import com.tojosebe.vulfen.util.Constants;
 import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
@@ -202,7 +201,7 @@ public class StartScreen extends Screen {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
 				mContext.getApplicationContext(), R.drawable.button, "Play",
-				0xFFFFFFFF, 0x44000000, 30, 150, 50, mDpi);
+				0xFFFFFFFF, 0x44000000, 30, 150, 50, mDpi, mScale);
 
 		button.setEventListener(new EventListener() {
 			@Override
@@ -227,25 +226,6 @@ public class StartScreen extends Screen {
 			BitmapManager.addBitmap(Constants.BITMAP_BACKGROUND,
 					background);
 		}
-	}
-
-	private ImageComponent getImageComponent(int imageConstant, int resource) {
-		Bitmap background = BitmapManager.getBitmap(imageConstant);
-
-		ImageComponent imageComp = null;
-
-		if (background != null) {
-			imageComp = new ImageComponent(background, false);
-		} else {
-			background = ImageLoader.loadFromResource(
-					mContext.getApplicationContext(), resource);
-			imageComp = new ImageComponent(background, false);
-			imageComp.setHeight(getHeight());
-			imageComp.setWidth(getWidth());
-			imageComp.resizeBitmap();
-			BitmapManager.addBitmap(imageConstant, imageComp.getBitmap());
-		}
-		return imageComp;
 	}
 
 	@Override

@@ -129,6 +129,13 @@ public class ContextMenuScreen extends Screen {
 		mStrokePaint.setStrokeWidth(strokeWidthBefore);
 
 	}
+	
+	@Override
+	public void handleShowOptionsMenu() {
+		
+		mScreenManager.removeScreenUI(this);
+		mBowlScreen.setPaused(false);
+	}
 
 	private void updateDialogY() {
 		long timeSinceStart = System.currentTimeMillis() - mDialogStartTime;

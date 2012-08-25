@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.preference.PreferenceManager;
 import android.view.MotionEvent;
 
 import com.tojosebe.vulfen.R;
@@ -54,7 +55,7 @@ public class WorldScreen extends Screen {
 	private Cloud mCloud1;
 	private Cloud mCloud2;
 	
-	private int mStarSizeDp = 20;
+	private int mStarSize = 36;
 	
 	private StretchableImageButtonComponent mBottomFade;
 
@@ -100,13 +101,28 @@ public class WorldScreen extends Screen {
 		LevelManager.init(mActivity.getAssets(), getWidth(), getHeight());
 		int numberOfWOrlds = LevelManager.getNumberOfWorlds();
 		
-		WorldButton worldButton = addWorld("World " + 1, LevelManager.getNumberOfLevels(0),  LevelManager.getNumberOfLevels(0), null, 1);
+		int starsForLevel = getNbrOfStarsForLevel(1, LevelManager.getNumberOfLevels(0));
+		
+		WorldButton worldButton = addWorld("World " + 1, LevelManager.getNumberOfLevels(0),  LevelManager.getNumberOfLevels(0), starsForLevel, null, 1);
 		for (int i = 1; i < numberOfWOrlds; i++) {
-			addWorld("World " + i, LevelManager.getNumberOfLevels(i),  LevelManager.getNumberOfLevels(i), worldButton, 1);
+			starsForLevel = getNbrOfStarsForLevel(i+1, LevelManager.getNumberOfLevels(i));
+			addWorld("World " + i, LevelManager.getNumberOfLevels(i),  LevelManager.getNumberOfLevels(i), starsForLevel, worldButton, 1);
 		}
 		
 		addScreenComponent(createBottomBackground());
 
+	}
+
+	private int getNbrOfStarsForLevel(int worldNumber, int totalStages) {
+		
+		int stars = 0;
+		
+		for (int i = 0; i < totalStages; i++) {
+			stars += PreferenceManager.getDefaultSharedPreferences(mContext
+					.getApplicationContext()).getInt(LevelScreen.getStarsPrefsKey(worldNumber, i+1), 0);
+		}
+
+		return stars;
 	}
 
 	@Override
@@ -125,7 +141,7 @@ public class WorldScreen extends Screen {
 		
 		mBottomFade = new StretchableImageButtonComponent(mContext,
 				R.drawable.screen_footer, "", 0, 0, 0, 
-				(int)GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
+				(int)GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi, mScale);
 		
 		mBottomFade.setPositionX(0);
 		mBottomFade.setPositionY(getHeight() - (int)GraphicsUtil.dpToPixels(70, mDpi));
@@ -357,8 +373,8 @@ public class WorldScreen extends Screen {
 		}
 	}
 
-	private WorldButton addWorld(String worldName, final int totalStars,
-			final int lockedStages, WorldButton worldButtonTemplate, final int worldNumber) {
+	private WorldButton addWorld(String worldName, final int totalLevels,
+			final int lockedStages, final int nbrOfClearedStars, WorldButton worldButtonTemplate, final int worldNumber) {
 
 		
 		WorldButton worldButton = null;
@@ -366,7 +382,7 @@ public class WorldScreen extends Screen {
 			@Override
 			public boolean handleButtonClicked() {
 				if (Math.abs(mLastScrollLength) < GraphicsUtil.dpToPixels(10, mDpi)) {
-					mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, totalStars, 0, 4, worldNumber, mActivity));
+					startLevelScreen(totalLevels, worldNumber);
 					
 					return true;
 				}
@@ -375,12 +391,12 @@ public class WorldScreen extends Screen {
 		};
 
 		if (worldButtonTemplate != null) {
-			worldButton = new WorldButton(worldName, totalStars,
-					lockedStages, mContext, mDpi, worldButtonTemplate, mScale);
+			worldButton = new WorldButton(worldName, totalLevels * 3,
+					nbrOfClearedStars, mContext, mDpi, worldButtonTemplate, mScale);
 			worldButton.setEventListener(listener);
 		} else {
-			worldButton = new WorldButton(worldName, totalStars,
-					lockedStages, mContext, mDpi, mScale);
+			worldButton = new WorldButton(worldName, totalLevels * 3,
+					nbrOfClearedStars, mContext, mDpi, mScale);
 			worldButton.setEventListener(listener);
 		}
 		worldButton.setPositionX((getWidth() - worldButton.getWidth()) / 2);
@@ -396,21 +412,34 @@ public class WorldScreen extends Screen {
 		return worldButton;
 	}
 	
+	private void startLevelScreen(final int totalLevels,
+			final int worldNumber) {
+		mScreenManager.addScreenUI(new LevelScreen(mDpi, mCloud1, mCloud2, totalLevels, 0, 4, worldNumber, mActivity, this));
+	}
+	
 	private void createStar() {
 		
-		int starSize = (int)GraphicsUtil.dpToPixels(mStarSizeDp, mDpi);
+		int starSize = (int)(mStarSize * mScale);
 		
 		Bitmap brightStar = BitmapManager
 				.getBitmap(Constants.BITMAP_STAR_BIG);
 
 		if (brightStar == null) {
 			brightStar = ImageLoader.loadFromResource(
-					mContext.getApplicationContext(), R.drawable.star_small);
+					mContext.getApplicationContext(), R.drawable.star_small_2);
 			brightStar = GraphicsUtil.resizeBitmap(brightStar, starSize,
 					starSize);
 			BitmapManager.addBitmap(Constants.BITMAP_STAR_BIG, brightStar);
 		}
 
+	}
+
+	public int getNumberOfStarsCleared(int mWorldNumber) {
+		return mButtons.get(mWorldNumber).getClearedStars();
+	}
+	
+	public void setNumberOfStarsCleared(int mWorldNumber, int stars) {
+		mButtons.get(mWorldNumber).setClearedStars(stars);
 	}
 
 }

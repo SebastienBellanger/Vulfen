@@ -19,6 +19,7 @@ import com.tojosebe.vulfen.game.BowlScreen;
 import com.tojosebe.vulfen.game.StoryScreen;
 import com.tojosebe.vulfen.startscreen.Cloud;
 import com.tojosebe.vulfen.util.Constants;
+import com.tojosebe.vulfen.worldscreen.WorldScreen;
 import com.vulfox.ImageLoader;
 import com.vulfox.Screen;
 import com.vulfox.component.ImageComponent;
@@ -27,6 +28,7 @@ import com.vulfox.component.StretchableImageButtonComponent;
 import com.vulfox.listener.EventListener;
 import com.vulfox.util.BitmapManager;
 import com.vulfox.util.GraphicsUtil;
+import com.vulfox.util.Logger;
 
 public class LevelScreen extends Screen {
 
@@ -72,10 +74,12 @@ public class LevelScreen extends Screen {
 	private int mWorldNumber;
 
 	private Activity mActivity;
+	
+	private WorldScreen mWorldScreen;
 
 	public LevelScreen(int dpi, Cloud cloud1, Cloud cloud2, int nbrOfLevels,
 			int nbrOfLockedLevels, int gridCols, int worldNumber,
-			Activity activity) {
+			Activity activity, WorldScreen worldScreen) {
 		this.mDpi = dpi;
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
@@ -84,6 +88,7 @@ public class LevelScreen extends Screen {
 		this.mNbrOfLockedLevels = nbrOfLockedLevels;
 		this.mWorldNumber = worldNumber;
 		this.mActivity = activity;
+		this.mWorldScreen = worldScreen;
 
 		mLevelWidthMargin = (int) GraphicsUtil.dpToPixels(mLevelMarginDp, mDpi);
 
@@ -197,7 +202,7 @@ public class LevelScreen extends Screen {
 
 		StretchableImageButtonComponent bottom = new StretchableImageButtonComponent(
 				mContext, R.drawable.screen_footer, "", 0, 0, 0,
-				(int) GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi);
+				(int) GraphicsUtil.pixelsToDp(getWidth(), mDpi), 70, mDpi, mScale);
 
 		bottom.setPositionX(0);
 		bottom.setPositionY(getHeight()
@@ -386,7 +391,11 @@ public class LevelScreen extends Screen {
 	}
 
 	public void updateLevelWithStars(int level, int stars) {
+		int previousNumberOfStars = mButtons.get(level).getNbrOfStars();
+		int newStars = stars - previousNumberOfStars;
 		mButtons.get(level).setNbrOfStars(stars);
+		Logger.log("UPDATING WORLD " + (mWorldNumber - 1) + " CHANGING FROM " + mWorldScreen.getNumberOfStarsCleared(mWorldNumber - 1) + " ADDING " + newStars);
+		mWorldScreen.setNumberOfStarsCleared(mWorldNumber - 1, mWorldScreen.getNumberOfStarsCleared(mWorldNumber - 1) + newStars);
 	}
 
 }

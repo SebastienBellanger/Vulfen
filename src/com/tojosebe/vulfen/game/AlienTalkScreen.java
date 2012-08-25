@@ -345,7 +345,7 @@ public class AlienTalkScreen extends Screen {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
 				mContext.getApplicationContext(), R.drawable.button,
-				"Continue", 0xFFFFFFFF, 0x44000000, 30, 170, 50, mDpi);
+				"Continue", 0xFFFFFFFF, 0x44000000, 30, 170, 50, mDpi, mScale);
 
 		button.setEventListener(new EventListener() {
 			@Override

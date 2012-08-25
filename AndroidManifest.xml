@@ -4,14 +4,17 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="7" />
 
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
     <application
         android:icon="@drawable/icon"
-        android:label="@string/app_name" 
-        android:debuggable="true">
+        android:label="@string/app_name">
         <activity
             android:name=".VulfenActivity"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,7 +24,6 @@
         </activity>
     </application>
     
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    
 
 </manifest>

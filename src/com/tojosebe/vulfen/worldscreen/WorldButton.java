@@ -1,7 +1,5 @@
 package com.tojosebe.vulfen.worldscreen;
 
-import java.util.Random;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -31,24 +29,32 @@ public class WorldButton extends StretchableImageButtonComponent {
 	private Paint mStarPaint;
 	
 	private float mScale;
-
-	private int mScore = new Random(System.currentTimeMillis()).nextInt(1000000);
+	
+	private Rect mStarsClearedRect = new Rect();
+	
+	private int mClearedStars;
+	
+	private int mTotalStars;
 	
 	
 	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, float scale) {
 		super(context, R.drawable.world, "", 0xFFFF0000,
-				0xFF000000, 20, 175, 152, dpi);
+				0xFF000000, 20, 175, 152, dpi, scale);
 		mScale = scale;
-		init(worldName, dpi, clearedStars, totalStars);
+		mTotalStars = totalStars;
+		mClearedStars = clearedStars;
+		init(worldName, clearedStars, totalStars);
 	}
 	
 	public WorldButton(String worldName, int totalStars, int clearedStars, Context context, int dpi, WorldButton buttonTemplate, float scale) {
 		super((StretchableImageButtonComponent)buttonTemplate);
 		mScale = scale;
-		init(worldName, dpi, totalStars, clearedStars);
+		mTotalStars = totalStars;
+		mClearedStars = clearedStars;
+		init(worldName, totalStars, clearedStars);
 	}
 	
-	private void init(String worldName, int dpi, int clearedStars, int totalStars) {
+	private void init(String worldName, int clearedStars, int totalStars) {
 		
 		mWorldName = worldName;
 		
@@ -56,7 +62,7 @@ public class WorldButton extends StretchableImageButtonComponent {
 		this.mTextPaint.setColor(0xFFFFFFFF);
 		this.mTextPaint.setAntiAlias(true);
 		this.mTextPaint.setTextAlign(Paint.Align.CENTER);
-		this.mTextPaint.setTextSize((int) (20 * (dpi / 160.0f)));
+		this.mTextPaint.setTextSize((int) 30 * mScale);
 		this.mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
 		this.mTextRect = new Rect();
 		this.mTextPaint.getTextBounds(worldName, 0, worldName.length(),
@@ -72,7 +78,7 @@ public class WorldButton extends StretchableImageButtonComponent {
 		this.mScorePaint = new Paint();
 		this.mScorePaint.setColor(0xFFFFFFFF);
 		this.mScorePaint.setAntiAlias(true);
-		this.mScorePaint.setTextSize((int) (14 * (dpi / 160.0f)));
+		this.mScorePaint.setTextSize((int) 24 * mScale);
 		this.mScorePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		this.mScoreTextRect = new Rect();
 		
@@ -102,30 +108,46 @@ public class WorldButton extends StretchableImageButtonComponent {
 		canvas.drawText(mWorldName, getPositionX() + getWidth() / 2,
 				getPositionY() + getHeight() / 4 + mTextRect.height() / 2, mTextPaint);
 			
-		int leftMargin = getWidth() / 10;
 		int bottomEdge = getPositionY() + getHeight() - getHeight()/5;
 		
-		// Draw Score shadow text
-		canvas.drawText("Score: " + mScore, getPositionX() + leftMargin,
-				bottomEdge, mScorePaintShadow);
-		// Draw Score text
-		canvas.drawText("Score: " + mScore, getPositionX() + leftMargin,
-				bottomEdge, mScorePaint);
+		this.mStagesText = String.format("%d/%d", mClearedStars, mTotalStars);
 		
 		Bitmap brightStar = BitmapManager.getBitmap(Constants.BITMAP_STAR_BIG);
 		
 		int starSize = brightStar.getWidth();
-		int left = getPositionX() + leftMargin; 
-		int scoreTextHeight = mScoreTextRect.height();
 		
-		canvas.drawBitmap(brightStar, left, bottomEdge - getHeight()/4 - scoreTextHeight, mStarPaint);
+		mScorePaint.getTextBounds(mStagesText, 0, mStagesText.length(), mStarsClearedRect);
 
+		int width = getWidth();
+		float spaceBetweenStarAndText = 5 * mScale;
+		float widthStarsCleared = starSize + mStarsClearedRect.width() + spaceBetweenStarAndText;
+		
+		int starLeft = getPositionX()
+				+ (int) ((width - widthStarsCleared) / 2.0f);
+
+		canvas.drawBitmap(brightStar, starLeft + spaceBetweenStarAndText
+				+ mStarsClearedRect.width(), bottomEdge - 20 * mScale - brightStar.getHeight() + 10 * mScale, mStarPaint);
+	
 		// Draw mStagesText shadow text
-		canvas.drawText(mStagesText, left + starSize + starSize/2,
-				bottomEdge - getHeight()/4 + scoreTextHeight/2, mScorePaintShadow);
+		canvas.drawText(mStagesText, starLeft,
+				bottomEdge - 20 * mScale, mScorePaintShadow);
 		// Draw mStagesText text
-		canvas.drawText(mStagesText, left + starSize + starSize/2,
-				bottomEdge - getHeight()/4 + scoreTextHeight/2, mScorePaint);
+		canvas.drawText(mStagesText, starLeft,
+				bottomEdge - 20 * mScale, mScorePaint);
+	}
+
+	/**
+	 * @return the mClearedStars
+	 */
+	public int getClearedStars() {
+		return mClearedStars;
+	}
+
+	/**
+	 * @param mClearedStars the mClearedStars to set
+	 */
+	public void setClearedStars(int clearedStars) {
+		this.mClearedStars = clearedStars;
 	}
 
 	

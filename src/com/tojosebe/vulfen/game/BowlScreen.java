@@ -68,6 +68,8 @@ public class BowlScreen extends Screen {
 	
 	private boolean paused = false;
 	
+	private ContextMenuScreen contextMenuScreen;
+	
 	//set to true means we will first check side collisions against all bricks.
 	private boolean sidesHasPrecedence = true;
 	
@@ -95,6 +97,7 @@ public class BowlScreen extends Screen {
 	
 	private Bitmap mBrickSoft;
 	private Bitmap mBrickMedium;
+	private Bitmap mBrickMediumBroken;
 	private Bitmap mBrickHard;
 
 	private Paint mTextPaint = new Paint();
@@ -294,6 +297,7 @@ public class BowlScreen extends Screen {
 			float w = mLevelConfig.getBricks().get(0).getWidth();
 			mBrickSoft = getBrickBitmap(Brick.Type.SOFT, w, h, R.drawable.brick_soft);
 			mBrickMedium = getBrickBitmap(Brick.Type.MEDIUM, w, h, R.drawable.brick_medium);
+			mBrickMediumBroken = getBrickBitmap(null, w, h, R.drawable.brick_medium_broken);
 			mBrickHard = getBrickBitmap(Brick.Type.HARD, w, h, R.drawable.brick_hard);
 		}
 		
@@ -650,7 +654,7 @@ public class BowlScreen extends Screen {
 		buttons[2].setEventListener(cancelListener);
 		buttons[2].resizeBitmap();		
 		
-		ContextMenuScreen contextMenuScreen = new ContextMenuScreen(getWidth(),
+		contextMenuScreen = new ContextMenuScreen(getWidth(),
 				getHeight(),
 				mScale,
 				buttons,
@@ -738,10 +742,6 @@ public class BowlScreen extends Screen {
 				resetLauncher();
 			}
 
-		}
-		
-		if (mGameOver && checkGameFinished()) {
-			saveTopScore();
 		}
 		
 		if (alien != null && !alien.isMoving() && !mGameOver && mHasLaunched) {
@@ -940,6 +940,10 @@ public class BowlScreen extends Screen {
 				brick.update(timeStep);
 			}
 		}
+		
+		if (mGameOver && checkGameFinished()) {
+			saveTopScore();
+		}
 
 	}
 
@@ -1019,7 +1023,7 @@ public class BowlScreen extends Screen {
 									brickCollidedWith = brick;
 								}
 							}
-							if (brick.getType() != Brick.Type.HARD) {
+							if (brick.getType() == Brick.Type.SOFT) {
 								mPoints.add(new Score(SCORE_FOR_BRICK, new Vector2f(brick 
 										.getPosition()), Color.YELLOW, mScale));
 								setTotalScore(mTotalScore + SCORE_FOR_BRICK);
@@ -1042,10 +1046,10 @@ public class BowlScreen extends Screen {
 
 							brickCollidedWith = brick;
 	//							Logger.log("CORNER HIT against" + brick.toString());
-							if (brick.getType() != Brick.Type.HARD) {
+							if (brick.getType() == Brick.Type.SOFT) {
 	//								brick.fadeOut(250);
-								mPoints.add(new Score(SCORE_FOR_BRICK, brick
-										.getPosition(), Color.YELLOW, mScale));
+								mPoints.add(new Score(SCORE_FOR_BRICK, new Vector2f(brick
+										.getPosition()), Color.YELLOW, mScale));
 								setTotalScore(mTotalScore + SCORE_FOR_BRICK);
 							}
 							break;
@@ -1069,8 +1073,8 @@ public class BowlScreen extends Screen {
 						
 						brickCollidedWith = brick;
 						if (brick.getType() != Brick.Type.HARD) {
-							mPoints.add(new Score(SCORE_FOR_BRICK, brick
-									.getPosition(), Color.YELLOW, mScale));
+							mPoints.add(new Score(SCORE_FOR_BRICK, new Vector2f(brick
+									.getPosition()), Color.YELLOW, mScale));
 							setTotalScore(mTotalScore + SCORE_FOR_BRICK);
 						}
 						break;
@@ -1079,8 +1083,11 @@ public class BowlScreen extends Screen {
 			}
 			
 			if (brickCollidedWith != null) {
-				if (brickCollidedWith.getType() != Brick.Type.HARD){
+				if (brickCollidedWith.getType() == Brick.Type.SOFT){
 					mBricks.remove(brickCollidedWith);
+				} else if (brickCollidedWith.getType() == Brick.Type.MEDIUM) {
+					brickCollidedWith.setType(Brick.Type.SOFT);
+					brickCollidedWith.setBitmap(mBrickMediumBroken);
 				}
 				CollisionCalculator
 						.calculateCollisionVectorCircleVsSolidSquare(pong,
@@ -1300,6 +1307,11 @@ public class BowlScreen extends Screen {
 	}
 
 	private void addGameOverDialog(Canvas canvas) {
+		
+		if (paused) {
+			paused = false;
+			mScreenManager.removeScreenUI(contextMenuScreen);
+		}
 		
 		if (mLivesLeftAnimationStart == 0) {
 			mLivesLeftAnimationStart = System.currentTimeMillis();
@@ -1557,23 +1569,26 @@ public class BowlScreen extends Screen {
 
 	private void saveTopScore() {
 		SharedPreferences settings = getDefaultSharedPrefs();
-		Editor editor = settings.edit();
-		
+
 		String starsKey = LevelScreen.getStarsPrefsKey(mLevelConfig.getWorldNumber()+1, mLevelConfig.getLevelNumber()+1);
 		int stars = settings.getInt(starsKey, 0);
 		
 		if (mScoreBar.getNumberOfStarsShowing() > stars) {
+			Editor editor = settings.edit();
 			editor.putInt(starsKey, mScoreBar.getNumberOfStarsShowing());
 			mLevelScreen.updateLevelWithStars(mLevelConfig.getLevelNumber(), mScoreBar.getNumberOfStarsShowing());
+			editor.commit();
 		}
 		
 		if (mTotalScore > mSavedTopScore) {
+			Editor editor = settings.edit();
 			editor.putInt(getTopScorePrefsKey(), mTotalScore);
 			mHightScore = true;
 			mSavedTopScore = mTotalScore;
+			editor.commit();
 		}
 		
-		editor.commit();	
+			
 	}
 
 	private void randomizeBonusItem() {

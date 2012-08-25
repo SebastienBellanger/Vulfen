@@ -254,6 +254,10 @@ public class StoryScreen extends Screen {
 		imageComp.setHeight((int) (PENGUIN_WIDTH * mScale));
 		imageComp.setPositionX((int) (330 * mScale));
 		imageComp.setPositionY((int) (680 * mScale));
+		
+		if (getHeight() < imageComp.getPositionY() + imageComp.getHeight()) {
+			imageComp.setPositionY(imageComp.getPositionY() - imageComp.getHeight() / 2);
+		}
 
 		// Resize the loaded bitmaps with nice algorithms so that they looks
 		// nice.
@@ -395,7 +399,7 @@ public class StoryScreen extends Screen {
 
 		StretchableImageButtonComponent button = new StretchableImageButtonComponent(
 				mContext.getApplicationContext(), R.drawable.button,
-				"Continue", 0xFFFFFFFF, 0x44000000, 30, 170, 50, mDpi);
+				"Continue", 0xFFFFFFFF, 0x44000000, 30, 170, 50, mDpi, mScale);
 
 		button.setEventListener(new EventListener() {
 			@Override

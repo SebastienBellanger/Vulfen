@@ -1,34 +1,25 @@
 
-gör en commit innan du fortsätter. Kolla vilka bilder som ska bort.
-
-
-FIXA TEXTEN PÅ PLAYKNAPPEN OCH DE ANDRA KNAPPARNA (alltså inte shadow offset)
-
-koppla in storage (worldscreen kvar.)
-
-tegelstenar som man måste träffa 2 gånger.
-
-nåsta steg på alien är att han kör till mitten, väntar 5 sek och sen strålar upp en ko. Det gäller att
-stoppa honom medan man kan.
-
 animation när tegelsten försvinner???
 
-byt text på level, world och start screen så matchar resten.
-
 Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
+
+fler banor!
+- Power ups (BRICK_SMASHER, LIGHTNING)
+
+nästa steg på alien är att han kör till mitten, väntar 5 sek och sen strålar upp en ko. Det gäller att
+stoppa honom medan man kan.
 
 boss
 
 placeringen av penguin på launcehrn är inte samma på olika skärmar.
 
-- Power ups (BRICK_SMASHER, LIGHTNING)
-
-fler banor!
-
 GRAFIKGREJS (rita)
 lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
 Lägg till back knapp överallt.
 bakgrundsbild(er).
+hard brick är ful!
+
+WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
 
 jobba bort dpi användandet.
 
@@ -50,8 +41,6 @@ hur långt man kommit i levlar ska sparas. (senare)
 
 * GAMESCREEN:
 	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
-	- Bakgrundsbild snyggare
-	
 	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
 
 LJUD
@@ -60,8 +49,8 @@ LJUD
 	- som feedback när man klickar på saker?
 	- applåder när man klarar.
 	- när man får en stjärna
-	
-WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
+
+artifakt på worldscreen ibland (bara sett på samsung galaxy s3)
 
 Idéer:
 * svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!?

@@ -122,4 +122,8 @@ public class LevelButton extends ImageComponent {
 	public void setNbrOfStars(int nbrOfStars) {
 		this.mNbrOfStars = nbrOfStars;
 	}
+	
+	public int getNbrOfStars() {
+		return this.mNbrOfStars;
+	}
 }
