@@ -172,7 +172,6 @@ public class CollisionCalculator {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner2());
 				done = true;
-				Logger.log("COLLISION Corner2");
 				
 				//move circle out of square
 				float xDiff = brick.getPositionCorner2().getX() - (pong.getPosition().getX() - pong.getRadius());
@@ -189,7 +188,6 @@ public class CollisionCalculator {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner3());
 				done = true;
-				Logger.log("COLLISION Corner3");
 				
 				//move circle out of square
 				float xDiff = pong.getPosition().getX() + pong.getRadius() - brick.getPositionCorner3().getX();
@@ -206,7 +204,6 @@ public class CollisionCalculator {
 				calculateCollisionVectorCircleSolidPoint(pong,
 						brick.getPositionCorner4());
 				done = true;
-				Logger.log("COLLISION Corner4");
 				
 				//move circle out of square
 				float xDiff = brick.getPositionCorner4().getX() - (pong.getPosition().getX() - pong.getRadius());
@@ -225,10 +222,8 @@ public class CollisionCalculator {
 			if (hitLeft) {
 				
 				float penetration = (brick.getWidth() * 0.5f + pong.getRadius()) - (brick.getPosition().getX() - pong.getPosition().getX());
-				
-				Logger.log("penetration " + penetration);
+	
 				if (penetration >= -0.001f) { 
-					Logger.log("COLLISION left side. Penetration is " + penetration);
 					pong.getPosition().setX(pong.getPosition().getX() - penetration);
 					pong.velocity.setX(-pong.velocity.getX());
 				}
@@ -236,11 +231,8 @@ public class CollisionCalculator {
 			} else if (hitRight) {
 				
 				float penetration = (brick.getWidth() * 0.5f + pong.getRadius()) - (pong.getPosition().getX() - brick.getPosition().getX());
-				
-				Logger.log("penetration " + penetration);
 
 				if (penetration >= -0.001f) {
-					Logger.log("COLLISION right side. Penetration is " + penetration);
 					pong.getPosition().setX(pong.getPosition().getX() + penetration);
 					pong.velocity.setX(-pong.velocity.getX());
 				}
@@ -248,22 +240,16 @@ public class CollisionCalculator {
 				
 				float penetration = (brick.getHeight() * 0.5f + pong.getRadius()) - (brick.getPosition().getY() - pong.getPosition().getY());
 				
-				Logger.log("penetration " + penetration);
-				
 				if (penetration >= -0.001f) {
 					pong.velocity.setY(-pong.velocity.getY());
-					Logger.log("COLLISION top side. Penetration is " + penetration);
 					pong.getPosition().setY(pong.getPosition().getY() - penetration);
 				}
 			} else if (hitDown) {
 				
 				float penetration = (brick.getHeight() * 0.5f + pong.getRadius()) - (pong.getPosition().getY() - brick.getPosition().getY());
-				
-				Logger.log("penetration " + penetration);
-				
+	
 				if (penetration >= -0.001f) {
 					pong.velocity.setY(-pong.velocity.getY());
-					Logger.log("COLLISION bottom side. Penetration is " + penetration);
 					pong.getPosition().setY(pong.getPosition().getY() + penetration);
 				}
 			}
@@ -295,12 +281,6 @@ public class CollisionCalculator {
 		circle.velocity.addT(collisionCheckVector.mul((bci - aci) * 0.90f));
 	}
 
-	// private static boolean circlePointCollision(Pong circle, Vector2f
-	// positionCorner1) {
-	// return circleCircleCollision(circle.getPosition(), positionCorner1,
-	// circle.getRadius(), 2.0f);
-	// }
-
 	public static boolean circleOrtogonalSquareSingleSideCollision(Pong pong,
 			Brick brick) {
 
@@ -318,7 +298,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeDown().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalDown) <= 0) {
-			Logger.log("WE HIT THE DOWN SIDE");
 			hits++;
 		}
 
@@ -327,7 +306,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeUp().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalUp) <= 0) {
-			Logger.log("WE HIT THE UP SIDE");
 			hits++;
 		}
 
@@ -336,7 +314,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeLeft().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalLeft) <= 0) {
-			Logger.log("WE HIT THE LEFT SIDE");
 			hits++;
 		}
 
@@ -345,7 +322,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeRight().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalRight) <= 0) {
-			Logger.log("WE HIT THE RIGHT SIDE");
 			hits++;
 		}
 
@@ -368,7 +344,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeDown().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalDown) <= 0) {
-			Logger.log("WE HIT THE DOWN SIDE (corner check)");
 			hits++;
 		}
 
@@ -377,7 +352,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeUp().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalUp) <= 0) {
-			Logger.log("WE HIT THE UP SIDE (corner check)");
 			hits++;
 			if (hits == 2) {
 				return true;
@@ -389,7 +363,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeLeft().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalLeft) <= 0) {
-			Logger.log("WE HIT THE LEFT SIDE (corner check)");
 			hits++;
 			if (hits == 2) {
 				return true;
@@ -401,7 +374,6 @@ public class CollisionCalculator {
 		// subtract circleToSideVector and store in circleToSideVector.
 		brick.getEdgeRight().sub(circleToSideVector, circleToSideVector);
 		if (circleToSideVector.dot(edgeNormalRight) <= 0) {
-			Logger.log("WE HIT THE RIGHT SIDE (corner check)");
 			hits++;
 			if (hits == 2) {
 				return true;

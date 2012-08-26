@@ -106,6 +106,8 @@ public class BowlScreen extends Screen {
 
 	private List<Pong> mPongs = new Vector<Pong>();
 	private List<Brick> mBricks = new Vector<Brick>();
+	private List<FadeInOutAnimation> mBrickAnimations = new Vector<FadeInOutAnimation>();
+	private List<FadeInOutAnimation> mBrickAnimationsToDelete = new Vector<FadeInOutAnimation>();
 	
 	private LevelText mLevelText;
 	private TopScoreText mTopScoreText;
@@ -941,10 +943,25 @@ public class BowlScreen extends Screen {
 			}
 		}
 		
+		updateBrickAnimations(timeStep);
+		
 		if (mGameOver && checkGameFinished()) {
 			saveTopScore();
 		}
 
+	}
+
+	private void updateBrickAnimations(float timeStep) {
+		if (mBrickAnimationsToDelete.size() > 0) {
+			mBrickAnimationsToDelete.clear();
+		}
+		for (FadeInOutAnimation brickAnimation : mBrickAnimations) {
+			brickAnimation.update(timeStep);
+			if (brickAnimation.isDone()) {
+				mBrickAnimationsToDelete.add(brickAnimation);
+			}
+		}
+		mBrickAnimations.removeAll(mBrickAnimationsToDelete);
 	}
 
 	private void updateKillAnimations() {
@@ -1085,6 +1102,11 @@ public class BowlScreen extends Screen {
 			if (brickCollidedWith != null) {
 				if (brickCollidedWith.getType() == Brick.Type.SOFT){
 					mBricks.remove(brickCollidedWith);
+					Bitmap bitmap = mBrickSoft;
+					if (brickCollidedWith.getBitmap() == mBrickMediumBroken) {
+						bitmap = mBrickMediumBroken;
+					}
+					mBrickAnimations.add(new FadeInOutAnimation(brickCollidedWith.getPosition().getX(), brickCollidedWith.getPosition().getY(), bitmap, 250));
 				} else if (brickCollidedWith.getType() == Brick.Type.MEDIUM) {
 					brickCollidedWith.setType(Brick.Type.SOFT);
 					brickCollidedWith.setBitmap(mBrickMediumBroken);
@@ -1249,6 +1271,10 @@ public class BowlScreen extends Screen {
 		}
 		if (!mTopScoreText.isDone()) {
 			mTopScoreText.draw(canvas);
+		}
+		
+		for (FadeInOutAnimation brickAnimation : mBrickAnimations) {
+			brickAnimation.draw(canvas);
 		}
 	}
 

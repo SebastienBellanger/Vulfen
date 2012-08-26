@@ -28,12 +28,7 @@ public class SpriteComponent {
 	private float mWidth;
 	private float mHeight;
 	
-	private boolean animatingDone = false;
-	
-	private boolean fadeOut;
-	private int fadeOutTime;
-	private long fadeOutStartTime;
-	private float currentFadeOutAnimationSize = 1.0f; //100 percent i.e. full size
+	private boolean animatingDone = false;	
 	
 	public SpriteComponent(Bitmap bitmap, boolean antialias, boolean animateFromLarge, boolean animateFromSmall, int animationTimeMillis, float x, float y, float width, float height) {
 
@@ -63,37 +58,25 @@ public class SpriteComponent {
 			currentAnimationSize = 2.0f;
 		} 
 		
-		currentFadeOutAnimationSize = 1.0f;
-		
 		mStart = System.currentTimeMillis();
 	}
 	
 	
 	public void update(float timeStep) {
 		
-		
-		long fadeTimeSinceStart = System.currentTimeMillis() - fadeOutStartTime;
-		
-		if (fadeOut && fadeTimeSinceStart < fadeOutTime) {
-			//WE ARE DOING FADE OUT
-			currentFadeOutAnimationSize = 1.0f - 1.0f * ((float)fadeTimeSinceStart / (float)fadeOutTime);
+		long timeSinceStart = System.currentTimeMillis() - mStart;
+		if (timeSinceStart > animationMillis) {
+			currentAnimationSize = 1.0f;
+			animatingDone = true;
 		} else {
-			currentFadeOutAnimationSize = 0.0f;
-			
-			//WE ARE DOING FADE IN
-			long timeSinceStart = System.currentTimeMillis() - mStart;
-			if (timeSinceStart > animationMillis) {
-				currentAnimationSize = 1.0f;
-				animatingDone = true;
-			} else {
-				animatingDone = false;
-				if (mAnimateFromSmall) {
-					currentAnimationSize = (float)timeSinceStart / (float)animationMillis;
-				} else if (mAnimateFromLarge) {
-					currentAnimationSize = 2.0f - 1.0f * ((float)timeSinceStart / (float)animationMillis);
-				} 
-			}
+			animatingDone = false;
+			if (mAnimateFromSmall) {
+				currentAnimationSize = (float)timeSinceStart / (float)animationMillis;
+			} else if (mAnimateFromLarge) {
+				currentAnimationSize = 2.0f - 1.0f * ((float)timeSinceStart / (float)animationMillis);
+			} 
 		}
+		
 	}
 
 	
@@ -104,35 +87,18 @@ public class SpriteComponent {
 
 		mDrawRect.set((int)x, (int)y, (int)(x + getWidth()), (int)(y + getHeight()));
 
-		if (fadeOut) {
-			float currentWidth = (float)(mWidth * currentFadeOutAnimationSize);
+		if ((mAnimateFromSmall || mAnimateFromLarge) && !animatingDone) {		
+			
+			float currentWidth = (float)(mWidth * currentAnimationSize);
 			mDrawRect.left = left + (int)((mWidth - currentWidth) * 0.5f);
 			mDrawRect.right = mDrawRect.left + (int)currentWidth;
 			
-			float currentHeight = (float)(mHeight * currentFadeOutAnimationSize);
+			float currentHeight = (float)(mHeight * currentAnimationSize);
 			mDrawRect.top = top + (int)((mHeight - currentHeight) * 0.5f);
 			mDrawRect.bottom = mDrawRect.top + (int)currentHeight;
-		} else {
-			if ((mAnimateFromSmall || mAnimateFromLarge) && !animatingDone) {		
-				
-				float currentWidth = (float)(mWidth * currentAnimationSize);
-				mDrawRect.left = left + (int)((mWidth - currentWidth) * 0.5f);
-				mDrawRect.right = mDrawRect.left + (int)currentWidth;
-				
-				float currentHeight = (float)(mHeight * currentAnimationSize);
-				mDrawRect.top = top + (int)((mHeight - currentHeight) * 0.5f);
-				mDrawRect.bottom = mDrawRect.top + (int)currentHeight;
-			}
 		}
 		
 		canvas.drawBitmap(mBitmap, null, mDrawRect, mPaint);
-	}
-	
-	public void fadeOut(int millis) {
-		fadeOut = true;
-		fadeOutTime = millis;
-		fadeOutStartTime = System.currentTimeMillis();
-		currentFadeOutAnimationSize = 1.0f;
 	}
 
 	/**
@@ -255,14 +221,6 @@ public class SpriteComponent {
 		} else if (mAnimateFromLarge) {
 			currentAnimationSize = 2.0f;
 		} 
-		fadeOut = false;
-	}
-
-	/**
-	 * @return the fadeOut
-	 */
-	public boolean isFadingOut() {
-		return fadeOut;
 	}
 
 }

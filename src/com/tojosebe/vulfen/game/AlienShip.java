@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.tojosebe.vulfen.component.SpriteComponent;
 import com.vulfox.math.Vector2f;
-import com.vulfox.util.Logger;
 import com.vulfox.util.Vector2fPool;
 
 public class AlienShip extends SpriteComponent {
@@ -97,7 +96,7 @@ public class AlienShip extends SpriteComponent {
 	
 	@Override
 	public void draw(Canvas canvas) {
-		if (moving || isFadingOut()) {
+		if (moving) {
 			super.draw(canvas);
 		}
 		
@@ -116,10 +115,8 @@ public class AlienShip extends SpriteComponent {
 				
 				if (switchColor) {
 					if (shootPaint.getColor() == color1) {
-						Logger.log("Setting color " + color2);
 						shootPaint.setColor(color2);
 					} else {
-						Logger.log("Setting color " + color1);
 						shootPaint.setColor(color1);
 					}
 				}
