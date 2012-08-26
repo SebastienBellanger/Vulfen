@@ -34,6 +34,8 @@ public class LevelScreen extends Screen {
 
 	private final int mButtonUpperOffsetDp = 30;
 	private final int mButtonUpperOffset;
+	
+	private int mButtonLowerOffset = 30;
 
 	private static final String SAVED_TOP_STARS = "topStars";
 
@@ -84,7 +86,7 @@ public class LevelScreen extends Screen {
 		this.mCloud1 = cloud1;
 		this.mCloud2 = cloud2;
 		this.mNbrOfLevels = nbrOfLevels;
-		this.mGridCols = gridCols;
+		this.mGridCols = 5;
 		this.mNbrOfLockedLevels = nbrOfLockedLevels;
 		this.mWorldNumber = worldNumber;
 		this.mActivity = activity;
@@ -105,6 +107,8 @@ public class LevelScreen extends Screen {
 
 		mPaint.setAntiAlias(true);
 		mScale = getWidth() / 480.0f;
+		
+		mButtonLowerOffset *= mScale;
 
 		int levelSpace = getWidth() - 2 * minMargin;
 

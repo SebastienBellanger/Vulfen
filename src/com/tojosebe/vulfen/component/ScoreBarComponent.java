@@ -293,9 +293,11 @@ public class ScoreBarComponent extends ScreenComponent {
 	
 	public void setScoreProgress(float star1Progress, float star2Progress, float star3Progress) {
 		
-		
 		float currentBarWidth = 0f;
 		
+		star1Progress = star1Progress < 0.0f ? 0.0f : star1Progress;
+		star2Progress = star2Progress < 0.0f ? 0.0f : star2Progress;
+		star3Progress = star3Progress < 0.0f ? 0.0f : star3Progress;
 		
 		if (star1Progress < 1.0) {
 			currentBarWidth = star1Progress * mTotalBarWidth * fractionStar1;
@@ -335,7 +337,7 @@ public class ScoreBarComponent extends ScreenComponent {
 			mDrawRectMarker.set(0,0,0,0);
 		} else {
 			mDrawRectMarker.set((int) ((10 * mScale) + currentBarWidth), (int) (5 * mScale),
-					(int) (10 * mScale  + currentBarWidth + 2 * mScale),
+					(int) (10 * mScale  + currentBarWidth + 4 * mScale),
 					(int) (5 * mScale + mBitmapProgressBackground.getHeight()));
 		}
 	}

@@ -13,7 +13,7 @@ public class Pong extends SpriteComponent {
 	};
 
 	private int maxGroth = +2;
-	private int maxShrink = +4;
+	private int maxShrink = +2;
 	private int mShrinkSteps = 2;
 	private int mTimesShrinken = 0;
 

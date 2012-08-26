@@ -1,45 +1,54 @@
 
-Om man släpper och aldrig lämnar "boet" är man kvar i boet. fastnar på kanten.
+3h
+WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
+lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
+Lägg till back knapp överallt.
 
-fler banor!
+6h
+bakgrundsbild(er).
+
+1h
+hard brick är ful!
+
+4h
+fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds. (scrolling game view)
+
+8h
+fler banor (satsa på 24 stycken! och adjusta dem helt)
 - Power ups (BRICK_SMASHER, LIGHTNING)
 
+2h
 nästa steg på alien är att han kör till mitten, väntar 5 sek och sen strålar upp en ko. Det gäller att
 stoppa honom medan man kan.
 
-boss
+-------------------------------WORLD 1 KLAR----------------------------------
 
-placeringen av penguin på launcehrn är inte samma på olika skärmar.
+-------------------------------WORLD 2---------------------------------------
+Idéer:
+* svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!? 
+* hål där man ramlar ner och kommer upp i ett annat. Maskhål.
+-------------------------------WORLD 2 KLAR----------------------------------
 
-GRAFIKGREJS (rita)
-lägg till ikon som visar att man kan scrolla ner. om man kan göra det.
-Lägg till back knapp överallt.
-bakgrundsbild(er).
-hard brick är ful!
 
-WORLDSCREEN/LEVELSCREEN: visa med animerad pil att det går att scrolla?
+* GAMESCREEN:
+	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
+	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
 
-jobba bort dpi användandet.
-
-fixa så spelet funkar för skärmar som är mindre än den minsta aspect ration som stöds.
-
-alien growar cows utan att kolla om de får plats först.
-
+***********BUGGAR******************
 BUGG: lyckades spela och ta alla kor men kom ingen dialog att det var klart. 
       Fick istället en ny pong att kasta. Kanske glitch om man tar sista kossan genom att växa? japp!
       
 BUGG: en pingvin var nära kanten. stod still. tog en fisk och växte så långt att den touchade en annnan
-pingvin. Hängde sig och bara stod och vibrera in poäng!
+      pingvin. Hängde sig och bara stod och vibrera in poäng!
+      
+artifakt på worldscreen ibland (bara sett på samsung galaxy s3)
+***********BUGGAR******************
 
 
 ta bort alla new i bowlScreen som går.
 bowlScreen ska INTE vara > 1000 rader.
 
-hur långt man kommit i levlar ska sparas. (senare)
-
-* GAMESCREEN:
-	- Tutorial dialog? eller ett finger som animerat visar hur man gör?
-	- när ingenting rör sig ska kossornas ben växa ut och alla varelser ska blinka med ögonen då och då.
+hur långt man kommit i levlar ska sparas. (senare) ifall det ringer, byter språk etc. Ett måste!
 
 LJUD
 	- precis innan det kommer en bonusitem?
@@ -47,12 +56,6 @@ LJUD
 	- som feedback när man klickar på saker?
 	- applåder när man klarar.
 	- när man får en stjärna
-
-artifakt på worldscreen ibland (bara sett på samsung galaxy s3)
-
-Idéer:
-* svarta hål som uppstår! Kanske på värld 2? eller 3? inversen till svart hål!?
-* hål där man ramlar ner och kommer upp i ett annat. 
 
 
 

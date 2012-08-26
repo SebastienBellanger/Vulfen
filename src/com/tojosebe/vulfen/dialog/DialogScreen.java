@@ -202,7 +202,12 @@ public class DialogScreen extends Screen {
 						dialogTextRect);
 
 				mStrokePaint.setColor(0xFF303030);
-				mStrokePaint.setStrokeWidth(5 * mScale);
+				
+				if (canvasDialogString.getTextSize() == TextSize.SMALL) {
+					mStrokePaint.setStrokeWidth(3 * mScale);
+				} else {
+					mStrokePaint.setStrokeWidth(4 * mScale);
+				}
 				canvas.drawText(canvasDialogString.getContent(), mWidth / 2
 						- dialogTextRect.width() / 2, currentY, mStrokePaint);
 				mTextPaint.setColor(canvasDialogString.getColor());

@@ -114,6 +114,15 @@ public class SpriteComponent {
 	public void setSpriteBitmap(Bitmap bitmap) {
 		this.mBitmap = bitmap;
 	}
+	
+	/**
+	 * @param mBitmap the mBitmap to set
+	 */
+	public void setSpriteBitmapAndAdjustBounds(Bitmap bitmap) {
+		setWidth(bitmap.getWidth());
+		setHeight(bitmap.getHeight());
+		this.mBitmap = bitmap;
+	}
 
 	/**
 	 * @return the animatingDone
